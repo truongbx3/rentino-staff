@@ -1,0 +1,20 @@
+<nz-layout style="min-height: 100vh">
+  <nz-header class="header d-flex justify-content-between">
+    <div class="header-logo"></div>
+    <div class="header-actions d-flex gap-4">
+      <div class="user-infor d-flex align-items-center">
+        <i class="me-1 bi bi-person"></i>
+        <span>{{ user.firstName }} {{ user.lastName }}</span>
+      </div>
+      <div class="actions">
+        <i
+          (click)="auth.logout()"
+          class="btn-logout bi bi-box-arrow-right"
+        ></i>
+      </div>
+    </div>
+  </nz-header>
+  <nz-content style="padding: 16px">
+    <router-outlet></router-outlet>
+  </nz-content>
+</nz-layout>

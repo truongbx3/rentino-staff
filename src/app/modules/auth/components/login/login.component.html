@@ -1,0 +1,67 @@
+<div class="login-wrapper">
+  <div class="login-header">
+    <i nz-icon nzType="appstore" nzTheme="outline" class="logo-icon"></i>
+    <div class="header-title d-flex flex-column text-center mb-4">
+      <div class="fs-4 fw-bold logo-text">Device Check</div>
+      <span>Hệ thống kiểm tra thiết bị</span>
+    </div>
+  </div>
+  <div class="login-card">
+    <form nz-form [formGroup]="form" (ngSubmit)="submit()">
+      <nz-form-item class="mb-3">
+        <label class="w-100 mb-1 text-white">Tài khoản</label>
+        <nz-form-control
+          nzErrorTip="Vui lòng nhập tài khoản"
+          [nzValidateStatus]="form.controls.phone"
+        >
+          <nz-input-group class="p-2" [nzPrefix]="prefixTemplateUser">
+            <input nz-input placeholder="Tài khoản" formControlName="phone" />
+            <ng-template #prefixTemplateUser
+              ><i nz-icon nzType="user"></i
+            ></ng-template>
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-control
+          nzErrorTip="Vui lòng nhập mật khẩu"
+          [nzValidateStatus]="form.controls.password"
+        >
+          <label class="w-100 mb-1 text-white">Mật khẩu</label>
+          <nz-input-group
+            class="p-2"
+            nzPrefixIcon="lock"
+            [nzSuffix]="suffixTemplate"
+          >
+            <input
+              nz-input
+              [type]="passwordVisible ? 'text' : 'password'"
+              placeholder="Mật khẩu"
+              formControlName="password"
+            />
+            <ng-template #suffixTemplate>
+              <i
+                nz-icon
+                [nzType]="passwordVisible ? 'eye-invisible' : 'eye'"
+                nzTheme="twotone"
+                nzTwotoneColor="#eb2f96"
+                (click)="passwordVisible = !passwordVisible"
+              ></i>
+            </ng-template>
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
+
+      <button nz-button nzType="primary" nzBlock>Đăng nhập</button>
+    </form>
+
+    <div class="card-footer d-flex justify-content-center gap-3">
+      <span>Kiểm tra nhanh</span>
+      <span>Bảo mật cao</span>
+    </div>
+  </div>
+  <div class="login-footer mt-4">
+    <span>© 2025 Device Check System. All rights reserved.</span>
+  </div>
+</div>

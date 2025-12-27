@@ -1,0 +1,216 @@
+<div class="device-modal-container">
+  <div class="steps-wrapper">
+    <nz-steps [nzCurrent]="currentStep" nzSize="small">
+      <nz-step
+        nzTitle="Thông tin cơ bản"
+        nzDescription="Thông số kỹ thuật"
+      ></nz-step>
+      <nz-step
+        nzTitle="Kiểm tra chức năng"
+        nzDescription="Camera & Bổ sung"
+      ></nz-step>
+    </nz-steps>
+  </div>
+
+  <form nz-form [formGroup]="deviceForm" class="form-content">
+    <div *ngIf="currentStep === 0">
+      <h4 class="section-title">
+        <i nz-icon nzType="mobile"></i> Thông tin cơ bản
+      </h4>
+      <div nz-row [nzGutter]="24">
+        <div nz-col nzSpan="12">
+          <nz-form-item>
+            <nz-form-label [nzRequired]="true">Loại thiết bị</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="type">
+                <nz-option nzValue="mobile" nzLabel="Điện thoại"></nz-option>
+                <nz-option nzValue="tablet" nzLabel="Máy tính bảng"></nz-option>
+                <nz-option nzValue="laptop" nzLabel="Laptop"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzSpan="12">
+          <nz-form-item>
+            <nz-form-label [nzRequired]="true">Tên thiết bị</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="deviceName" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="24">
+        <div nz-col nzSpan="12">
+          <nz-form-item>
+            <nz-form-label [nzRequired]="true">Model</nz-form-label>
+            <nz-form-control>
+              <nz-select [formControlName]="'model'">
+                <nz-option
+                  *ngFor="let opt of modelItems"
+                  [nzValue]="opt.value"
+                  [nzLabel]="opt.label"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <h4 class="section-title">
+        <i nz-icon nzType="setting"></i> Thông số kỹ thuật
+      </h4>
+      <div nz-row [nzGutter]="24">
+        <div nz-col nzSpan="8">
+          <nz-form-item>
+            <nz-form-label>Phiên bản OS</nz-form-label>
+            <nz-form-control
+              ><input nz-input formControlName="osVersion"
+            /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzSpan="8">
+          <nz-form-item>
+            <nz-form-label>RAM</nz-form-label>
+            <nz-form-control
+              ><input nz-input formControlName="totalRam"
+            /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzSpan="8">
+          <nz-form-item>
+            <nz-form-label>Bộ nhớ</nz-form-label>
+            <nz-form-control
+              ><input nz-input formControlName="storage"
+            /></nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="currentStep === 1">
+      <h4 class="section-title">Kiểm tra chức năng</h4>
+      <div nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
+        <div
+          nz-col
+          nzSpan="6"
+          class="switch-item"
+          *ngFor="let item of switchItems"
+        >
+          <nz-switch [formControlName]="item.key"></nz-switch>
+          <span class="switch-label">{{ item.label }}</span>
+        </div>
+      </div>
+
+      <h4 class="section-title">Kiểm tra Camera</h4>
+      <div nz-row [nzGutter]="24">
+        <div nz-col nzSpan="24">
+          <nz-form-item>
+            <div class="w-100 mb-1 d-flex justify-content-between">
+              <label>Camera trước</label>
+              <span class="text-muted">{{ frontCameraFiles.length }}/5</span>
+            </div>
+            <nz-form-control>
+              <nz-upload
+                class="w-100"
+                nzListType="picture-card"
+                [(nzFileList)]="frontCameraFiles"
+                [nzBeforeUpload]="beforeUploadFront"
+                [nzCustomRequest]="uploadFrontCamera"
+                [nzLimit]="5"
+                [nzMultiple]="true"
+                [nzShowUploadList]="{
+                  showRemoveIcon: true
+                }"
+              >
+                <div *ngIf="frontCameraFiles.length < 5">
+                  <i nz-icon nzType="plus"></i>
+                  <div class="ant-upload-text">
+                    Kéo thả hoặc chọn ảnh<br />
+                    Còn {{ 5 - frontCameraFiles.length }} ảnh có thể thêm
+                  </div>
+                </div>
+              </nz-upload>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col nzSpan="24">
+          <nz-form-item>
+            <div class="w-100 mb-1 d-flex justify-content-between">
+              <label>Camera sau</label>
+              <span class="text-muted">{{ backCameraFiles.length }}/5</span>
+            </div>
+            <nz-form-control>
+              <nz-upload
+                class="w-100"
+                nzListType="picture-card"
+                [(nzFileList)]="backCameraFiles"
+                [nzBeforeUpload]="beforeUploadBack"
+                [nzCustomRequest]="uploadBackCamera"
+                [nzLimit]="5"
+                [nzMultiple]="true"
+                [nzShowUploadList]="{
+                  showPreviewIcon: true,
+                  showRemoveIcon: true
+                }"
+              >
+                <div *ngIf="backCameraFiles.length < 5">
+                  <i nz-icon nzType="plus"></i>
+                  <div class="ant-upload-text">
+                    Kéo thả hoặc chọn ảnh<br />
+                    Còn {{ 5 - backCameraFiles.length }} ảnh có thể thêm
+                  </div>
+                </div>
+              </nz-upload>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <h4 class="section-title">Kiểm tra bổ sung</h4>
+      <div nz-row [nzGutter]="24">
+        <div nz-col nzSpan="8" *ngFor="let acc of additionalItems">
+          <nz-form-item class="d-flex flex-column mt-2">
+            <label class="mb-1">{{ acc.label }}</label>
+            <nz-form-control>
+              <nz-select class="w-100" [formControlName]="acc.key">
+                <nz-option
+                  *ngFor="let opt of accessoryOptions"
+                  [nzValue]="opt.value"
+                  [nzLabel]="opt.label"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button nz-button nzType="default" (click)="cancel()">Hủy</button>
+      <button
+        nz-button
+        nzType="default"
+        *ngIf="currentStep === 1"
+        (click)="prev()"
+      >
+        Quay lại
+      </button>
+      <button
+        nz-button
+        nzType="primary"
+        *ngIf="currentStep === 0"
+        (click)="next()"
+      >
+        Tiếp theo <i nz-icon nzType="arrow-right"></i>
+      </button>
+      <button
+        nz-button
+        nzType="primary"
+        *ngIf="currentStep === 1"
+        (click)="submit()"
+      >
+        Cập nhật
+      </button>
+    </div>
+  </form>
+</div>

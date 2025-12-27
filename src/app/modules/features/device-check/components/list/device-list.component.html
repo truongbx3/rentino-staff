@@ -1,0 +1,46 @@
+<div class="list-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+  <button nz-button nzType="primary" (click)="onAddUpdate()">Thêm mới</button>
+</div>
+
+<nz-row [nzGutter]="16">
+  <nz-col nzSpan="8" class="mb-4" *ngFor="let d of devices">
+    <nz-card class="device-card">
+      <div class="card-header">
+        <div class="title">
+          <i nz-icon nzType="mobile"></i>
+          <div>
+            <h3>{{ d.deviceName }}</h3>
+            <span>{{ d.model }}</span>
+          </div>
+        </div>
+
+        <nz-tag [nzColor]="getTypeColor(d.finalSummary || null)">
+          {{ getTypeLabel(d.finalSummary) }}
+        </nz-tag>
+      </div>
+
+      <div class="card-info">
+        <div>RAM: {{ d.totalRam }}</div>
+        <div>ROM: {{ d.storage }}</div>
+        <div>{{ formatDate(d.updatedDate) }}</div>
+        <div>{{ getPrice(d.price) }}</div>
+      </div>
+
+      <div class="check">
+        <nz-tag *ngIf="d.osVersion">{{ d.osVersion }}</nz-tag>
+        <nz-tag *ngIf="d.type">{{ d.type }}</nz-tag>
+      </div>
+
+      <p class="desc">
+        {{ getSummary(d) }}
+      </p>
+
+      <nz-divider></nz-divider>
+
+      <div class="actions">
+        <button nz-buton nzType="primary" (click)="onAddUpdate(d.id)">Sửa</button>
+        <button nz-buton nzType="outline">Xóa</button>
+      </div>
+    </nz-card>
+  </nz-col>
+</nz-row>
