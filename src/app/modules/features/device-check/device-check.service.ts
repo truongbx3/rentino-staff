@@ -32,19 +32,8 @@ export class DeviceCheckService {
 
     constructor(private http: HttpClient) { }
 
-    getAllDevices(
-        page: number = 0,
-        size: number = 10,
-        lsCondition: any[] = [],
-        sortField: { fieldName: string; sort: string }[] = [{ fieldName: 'createdDate', sort: 'DESC' }]
-    ): Observable<any> {
-        const body: DeviceSearchRequest = {
-            page,
-            size,
-            lsCondition,
-            sortField
-        };
-        return this.http.post(`${this.contextPath}/search`, body);
+    getAllDevices(payload: any): Observable<any> {
+        return this.http.post(`${this.contextPath}/search`, payload);
     }
 
     getDeviceDetail(id: number): Observable<any> {

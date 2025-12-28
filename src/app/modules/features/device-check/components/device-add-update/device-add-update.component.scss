@@ -1,4 +1,3 @@
-
 .steps-wrapper {
   margin-bottom: 24px;
 }
@@ -7,11 +6,12 @@
   .section-title {
     font-size: 16px;
     font-weight: 500;
-    margin: 24px 0 16px;
     display: flex;
     align-items: center;
+    padding-bottom: 12px;
     gap: 8px;
-    color: #1890ff;
+    color: #40c4ff;
+    border-bottom: 1px solid #3d3d3d5a;
 
     &:first-child {
       margin-top: 0;
@@ -24,13 +24,19 @@
 
   .switch-item {
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
     padding: 12px;
-    background: #fafafa;
-    border-radius: 4px;
-    margin-bottom: 16px;
+    border-radius: 12px;
+    background-color: #ee340017;
+    border: 1px solid #ee3300;
+    color: #fff;
+
+    &.valid {
+      background-color: hsl(142 76% 36% / 0.1);
+      border: 1px solid #4b9f53 !important;
+    }
 
     .switch-label {
       font-size: 13px;
@@ -40,7 +46,6 @@
 
   .ant-upload-text {
     font-size: 12px;
-    color: #8c8c8c;
     text-align: center;
     margin-top: 8px;
   }
@@ -49,20 +54,169 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 24px;
     padding-top: 16px;
     border-top: 1px solid #f0f0f0;
   }
 }
 
 ::ng-deep {
-  
   .ant-upload.ant-upload-select-picture-card {
+    background-color: transparent;
     width: 100% !important;
     height: 120px;
+    border-radius: 16px;
+    border: 2px dashed #5b5b5b !important;
+    transition: all ease 0.3s;
+
+    &:hover {
+      border-color: #40c4ff !important;
+    }
   }
 
   .ant-upload-list-picture-card .ant-upload-list-item {
     padding: 4px;
+  }
+
+  .ant-select-selector {
+    background: #1a2133 !important;
+    border: 1px solid #293349 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 16px;
+    height: 40px !important;
+    padding: 4px 24px !important;
+    border-radius: 16px !important;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+
+    &:hover {
+      border-color: #40c4ff !important;
+    }
+
+    .ant-select-selection-placeholder {
+      color: #8c8c8c !important;
+      opacity: 1;
+    }
+
+    .ant-select-selection-item {
+      color: #fff !important;
+    }
+  }
+
+  .ant-input-group {
+    background: rgba(30, 40, 60, 0.4) !important;
+    border: none !important;
+    border-radius: 16px !important;
+    padding: 4px 16px !important;
+  }
+
+  cdk-virtual-scroll-viewport {
+    scrollbar-width: none;
+  }
+
+  .ant-select-focused .ant-select-selector,
+  .ant-select-open .ant-select-selector {
+    border-color: #40c4ff !important;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+  }
+
+  .ant-select-arrow {
+    color: #8c8c8c !important;
+    transition: all 0.3s;
+
+    .ant-select-open & {
+      transform: rotate(180deg);
+      color: #40c4ff !important;
+    }
+  }
+
+  .ant-select-clear {
+    color: #8c8c8c !important;
+    background: #1f1f1f !important;
+
+    &:hover {
+      color: #ff4d4f !important;
+    }
+  }
+
+  .ant-select-dropdown {
+    background-color: #141414 !important;
+    border-radius: 6px !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+
+    .ant-select-item {
+      color: #d9d9d9 !important;
+      min-height: 36px;
+      padding: 8px 12px;
+
+      &-option-active {
+        background-color: #262626 !important;
+      }
+
+      &-option-selected {
+        background-color: #40c4ff !important;
+        color: #fff !important;
+        font-weight: 600;
+      }
+
+      &-option-disabled {
+        color: #595959 !important;
+      }
+
+      &:hover:not(.ant-select-item-option-disabled) {
+        background-color: #262626 !important;
+      }
+    }
+
+    .ant-select-item-group {
+      color: #8c8c8c !important;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+  }
+
+  .ant-select-selection-overflow-item {
+    .ant-select-selection-item {
+      background: #262626 !important;
+      border-color: #434343 !important;
+      color: #fff !important;
+    }
+  }
+
+  .modal-footer {
+    border: none !important;
+  }
+
+  .ant-steps-item {
+    .ant-steps-item-title {
+      font-size: 16px;
+      color: #40c4ff !important;
+      font-weight: 600;
+    }
+
+    .ant-steps-item-description {
+      color: #ccc !important;
+    }
+
+    .ant-steps-item-icon {
+      background-color: #40c4ff !important;
+    }
+
+    &.ant-steps-item-wait,
+    &.ant-steps-item-finish {
+      opacity: 0.5;
+      .ant-steps-item-title {
+        font-size: 16px;
+        color: #ccc !important;
+        font-weight: 600;
+      }
+
+      .ant-steps-item-description {
+        color: #ccc !important;
+      }
+
+      .ant-steps-item-icon {
+        background-color: #ccc !important;
+        color: #000;
+      }
+    }
   }
 }

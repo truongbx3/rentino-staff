@@ -1,46 +1,96 @@
-<div class="list-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+<div class="list-toolbar">
+  <nz-input-group class="search-box" [nzPrefix]="suffixIconSearch">
+    <input
+      [(ngModel)]="deviceNameSearch"
+      (blur)="onSearch()"
+      (keyup.enter)="onSearch()"
+      nz-input
+      placeholder="Tìm kiếm thiết bị ..."
+    />
+  </nz-input-group>
+  <ng-template #suffixIconSearch>
+    <i class="bi bi-search text-muted"></i>
+  </ng-template>
+
   <button nz-button nzType="primary" (click)="onAddUpdate()">Thêm mới</button>
 </div>
 
-<nz-row [nzGutter]="16">
-  <nz-col nzSpan="8" class="mb-4" *ngFor="let d of devices">
-    <nz-card class="device-card">
-      <div class="card-header">
-        <div class="title">
-          <i nz-icon nzType="mobile"></i>
+<div class="mb-3 w-100 d-flex justify-content-between">
+  <h2 class="text-white">Danh sách thiết bị</h2>
+  <nz-pagination
+    [nzPageIndex]="pageIndex"
+    [nzPageSize]="pageSize"
+    [nzTotal]="total"
+    (nzPageIndexChange)="onPageIndexChange($event)"
+    (nzPageSizeChange)="onPageSizeChange($event)"
+  >
+  </nz-pagination>
+</div>
+<ng-container *ngIf="devices.length; else noData">
+  <nz-row [nzGutter]="16">
+    <nz-col nzSpan="8" class="mb-4" *ngFor="let d of devices">
+      <nz-card class="device-card h-100">
+        <div class="card-header">
+          <div class="title">
+            <div class="title-icon text-center">
+              <i class="bi bi-phone"></i>
+            </div>
+            <div>
+              <h3>{{ d.deviceName }}</h3>
+              <span>{{ d.model }}</span>
+            </div>
+          </div>
+
+          <nz-tag [nzColor]="getTypeColor(d.finalSummary || null)">
+            {{ getTypeLabel(d.finalSummary) }}
+          </nz-tag>
+        </div>
+
+        <div class="card-info">
+          <div><i class="bi bi-cpu"></i>{{ d.totalRam }}</div>
+          <div><i class="bi bi-hdd"></i>{{ d.storage }}</div>
           <div>
-            <h3>{{ d.deviceName }}</h3>
-            <span>{{ d.model }}</span>
+            <i class="bi bi-calendar4"></i>{{ formatDate(d.updatedDate) }}
+          </div>
+          <div>
+            <i class="bi bi-currency-dollar"></i>{{ getPrice(d.price) }}
           </div>
         </div>
 
-        <nz-tag [nzColor]="getTypeColor(d.finalSummary || null)">
-          {{ getTypeLabel(d.finalSummary) }}
-        </nz-tag>
-      </div>
+        <div class="check">
+          <nz-tag *ngIf="d.osVersion">{{ d.osVersion }}</nz-tag>
+          <nz-tag *ngIf="d.type">{{ d.type }}</nz-tag>
+        </div>
 
-      <div class="card-info">
-        <div>RAM: {{ d.totalRam }}</div>
-        <div>ROM: {{ d.storage }}</div>
-        <div>{{ formatDate(d.updatedDate) }}</div>
-        <div>{{ getPrice(d.price) }}</div>
-      </div>
+        <p class="desc">
+          {{ getSummary(d) }}
+        </p>
 
-      <div class="check">
-        <nz-tag *ngIf="d.osVersion">{{ d.osVersion }}</nz-tag>
-        <nz-tag *ngIf="d.type">{{ d.type }}</nz-tag>
-      </div>
+        <nz-divider></nz-divider>
 
-      <p class="desc">
-        {{ getSummary(d) }}
-      </p>
+        <div class="actions">
+          <button nz-button nzType="primary" (click)="onAddUpdate(d.id)">
+            <i class="bi bi-pen me-2"></i>
+            Sửa
+          </button>
+          <button nz-button nzType="primary" nzDanger nzGhost>
+            <i class="bi bi-trash3 me-2"></i>
+            Xóa
+          </button>
+        </div>
+      </nz-card>
+    </nz-col>
+  </nz-row>
+</ng-container>
 
-      <nz-divider></nz-divider>
-
-      <div class="actions">
-        <button nz-buton nzType="primary" (click)="onAddUpdate(d.id)">Sửa</button>
-        <button nz-buton nzType="outline">Xóa</button>
-      </div>
-    </nz-card>
-  </nz-col>
-</nz-row>
+<ng-template #noData>
+  <div
+    class="d-flex flex-column align-items-center justify-content-center text-white"
+  >
+    <i style="font-size: 56px" class="bi bi-search mb-3"></i>
+    <div class="fs-3 fw-bold" style="color: #40c4ff">
+      Không tìm thấy kết quả
+    </div>
+    <span>Vui lòng thử lại</span>
+  </div>
+</ng-template>

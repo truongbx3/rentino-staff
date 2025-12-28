@@ -1,22 +1,13 @@
 .list-toolbar {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
 
-  .ant-input-search {
-    width: 300px;
-    border-radius: 12px;
-    background: rgba(30, 40, 60, 0.4);
-    border: none;
-
-    .ant-input {
-      background: transparent;
-      color: white;
-      &::placeholder {
-        color: rgba(255, 255, 255, 0.5);
-      }
-    }
+  .search-box {
+    width: 400px;
+    height: 40px;
   }
 
   button {
@@ -51,6 +42,7 @@
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 16px;
+    padding: 0;
 
     .title {
       display: flex;
@@ -58,9 +50,16 @@
       gap: 12px;
       flex: 1;
 
-      i[nz-icon] {
-        font-size: 36px;
+      .title-icon {
+        width: 50px;
+        height: 50px;
+        background: #40c4ff80;
+        border-radius: 12px;
         color: #40c4ff;
+        font-size: 28px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
 
       div {
@@ -93,14 +92,9 @@
     color: rgba(255, 255, 255, 0.8);
     font-size: 14px;
 
-    div:nth-child(3) {
-      grid-column: 1 / -1;
-    }
-    div:nth-child(4) {
-      grid-column: 1 / -1;
-      font-weight: 600;
+    .bi {
+      margin-right: 12px;
       color: #40c4ff;
-      font-size: 16px;
     }
   }
 
@@ -133,7 +127,7 @@
 
   .actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: end;
     gap: 12px;
   }
 }
@@ -168,14 +162,47 @@
     font-weight: 600;
     background: linear-gradient(135deg, #40c4ff, #0091ea);
     border: none;
-    box-shadow: 0 4px 16px rgba(64, 196, 255, 0.4),
-      0 0 12px rgba(64, 196, 255, 0.2);
     transition: all 0.3s ease;
 
     &:hover {
       background: linear-gradient(135deg, #5dd1ff, #00a0ff);
-      box-shadow: 0 8px 20px rgba(64, 196, 255, 0.5),
-        0 0 16px rgba(64, 196, 255, 0.3);
     }
+  }
+
+  .ant-modal-content {
+    background-color: transparent;
+  }
+
+  .ant-modal-body,
+  .ant-modal-header {
+    background-color: #141b2f;
+  }
+
+  .ant-modal-body {
+    border-radius: 0 0 24px 24px;
+  }
+
+  .ant-modal-header {
+    border: none !important;
+    color: #fff;
+    border-radius: 24px 24px 0 0;
+
+    .ant-modal-title {
+      color: #fff;
+      font-size: 18px;
+    }
+  }
+
+  .modal-footer {
+    padding: 0 !important;
+  }
+
+  
+  .ant-form-item-explain.ant-form-item-explain-error {
+    color: #ee3300;
+  }
+
+  .ant-modal-close-icon {
+    color: #fff !important;
   }
 }

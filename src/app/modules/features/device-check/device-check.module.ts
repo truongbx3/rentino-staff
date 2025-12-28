@@ -1,8 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-// NG-ZORRO Modules cần thiết
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzStepsModule } from 'ng-zorro-antd/steps';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -13,7 +12,7 @@ import { NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzMessageModule } from 'ng-zorro-antd/message'; // Tùy chọn: để thông báo
+import { NzMessageModule } from 'ng-zorro-antd/message'; 
 
 import { DeviceAddUpdateComponent } from './components/device-add-update/device-add-update.component';
 import { DeviceListComponent } from './components/list/device-list.component';
@@ -21,6 +20,7 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzCardComponent, NzCardModule } from 'ng-zorro-antd/card';
 import { DeviceCheckRoutingModule } from './device-check-routing.module';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 
 @NgModule({
   declarations: [
@@ -30,7 +30,7 @@ import { DeviceCheckRoutingModule } from './device-check-routing.module';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-
+    FormsModule,
     NzModalModule,
     NzStepsModule,
     NzFormModule,
@@ -45,7 +45,8 @@ import { DeviceCheckRoutingModule } from './device-check-routing.module';
     NzDividerModule,
     NzTagModule,
     NzCardModule,
-    DeviceCheckRoutingModule
+    DeviceCheckRoutingModule,
+    NzPaginationModule
   ],
   exports: [
     DeviceAddUpdateComponent

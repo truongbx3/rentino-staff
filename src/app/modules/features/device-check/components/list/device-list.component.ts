@@ -14,13 +14,24 @@ export class DeviceListComponent {
   constructor(
     private deviceCheckService: DeviceCheckService,
     private modalService: NzModalService
-  ) {}
+  ) { }
 
   devices: DeviceCheckModel[] = [];
+  deviceNameSearch!: string;
+  pageIndex: number = 1;
+  pageSize: number = 10;
+  total = 0;
 
   ngOnInit(): void {
-    this.deviceCheckService.getAllDevices().subscribe((res: any) => {
-      this.devices = res.data.content;
+    this.getAllList();
+  }
+
+  getAllList() {
+    const payload = this.buildPayload();
+
+    this.deviceCheckService.getAllDevices(payload).subscribe(res => {
+      this.devices = res.data.content || [];
+      this.total = res.data.totalElements || 0;
     });
   }
 
@@ -56,9 +67,51 @@ export class DeviceListComponent {
       nzContent: DeviceAddUpdateComponent,
       nzWidth: '70vw',
       nzComponentParams: {
-        deviceId: id
+        deviceId: id,
+        onRefresh: () => this.getAllList()
       },
       nzFooter: null
     });
+  }
+
+  buildPayload() {
+    const conditions: any[] = [];
+
+    if (this.deviceNameSearch?.trim()) {
+      conditions.push({
+        operator: 'LIKE',
+        property: 'deviceName',
+        propertyType: 'string',
+        value: this.deviceNameSearch.trim()
+      });
+    }
+
+    return {
+      page: this.pageIndex - 1,
+      size: this.pageSize,
+      lsCondition: conditions,
+      sortField: [
+        {
+          fieldName: 'createdDate',
+          sort: 'DESC'
+        }
+      ]
+    };
+  }
+
+
+  onSearch(): void {
+    this.getAllList();
+  }
+
+  onPageIndexChange(page: number) {
+    this.pageIndex = page;
+    this.getAllList();
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.pageIndex = 1;
+    this.getAllList();
   }
 }

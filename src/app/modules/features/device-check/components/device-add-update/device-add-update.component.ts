@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { NzModalRef } from 'ng-zorro-antd/modal';
+import { NzModalRef, NzModalService } from 'ng-zorro-antd/modal';
 import { NzUploadFile, NzUploadXHRArgs } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { of } from 'rxjs';
@@ -15,7 +15,7 @@ import { accessoryOptions, additionalItems, modelItems, switchItems } from '../c
 })
 export class DeviceAddUpdateComponent implements OnInit {
   @Input() deviceId?: number;
-
+  @Input() onRefresh?: () => void;
   currentStep = 0;
   deviceForm!: FormGroup;
   isSubmitting = false;
@@ -34,7 +34,8 @@ export class DeviceAddUpdateComponent implements OnInit {
     private modalRef: NzModalRef,
     private fb: FormBuilder,
     private deviceCheckService: DeviceCheckService,
-    private message: NzMessageService
+    private message: NzMessageService,
+    private modalService: NzModalService
   ) { }
 
   ngOnInit(): void {
@@ -52,23 +53,23 @@ export class DeviceAddUpdateComponent implements OnInit {
   private initForm(): void {
     this.deviceForm = this.fb.group({
       type: ['mobile', Validators.required],
-      deviceName: ['', Validators.required],
+      deviceName: [null, Validators.required],
       model: ['', Validators.required],
       osVersion: [''],
       storage: [''],
       totalRam: [''],
 
-      wifi: [false],
-      bluetooth: [false],
-      vibration: [false],
-      gps: [false],
-      biometrics: [false],
-      mic: [false],
-      volumeUp: [false],
-      volumeDown: [false],
-      touchScreen: [false],
-      speaker: [false],
-      headphone: [false],
+      wifi: [true],
+      bluetooth: [true],
+      vibration: [true],
+      gps: [true],
+      biometrics: [true],
+      mic: [true],
+      volumeUp: [true],
+      volumeDown: [true],
+      touchScreen: [true],
+      speaker: [true],
+      headphone: [true],
 
       deviceFrame: [''],
       pin: [''],
@@ -288,7 +289,7 @@ export class DeviceAddUpdateComponent implements OnInit {
         });
         return;
       }
-      this.submitInfor();
+      this.currentStep++;
     }
   }
 
@@ -298,24 +299,9 @@ export class DeviceAddUpdateComponent implements OnInit {
     }
   }
 
-  private submitInfor(): void {
-    const payload = {
-      id: this.deviceId || null,
-      deviceName: this.deviceForm.get('deviceName')?.value,
-      model: this.deviceForm.get('model')?.value,
-      osVersion: this.deviceForm.get('osVersion')?.value || '',
-      storage: this.deviceForm.get('storage')?.value || '',
-      totalRam: this.deviceForm.get('totalRam')?.value || '',
-      transactionID: this.transactionID,
-      type: this.deviceForm.get('type')?.value
-    };
-
-    this.isSubmitting = true;
-    this.currentStep++;
-  }
-
   submit(): void {
     this.isSubmitting = true;
+    let loadingModalRef: NzModalRef | null = null;
 
     const frontUrls = this.frontCameraFiles
       .map((f) => (f.originFileObj as any).url || '')
@@ -366,11 +352,19 @@ export class DeviceAddUpdateComponent implements OnInit {
         this.message.success('Lưu thông tin thiết bị thành công');
         return this.deviceCheckService.saveCheckDeviceInfor(payload);
       }),
-      concatMap((res2) => {
+      concatMap((res) => {
         this.message.success('Lưu kết quả kiểm tra thành công');
+
+        loadingModalRef = this.showLoadingModal();
         return this.deviceCheckService.checkDeviceStatus(this.transactionID);
       }),
-      finalize(() => (this.isSubmitting = false)),
+      finalize(() => {
+        this.isSubmitting = false;
+        this.onRefresh?.();
+        setTimeout(() => {
+          this.cancel();
+        })
+      }),
       catchError((err) => {
         this.message.error(err?.message || 'Có lỗi xảy ra');
         return of(null);
@@ -382,6 +376,26 @@ export class DeviceAddUpdateComponent implements OnInit {
       }
     });
   }
+
+  private showLoadingModal(): NzModalRef {
+    return this.modalService.create({
+      nzTitle: '',
+      nzContent: `
+      <div style="text-align:center; padding: 32px">
+        <nz-spin nzTip="Đang kiểm tra trạng thái thiết bị..."></nz-spin>
+        <div style="margin-top: 16px; color: #8c8c8c">
+          Vui lòng chờ trong giây lát
+        </div>
+      </div>
+    `,
+      nzFooter: null,
+      nzClosable: false,
+      nzMaskClosable: false,
+      nzCentered: true,
+      nzWidth: 360
+    });
+  }
+
 
   cancel(): void {
     this.modalRef.close(false);
