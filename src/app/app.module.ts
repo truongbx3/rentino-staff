@@ -8,6 +8,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { LayoutModule } from './modules/layout/layout.module';
 import { HttpClientModule } from '@angular/common/http';
 import { CoreModule } from './core/core.module';
+import { SharesModule } from './modules/shares/shares.module';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { CoreModule } from './core/core.module';
     HttpClientModule,
     LayoutModule,
     NzModalModule,
-    CoreModule
+    CoreModule,
+    SharesModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
-import { DeviceCheckModel } from '../configs/device-check.model';
+import { DeviceCheckModel } from '../../configs/device-check.model';
 import { DeviceCheckService } from '../../device-check.service';
-import { accessoryOptions } from '../configs/device.check.constant';
+import { accessoryOptions } from '../../configs/device.check.constant';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { DeviceAddUpdateComponent } from '../device-add-update/device-add-update.component';
+import { LoadingService } from 'src/app/core/services/loading.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-device-list',
@@ -13,7 +15,8 @@ import { DeviceAddUpdateComponent } from '../device-add-update/device-add-update
 export class DeviceListComponent {
   constructor(
     private deviceCheckService: DeviceCheckService,
-    private modalService: NzModalService
+    private modalService: NzModalService,
+    private loading: LoadingService
   ) { }
 
   devices: DeviceCheckModel[] = [];
@@ -28,8 +31,11 @@ export class DeviceListComponent {
 
   getAllList() {
     const payload = this.buildPayload();
+    this.loading.show();
 
-    this.deviceCheckService.getAllDevices(payload).subscribe(res => {
+    this.deviceCheckService.getAllDevices(payload).pipe((finalize(() => {
+      this.loading.hide();
+    }))).subscribe(res => {
       this.devices = res.data.content || [];
       this.total = res.data.totalElements || 0;
     });
@@ -60,8 +66,6 @@ export class DeviceListComponent {
   }
 
   onAddUpdate(id?: number): void {
-    console.log('Update device with id:', id);
-
     const modalRef = this.modalService.create({
       nzTitle: !!id ? 'Chỉnh sửa thiết bị' : 'Thêm thiết bị mới',
       nzContent: DeviceAddUpdateComponent,

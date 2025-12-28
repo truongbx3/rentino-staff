@@ -2,35 +2,30 @@ import { DeviceEnumType } from "./device-check.enum";
 
 export const accessoryOptions = [
     {
-        label: 'Loại 1',
-        value: DeviceEnumType.LOAI_1,
+        label: DeviceEnumType.LOAI_1,
+        value: 'LOAI_1',
         color: 'green',
     },
     {
-        label: 'Loại 2',
-        value: DeviceEnumType.LOAI_2,
+        label: DeviceEnumType.LOAI_2,
+        value: 'LOAI_2',
         color: 'blue',
     },
     {
-        label: 'Loại 3',
-        value: DeviceEnumType.LOAI_3,
+        label: DeviceEnumType.LOAI_3,
+        value: 'LOAI_3',
         color: 'orange',
     },
     {
-        label: 'Loại 4',
-        value: DeviceEnumType.LOAI_4,
+        label: DeviceEnumType.LOAI_4,
+        value: 'LOAI_4',
         color: 'purple',
     },
     {
-        label: 'Loại 5',
-        value: DeviceEnumType.LOAI_5,
+        label: DeviceEnumType.LOAI_5,
+        value: 'LOAI_5',
         color: 'red',
-    },
-    {
-        label: 'Chưa cập nhật',
-        value: null,
-        color: 'gray',
-    },
+    }
 ]
 
 export const switchItems = [
