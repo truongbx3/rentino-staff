@@ -12,7 +12,10 @@
     <i class="bi bi-search text-muted"></i>
   </ng-template>
 
-  <button nz-button nzType="primary" (click)="onAddUpdate()">Thêm mới</button>
+  <button nz-button nzType="primary" (click)="onAddUpdate()">
+    <i class="bi bi-plus-lg"></i>
+    Thêm mới
+  </button>
 </div>
 
 <div class="mb-3 w-100 d-flex justify-content-between">
@@ -46,27 +49,27 @@
           </nz-tag>
         </div>
 
-        <div class="card-info">
-          <div><i class="bi bi-cpu"></i>{{ d.totalRam }}</div>
-          <div><i class="bi bi-hdd"></i>{{ d.storage }}</div>
-          <div>
-            <i class="bi bi-calendar4"></i>{{ formatDate(d.updatedDate) }}
+        <div class="card-body m-0 p-0">
+          <div class="card-info">
+            <div><i class="bi bi-cpu"></i>{{ d.totalRam }}</div>
+            <div><i class="bi bi-hdd"></i>{{ d.storage }}</div>
+            <div>
+              <i class="bi bi-calendar4"></i>{{ formatDate(d.updatedDate) }}
+            </div>
+            <div>
+              <i class="bi bi-currency-dollar"></i>{{ getPrice(d.price) }}
+            </div>
           </div>
-          <div>
-            <i class="bi bi-currency-dollar"></i>{{ getPrice(d.price) }}
+
+          <div class="check">
+            <nz-tag *ngIf="d.osVersion">{{ d.osVersion }}</nz-tag>
+            <nz-tag *ngIf="d.type">{{ d.type }}</nz-tag>
           </div>
+
+          <p class="desc">
+            {{ d.summary || "Không có mô tả" }}
+          </p>
         </div>
-
-        <div class="check">
-          <nz-tag *ngIf="d.osVersion">{{ d.osVersion }}</nz-tag>
-          <nz-tag *ngIf="d.type">{{ d.type }}</nz-tag>
-        </div>
-
-        <p class="desc">
-          {{ getSummary(d) }}
-        </p>
-
-        <nz-divider></nz-divider>
 
         <div class="actions">
           <button nz-button nzType="primary" (click)="onAddUpdate(d.id)">

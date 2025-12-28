@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { LoadingService } from 'src/app/core/services/loading.service';
 
 @Component({
   selector: 'app-login',
@@ -11,7 +12,6 @@ import { AuthService } from 'src/app/core/services/auth.service';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-  loading = false;
   passwordVisible = false;
   password?: string;
 
@@ -24,7 +24,8 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private message: NzMessageService
+    private message: NzMessageService,
+    private loading: LoadingService
   ) {}
 
   submit(): void {
@@ -33,12 +34,10 @@ export class LoginComponent {
       return;
     }
 
-    console.log(this.form.value);
-
-    this.loading = true;
+    this.loading.show();
 
     this.authService.login(this.form.value)
-      .pipe(finalize(() => (this.loading = false)))
+      .pipe(finalize(() => this.loading.hide()))
       .subscribe({
         next: res => {
           if (res.code === '00') {

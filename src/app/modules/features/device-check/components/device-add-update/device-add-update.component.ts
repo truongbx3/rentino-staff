@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NzModalRef, NzModalService } from 'ng-zorro-antd/modal';
 import { NzUploadFile, NzUploadXHRArgs } from 'ng-zorro-antd/upload';
@@ -6,7 +6,8 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { of } from 'rxjs';
 import { catchError, finalize, concatMap } from 'rxjs/operators';
 import { DeviceCheckService } from '../../device-check.service';
-import { accessoryOptions, additionalItems, modelItems, switchItems } from '../configs/device.check.constant';
+import { accessoryOptions, additionalItems, modelItems, switchItems } from '../../configs/device.check.constant';
+import { LoadingService } from 'src/app/core/services/loading.service';
 
 @Component({
   selector: 'app-device-add-update',
@@ -14,12 +15,16 @@ import { accessoryOptions, additionalItems, modelItems, switchItems } from '../c
   styleUrls: ['./device-add-update.component.scss']
 })
 export class DeviceAddUpdateComponent implements OnInit {
+  @ViewChild('resultTempl') resultTempl!: TemplateRef<any>
   @Input() deviceId?: number;
   @Input() onRefresh?: () => void;
   currentStep = 0;
   deviceForm!: FormGroup;
   isSubmitting = false;
-  isLoading = false;
+  isSumitting = false;
+  devicesOptions: any[] = [];
+  loadingModalRef!: NzModalRef | null
+  checkResult: any = null;
 
   additionalItems = additionalItems;
   switchItems = switchItems;
@@ -35,7 +40,8 @@ export class DeviceAddUpdateComponent implements OnInit {
     private fb: FormBuilder,
     private deviceCheckService: DeviceCheckService,
     private message: NzMessageService,
-    private modalService: NzModalService
+    private modalService: NzModalService,
+    private loading: LoadingService
   ) { }
 
   ngOnInit(): void {
@@ -80,7 +86,7 @@ export class DeviceAddUpdateComponent implements OnInit {
   }
 
   private loadDeviceDetail(id: number): void {
-    this.isLoading = true;
+    this.loading.show();
 
     this.deviceCheckService.getDeviceDetail(id)
       .pipe(
@@ -88,7 +94,7 @@ export class DeviceAddUpdateComponent implements OnInit {
           this.message.error('Không thể tải thông tin thiết bị');
           return of(null);
         }),
-        finalize(() => (this.isLoading = false))
+        finalize(() => this.loading.hide())
       )
       .subscribe((response) => {
         if (response?.code === '00' && response.data?.length > 0) {
@@ -300,9 +306,6 @@ export class DeviceAddUpdateComponent implements OnInit {
   }
 
   submit(): void {
-    this.isSubmitting = true;
-    let loadingModalRef: NzModalRef | null = null;
-
     const frontUrls = this.frontCameraFiles
       .map((f) => (f.originFileObj as any).url || '')
       .filter(Boolean)
@@ -347,6 +350,8 @@ export class DeviceAddUpdateComponent implements OnInit {
       type: this.deviceForm.get('type')?.value
     };
 
+    this.loading.show();
+
     this.deviceCheckService.saveDeviceInfor(devicePayload).pipe(
       concatMap((res) => {
         this.message.success('Lưu thông tin thiết bị thành công');
@@ -355,18 +360,19 @@ export class DeviceAddUpdateComponent implements OnInit {
       concatMap((res) => {
         this.message.success('Lưu kết quả kiểm tra thành công');
 
-        loadingModalRef = this.showLoadingModal();
         return this.deviceCheckService.checkDeviceStatus(this.transactionID);
       }),
       finalize(() => {
-        this.isSubmitting = false;
+        this.loading.hide();
+        
         this.onRefresh?.();
         setTimeout(() => {
           this.cancel();
+          // this.showLoadingModal();
         })
       }),
-      catchError((err) => {
-        this.message.error(err?.message || 'Có lỗi xảy ra');
+      catchError((res) => {
+        this.message.error(res?.error?.message || 'Có lỗi xảy ra');
         return of(null);
       })
     ).subscribe((finalRes) => {
@@ -377,25 +383,58 @@ export class DeviceAddUpdateComponent implements OnInit {
     });
   }
 
+  onModelChange(value: string): void {
+    if (value) {
+      const payload = {
+        page: 0,
+        size: 1000,
+        lsCondition: [
+          {
+            operator: 'EQUAL',
+            property: 'model',
+            propertyType: 'string',
+            value: value
+          }
+        ],
+        sortField: []
+      };
+
+      this.deviceCheckService.getAllDevices(payload).subscribe(res => {
+        this.devicesOptions = res.data.content.map((item: any) => ({
+          label: item.deviceName,
+          value: item.deviceName,
+          infor: {
+            totalRam: item.totalRam,
+            storage: item.storage,
+            osVersion: item.osVersion
+          }
+        })) || [];
+      });
+    }
+  }
+
+  onDeviceChange(deviceName: string): void {
+    const selected = this.devicesOptions.find(d => d.value === deviceName);
+    if (!selected) return;
+
+    this.deviceForm.patchValue({
+      osVersion: selected.infor?.osVersion || '',
+      totalRam: selected.infor?.totalRam || '',
+      storage: selected.infor?.storage || ''
+    });
+  }
+
   private showLoadingModal(): NzModalRef {
     return this.modalService.create({
       nzTitle: '',
-      nzContent: `
-      <div style="text-align:center; padding: 32px">
-        <nz-spin nzTip="Đang kiểm tra trạng thái thiết bị..."></nz-spin>
-        <div style="margin-top: 16px; color: #8c8c8c">
-          Vui lòng chờ trong giây lát
-        </div>
-      </div>
-    `,
+      nzContent: this.resultTempl,
       nzFooter: null,
       nzClosable: false,
       nzMaskClosable: false,
       nzCentered: true,
       nzWidth: 360
-    });
+    })
   }
-
 
   cancel(): void {
     this.modalRef.close(false);

@@ -52,3 +52,28 @@ body {
   color: rgba(255, 255, 255, 0.6);
   font-size: 20px;
 }
+
+.ant-pagination-item,
+.ant-pagination-item-link {
+  border-color: #40c4ff !important;
+  background-color: transparent !important;
+  color: #40c4ff !important;
+  border-radius: 8px !important;
+
+  &:hover {
+    opacity: 0.6;
+  }
+
+  &.ant-pagination-item-active {
+    background-color: #40c4ff;
+    color: #fff;
+  }
+}
+
+.ant-pagination-item-ellipsis {
+  color: #40c4ff !important;
+}
+
+.ant-pagination-item-link[disabled] {
+  opacity: 0.6;
+}

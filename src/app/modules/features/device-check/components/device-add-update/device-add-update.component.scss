@@ -110,6 +110,7 @@
 
   cdk-virtual-scroll-viewport {
     scrollbar-width: none;
+    height: 200px !important;
   }
 
   .ant-select-focused .ant-select-selector,
@@ -139,12 +140,12 @@
 
   .ant-select-dropdown {
     background-color: #141414 !important;
-    border-radius: 6px !important;
+    border-radius: 16px !important;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    margin-top: 8px;
 
     .ant-select-item {
       color: #d9d9d9 !important;
-      min-height: 36px;
       padding: 8px 12px;
 
       &-option-active {
