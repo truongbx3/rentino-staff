@@ -3,14 +3,24 @@
     background-color: transparent;
     border-bottom: 1px solid #51515147;
 
-    .user-infor, .btn-logout {
-        transition: all ease 0.3s;
-        cursor: pointer;
-        color: #ccc;
+    .user-infor,
+    .btn-logout {
+      transition: all ease 0.3s;
+      cursor: pointer;
+      color: #ccc;
 
-        &:hover {
-            opacity: 0.6;
-        }
+      &:hover {
+        opacity: 0.6;
+      }
     }
   }
+
+  .header-logo {
+    line-height: 1rem;
+  }
+}
+
+.logo-icon {
+  font-size: 48px;
+  color: #40c4ff;
 }

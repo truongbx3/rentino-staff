@@ -21,6 +21,22 @@
       <div nz-row [nzGutter]="24">
         <div nz-col nzSpan="12">
           <nz-form-item>
+            <label class="w-100 text-white mb-1">Loại thiết bị</label>
+            <nz-form-control>
+              <nz-select
+                formControlName="type"
+                nzAllowClear
+                nzPlaceHolder="Chọn loại thiết bị"
+              >
+                <nz-option nzValue="mobile" nzLabel="Điện thoại"></nz-option>
+                <nz-option nzValue="tablet" nzLabel="Máy tính bảng"></nz-option>
+                <nz-option nzValue="laptop" nzLabel="Laptop"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzSpan="12">
+          <nz-form-item>
             <label class="w-100 text-white mb-1">Model</label>
             <nz-form-control>
               <nz-select
@@ -38,12 +54,15 @@
             </nz-form-control>
           </nz-form-item>
         </div>
+      </div>
+
+      <div nz-row [nzGutter]="24">
         <div nz-col nzSpan="12">
           <nz-form-item>
             <label class="w-100 text-white mb-1">Tên thiết bị</label>
             <nz-form-control>
               <nz-select
-                formControlName="deviceName"
+                formControlName="deviceCode"
                 nzAllowClear
                 nzPlaceHolder="Chọn thiết bị"
                 (ngModelChange)="onDeviceChange($event)"
@@ -60,27 +79,9 @@
         </div>
       </div>
 
-      <div nz-row [nzGutter]="24">
-        <div nz-col nzSpan="12">
-          <nz-form-item>
-            <label class="w-100 text-white mb-1">Loại thiết bị</label>
-            <nz-form-control>
-              <nz-select
-                formControlName="type"
-                nzAllowClear
-                nzPlaceHolder="Chọn loại thiết bị"
-              >
-                <nz-option nzValue="mobile" nzLabel="Điện thoại"></nz-option>
-                <nz-option nzValue="tablet" nzLabel="Máy tính bảng"></nz-option>
-                <nz-option nzValue="laptop" nzLabel="Laptop"></nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-      </div>
-
       <h4 class="section-title">
-        <i nz-icon nzType="setting"></i> Thông số kỹ thuật
+        <i class="bi bi-gear me-2"></i>
+        Thông số kỹ thuật
       </h4>
       <div nz-row [nzGutter]="24">
         <div nz-col nzSpan="8">
@@ -116,7 +117,10 @@
       </div>
     </div>
     <div *ngIf="currentStep === 1">
-      <h4 class="section-title">Kiểm tra chức năng</h4>
+      <h4 class="section-title">
+        <i class="bi bi-patch-check me-2"></i>
+        Kiểm tra chức năng
+      </h4>
       <div nz-row [nzGutter]="[24, 24]">
         <div nz-col nzSpan="6" *ngFor="let item of switchItems">
           <div
@@ -144,7 +148,10 @@
         </div>
       </div>
 
-      <h4 class="section-title mt-4">Kiểm tra Camera</h4>
+      <h4 class="section-title mt-4">
+        <i class="bi bi-camera me-2"></i>
+        Kiểm tra Camera
+      </h4>
       <div nz-row [nzGutter]="24">
         <div nz-col nzSpan="24">
           <nz-form-item>
@@ -159,9 +166,11 @@
                 [(nzFileList)]="frontCameraFiles"
                 [nzBeforeUpload]="beforeUploadFront"
                 [nzCustomRequest]="uploadFrontCamera"
-                [nzLimit]="5"
+                [nzShowButton]="true"
                 [nzMultiple]="true"
+                [nzLimit]="5"
                 [nzShowUploadList]="{
+                  showPreviewIcon: true,
                   showRemoveIcon: true
                 }"
               >
@@ -210,13 +219,16 @@
         </div>
       </div>
 
-      <h4 class="section-title">Kiểm tra bổ sung</h4>
+      <h4 class="section-title">
+        <i class="bi bi-list-check me-2"></i>
+        Kiểm tra bổ sung
+      </h4>
       <div nz-row [nzGutter]="24">
         <div nz-col nzSpan="8" *ngFor="let acc of additionalItems">
-          <nz-form-item class="d-flex flex-column mt-2">
-            <label class="w-100 text-white mb-1 mt-3">{{ acc.label }}</label>
+          <nz-form-item class="d-flex flex-column mt-1 mb-5">
+            <label class="w-100 text-white mb-2">{{ acc.label }}</label>
             <nz-form-control>
-              <nz-select class="w-100" [formControlName]="acc.key">
+              <nz-select class="w-100" [formControlName]="acc.key" nzPlaceHolder="Chọn" nzAllowClear>
                 <nz-option
                   *ngFor="let opt of accessoryOptions"
                   [nzValue]="opt.value"
@@ -228,7 +240,7 @@
         </div>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer mt-2">
       <button
         nz-button
         nzType="primary"
@@ -284,14 +296,15 @@
     </div>
   </ng-container>
 
-<ng-template #resultTempl>
-  <div class="result-container p-4">
-    <nz-result
-      *ngIf="checkResult?.code === 'device.valid'"
-      nzStatus="success"
-      nzTitle="Thiết bị đạt yêu cầu"
-      nzSubTitle="Tất cả các hạng mục kiểm tra đều đạt"
-    >
-    </nz-result>
-  </div>
+  <ng-template #resultTempl>
+    <div class="result-container p-4">
+      <nz-result
+        *ngIf="checkResult?.code === 'device.valid'"
+        nzStatus="success"
+        nzTitle="Thiết bị đạt yêu cầu"
+        nzSubTitle="Tất cả các hạng mục kiểm tra đều đạt"
+      >
+      </nz-result>
+    </div>
+  </ng-template>
 </ng-template>

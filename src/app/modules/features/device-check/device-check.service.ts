@@ -27,8 +27,9 @@ interface DeviceSearchRequest {
     providedIn: 'root'
 })
 export class DeviceCheckService {
-    private readonly contextPath = `${environment.apiUrl}${environment.contextPath}/deviceInfo`;
-    private readonly attachFileUrl = `${environment.apiUrl}${environment.contextPath}/attach-file/create`;
+    private readonly baseUrl = environment.apiUrl + environment.contextPath;
+    private readonly contextPath = `${this.baseUrl}/deviceInfo`;
+    private readonly attachFileUrl = `${this.baseUrl}/attach-file/create`;
 
     constructor(private http: HttpClient) { }
 
@@ -36,9 +37,18 @@ export class DeviceCheckService {
         return this.http.post(`${this.contextPath}/search`, payload);
     }
 
+    getAllDevicePrice(payload: any): Observable<any> {
+        return this.http.post(`${this.baseUrl}/devicePrice/search`, payload);
+    }
+
     getDeviceDetail(id: number): Observable<any> {
         const params = new HttpParams().set('ids', id.toString());
         return this.http.get(`${this.contextPath}/findByIds`, { params });
+    }
+
+    getDeviceCheckDetail(transactionId: string): Observable<any> {
+        const params = new HttpParams().set('transactionId', transactionId);
+        return this.http.get(`${this.contextPath}/getCheckInfo`, { params });
     }
 
     attachFiles(formData: FormData): Observable<UploadResponse> {

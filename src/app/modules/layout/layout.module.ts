@@ -4,15 +4,18 @@ import { RouterModule } from "@angular/router";
 import { MainLayoutComponent } from "./main-layout/main-layout.component";
 import { AuthLayoutComponent } from "./auth-layout/auth-layout.component";
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
+import { SharesModule } from "../shares/shares.module";
+import { NzIconModule } from "ng-zorro-antd/icon";
 @NgModule({
     declarations: [
         AuthLayoutComponent,
         MainLayoutComponent
     ],
     imports: [
-        CommonModule,
         RouterModule,
-        NzLayoutModule
+        NzLayoutModule,
+        SharesModule,
+        NzIconModule
     ],
     exports: [
         AuthLayoutComponent,
