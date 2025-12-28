@@ -59,7 +59,6 @@ import { NzResultModule } from 'ng-zorro-antd/result';
     NzUploadModule,
     NzButtonModule,
     NzGridModule,
-    NzIconModule,
     NzMessageModule,
     NzDividerModule,
     NzTagModule,

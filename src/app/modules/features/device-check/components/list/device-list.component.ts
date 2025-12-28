@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DeviceCheckModel } from '../../configs/device-check.model';
 import { DeviceCheckService } from '../../device-check.service';
-import { accessoryOptions } from '../../configs/device.check.constant';
+import { accessoryOptions, modelItems } from '../../configs/device.check.constant';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { DeviceAddUpdateComponent } from '../device-add-update/device-add-update.component';
 import { LoadingService } from 'src/app/core/services/loading.service';
@@ -25,6 +25,8 @@ export class DeviceListComponent {
   pageSize: number = 10;
   total = 0;
 
+  modelItems = modelItems;
+
   ngOnInit(): void {
     this.getAllList();
   }
@@ -42,8 +44,13 @@ export class DeviceListComponent {
   }
 
   formatDate(ms: number): string {
-    return new Date(ms).toLocaleDateString('vi-VN');
+    const d = new Date(ms);
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')
+      }/${d.getFullYear()}
+      ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')
+      }:${d.getSeconds().toString().padStart(2, '0')}`;
   }
+
 
   getTypeLabel(type: string | null): string {
     return accessoryOptions.find(item => item.value === type)?.label || 'Chưa cập nhật';
@@ -51,6 +58,10 @@ export class DeviceListComponent {
 
   getTypeColor(type: string | null): string {
     return accessoryOptions.find(item => item.value === type)?.color || 'gray';
+  }
+
+  getLabelModel(value: string): string {
+    return this.modelItems.find((item) => item.value === value)?.label || 'Chưa cập nhật'
   }
 
   getSummary(device: DeviceCheckModel): string {
@@ -96,7 +107,7 @@ export class DeviceListComponent {
       lsCondition: conditions,
       sortField: [
         {
-          fieldName: 'createdDate',
+          fieldName: 'updatedDate',
           sort: 'DESC'
         }
       ]

@@ -9,7 +9,10 @@ import { LayoutModule } from './modules/layout/layout.module';
 import { HttpClientModule } from '@angular/common/http';
 import { CoreModule } from './core/core.module';
 import { SharesModule } from './modules/shares/shares.module';
-
+import { NZ_I18N, vi_VN } from 'ng-zorro-antd/i18n';
+import { registerLocaleData } from '@angular/common';
+import vi from '@angular/common/locales/vi';
+registerLocaleData(vi);
 @NgModule({
   declarations: [
     AppComponent,
@@ -24,7 +27,9 @@ import { SharesModule } from './modules/shares/shares.module';
     CoreModule,
     SharesModule
   ],
-  providers: [],
+  providers: [
+    { provide: NZ_I18N, useValue: vi_VN }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

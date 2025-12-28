@@ -74,7 +74,12 @@
   }
 
   .ant-upload-list-picture-card .ant-upload-list-item {
+    border: none !important;
     padding: 4px;
+
+    .ant-upload-list-item-info {
+      border-radius: 16px;
+    }
   }
 
   .ant-select-selector {

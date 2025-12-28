@@ -1,7 +1,7 @@
 <div class="login-wrapper">
   <div class="login-header">
     <i nz-icon nzType="appstore" nzTheme="outline" class="logo-icon"></i>
-    <div class="header-title d-flex flex-column text-center mb-4">
+    <div class="header-title d-flex flex-column text-center mb-2">
       <div class="fs-4 fw-bold logo-text">Device Check</div>
       <span>Hệ thống kiểm tra thiết bị</span>
     </div>
@@ -43,9 +43,8 @@
             <ng-template #suffixTemplate>
               <i
                 nz-icon
+                class="text-white"
                 [nzType]="passwordVisible ? 'eye-invisible' : 'eye'"
-                nzTheme="twotone"
-                nzTwotoneColor="#eb2f96"
                 (click)="passwordVisible = !passwordVisible"
               ></i>
             </ng-template>
@@ -57,8 +56,8 @@
     </form>
 
     <div class="card-footer d-flex justify-content-center gap-3">
-      <span>Kiểm tra nhanh</span>
-      <span>Bảo mật cao</span>
+      <span><i class="bi bi-bar-chart me-2"></i>Kiểm tra nhanh</span>
+      <span><i class="bi bi-shield me-2"></i>Bảo mật cao</span>
     </div>
   </div>
   <div class="login-footer mt-4">

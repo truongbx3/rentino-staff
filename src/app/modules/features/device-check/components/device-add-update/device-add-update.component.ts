@@ -59,7 +59,8 @@ export class DeviceAddUpdateComponent implements OnInit {
   private initForm(): void {
     this.deviceForm = this.fb.group({
       type: ['mobile', Validators.required],
-      deviceName: [null, Validators.required],
+      deviceName: [''],
+      deviceCode: [null, Validators.required],
       model: ['', Validators.required],
       osVersion: [''],
       storage: [''],
@@ -100,45 +101,76 @@ export class DeviceAddUpdateComponent implements OnInit {
         if (response?.code === '00' && response.data?.length > 0) {
           const device = response.data[0];
 
+          this.loadDeviceCheckDetail(device.transactionId);
           this.deviceForm.patchValue({
             type: device.type || 'mobile',
             deviceName: device.deviceName || '',
+            deviceCode: device.deviceCode || '',
             model: device.model || '',
             osVersion: device.osVersion || '',
             storage: device.storage || '',
             totalRam: device.totalRam || ''
           });
-
-          this.loadExistingImages(device.frontCheck, 'front');
-          this.loadExistingImages(device.backCheck, 'back');
-
-          if (device.functionCheck) {
-            try {
-              const checks = JSON.parse(device.functionCheck);
-              checks.forEach((c: any) => {
-                const key = this.mapApiItemToFormKey(c.item);
-                if (this.deviceForm.get(key)) {
-                  this.deviceForm.get(key)?.setValue(c.value);
-                }
-              });
-            } catch (e) {
-            }
-          }
-
-          if (device.additionCheck) {
-            try {
-              const checks = JSON.parse(device.additionCheck);
-              checks.forEach((c: any) => {
-                const key = this.mapApiCodeToFormKey(c.code);
-                if (key && this.deviceForm.get(key)) {
-                  this.deviceForm.get(key)?.setValue(c.value);
-                }
-              });
-            } catch (e) {
-            }
-          }
         }
       });
+
+  }
+
+  private loadDeviceCheckDetail(transId: string) {
+    this.loading.show();
+
+    this.deviceCheckService.getDeviceCheckDetail(transId).subscribe((res: any) => {
+      if (res?.code === '00' && Array.isArray(res.data) && res.data.length > 0) {
+        const checks = res.data;
+        checks.forEach((check: any) => {
+          const item = check.item?.toUpperCase();
+          const value = check.value;
+
+          switch (item) {
+            case 'WIFI':
+            case 'BLUE_TOOTH':
+            case 'VIBRATION':
+            case 'GPS':
+            case 'BIOMETRICS':
+            case 'MIC':
+            case 'VOLUME_UP':
+            case 'VOLUME_DOWN':
+            case 'TOUCH_SCREEN':
+            case 'SPEAKER':
+            case 'HEADPHONE':
+              const functionKey = this.mapApiItemToFormKey(item);
+              if (this.deviceForm.get(functionKey)) {
+                this.deviceForm.get(functionKey)?.setValue(value === '1' ? true : false);
+              }
+              break;
+
+            case 'PIN':
+            case 'SIM':
+            case 'LOCK':
+            case 'DYNAMIC_ISLAND':
+            case 'DEVICE_FRAME':
+              const additionKey = this.mapApiCodeToFormKey(item);
+              if (additionKey && this.deviceForm.get(additionKey)) {
+                this.deviceForm.get(additionKey)?.setValue(value);
+              }
+              break;
+
+            case 'FRONT_CAMERA':
+              if (value) {
+                this.loadExistingImages(value, 'front');
+              }
+              break;
+            case 'BACK_CAMERA':
+              if (value) {
+                this.loadExistingImages(value, 'back');
+              }
+              break;
+            default:
+              break;
+          }
+        });
+      }
+    });
   }
 
   private loadExistingImages(urlString: string | null, type: 'front' | 'back'): void {
@@ -306,17 +338,18 @@ export class DeviceAddUpdateComponent implements OnInit {
   }
 
   submit(): void {
+    console.log(this.frontCameraFiles);
+    console.log(this.backCameraFiles);
     const frontUrls = this.frontCameraFiles
-      .map((f) => (f.originFileObj as any).url || '')
+      .map((f) => (f?.originFileObj as any)?.url || f?.url || '')
       .filter(Boolean)
       .join(';');
 
     const backUrls = this.backCameraFiles
-      .map((f) => (f.originFileObj as any).url || '')
+      .map((f) => (f?.originFileObj as any)?.url || f?.url || '')
       .filter(Boolean)
       .join(';');
-    console.log('Front URLs:', this.frontCameraFiles);
-    console.log('Back URLs:', this.backCameraFiles);
+
     const functionChecks = switchItems.map((item) => ({
       item: this.mapFormKeyToApiItem(item.key),
       value: this.deviceForm.get(item.key)?.value ?? false
@@ -338,10 +371,10 @@ export class DeviceAddUpdateComponent implements OnInit {
       additionalChecks,
       transactionID: this.transactionID
     };
-
     const devicePayload = {
       id: this.deviceId || null,
       deviceName: this.deviceForm.get('deviceName')?.value,
+      deviceCode: this.deviceForm.get('deviceCode')?.value,
       model: this.deviceForm.get('model')?.value,
       osVersion: this.deviceForm.get('osVersion')?.value || '',
       storage: this.deviceForm.get('storage')?.value || '',
@@ -364,7 +397,7 @@ export class DeviceAddUpdateComponent implements OnInit {
       }),
       finalize(() => {
         this.loading.hide();
-        
+
         this.onRefresh?.();
         setTimeout(() => {
           this.cancel();
@@ -399,17 +432,22 @@ export class DeviceAddUpdateComponent implements OnInit {
         sortField: []
       };
 
-      this.deviceCheckService.getAllDevices(payload).subscribe(res => {
-        this.devicesOptions = res.data.content.map((item: any) => ({
-          label: item.deviceName,
-          value: item.deviceName,
-          infor: {
-            totalRam: item.totalRam,
-            storage: item.storage,
-            osVersion: item.osVersion
-          }
-        })) || [];
-      });
+      this.loading.show();
+      this.deviceCheckService.getAllDevicePrice(payload)
+        .pipe(finalize(() => {
+          this.loading.hide();
+        }))
+        .subscribe(res => {
+          this.devicesOptions = res.data.content.map((item: any) => ({
+            label: `${item.deviceName} - ${item.totalRam} - ${item.storage}`,
+            value: item.deviceCode,
+            infor: {
+              totalRam: item.totalRam,
+              storage: item.storage,
+              deviceName: item.deviceName
+            }
+          })) || [];
+        });
     }
   }
 
@@ -418,22 +456,10 @@ export class DeviceAddUpdateComponent implements OnInit {
     if (!selected) return;
 
     this.deviceForm.patchValue({
-      osVersion: selected.infor?.osVersion || '',
       totalRam: selected.infor?.totalRam || '',
-      storage: selected.infor?.storage || ''
+      storage: selected.infor?.storage || '',
+      deviceName: selected.infor?.deviceName || ''
     });
-  }
-
-  private showLoadingModal(): NzModalRef {
-    return this.modalService.create({
-      nzTitle: '',
-      nzContent: this.resultTempl,
-      nzFooter: null,
-      nzClosable: false,
-      nzMaskClosable: false,
-      nzCentered: true,
-      nzWidth: 360
-    })
   }
 
   cancel(): void {
