@@ -92,16 +92,3 @@ export const modelItems = [
   { value: 'xiaomi', label: 'Xiaomi' },
   { value: 'samsung', label: 'Samsung' },
 ];
-
-export const EnumQuestionTitle: Record<string, string> = {
-  PIN_WEB: 'Pin',
-  DEVICE_FRAME_WEB: 'Khung viền',
-  BACK_SCREEN_WEB: 'Mặt kính sau/ nắp lưng',
-  FRONT_SCREEN_WEB: 'Mặt kính trước',
-  FUNCTION_WEB: 'Chức năng',
-  SCREEN_ERROR_WEB: 'Màn hình',
-  MAIN_SCREEN_WEB: 'Màn hình',
-  RESET_WEB: 'Khởi động',
-  LOCK_WEB: 'Khóa máy',
-  POWER_WEB: 'Nguồn'
-}

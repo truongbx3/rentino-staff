@@ -5,7 +5,7 @@ import { accessoryOptions, modelItems } from '../../configs/device.check.constan
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { finalize } from 'rxjs/operators';
-import { DeviceAddUpdateAdvancedComponent } from '../device-add-update-advanced/device-add-update-advanced.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-device-list',
@@ -16,7 +16,8 @@ export class DeviceListComponent {
   constructor(
     private deviceCheckService: DeviceCheckService,
     private modalService: NzModalService,
-    private loading: LoadingService
+    private loading: LoadingService,
+    private router: Router
   ) { }
 
   devices: DeviceCheckModel[] = [];
@@ -81,17 +82,18 @@ export class DeviceListComponent {
   }
 
   onAddUpdate(id?: number): void {
-    const modalRef = this.modalService.create({
-      nzTitle: !!id ? 'Chỉnh sửa thiết bị' : 'Thêm thiết bị mới',
-      nzContent: DeviceAddUpdateAdvancedComponent,
-      // nzContent: DeviceAddUpdateComponent,
-      nzWidth: '70vw',
-      nzComponentParams: {
-        deviceId: id,
-        onRefresh: () => this.getAllList()
-      },
-      nzFooter: null
-    });
+    this.router.navigateByUrl(id ? `/device-check/edit/${id}` : '/device-check/add');
+    // const modalRef = this.modalService.create({
+    //   nzTitle: !!id ? 'Chỉnh sửa thiết bị' : 'Thêm thiết bị mới',
+    //   nzContent: DeviceAddUpdateAdvancedComponent,
+    //   // nzContent: DeviceAddUpdateComponent,
+    //   nzWidth: '70vw',
+    //   nzComponentParams: {
+    //     deviceId: id,
+    //     onRefresh: () => this.getAllList()
+    //   },
+    //   nzFooter: null
+    // });
   }
 
   buildPayload() {

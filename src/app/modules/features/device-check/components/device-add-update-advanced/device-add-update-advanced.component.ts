@@ -4,10 +4,10 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { EMPTY, Observable, of } from 'rxjs';
 import { catchError, concatMap, finalize, tap } from 'rxjs/operators';
 import { DeviceCheckService } from '../../device-check.service';
-import { accessoryOptions, modelItems, switchItems, EnumQuestionTitle } from '../../configs/device.check.constant';
+import { accessoryOptions, modelItems, switchItems } from '../../configs/device.check.constant';
 import { LoadingService } from 'src/app/core/services/loading.service';
-import { NzModalRef } from 'ng-zorro-antd/modal';
 import { DeviceEnumType } from '../../configs/device-check.enum';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-device-add-update-advanced',
@@ -15,17 +15,14 @@ import { DeviceEnumType } from '../../configs/device-check.enum';
     styleUrls: ['./device-add-update-advanced.component.scss']
 })
 export class DeviceAddUpdateAdvancedComponent {
-    @ViewChild('resultTempl') resultTempl!: TemplateRef<any>
-    @Input() deviceId?: number;
-    @Input() onRefresh?: () => void;
-
+    deviceId?: number;
     current = 1;
     totalSteps!: number;
     percent = Math.round((this.current / this.totalSteps) * 100);
     isRejected = false;
     transactionID: string = '';
     questions: any = [];
-    enumQuestionTitle = EnumQuestionTitle
+    resultCheck: any = null;
 
     // Forms
     deviceForm!: FormGroup;
@@ -42,11 +39,11 @@ export class DeviceAddUpdateAdvancedComponent {
     rejectedQuestionKey: string | null = null;
 
     constructor(
-        private modalRef: NzModalRef,
         private fb: FormBuilder,
         private deviceCheckService: DeviceCheckService,
         private message: NzMessageService,
-        private loading: LoadingService
+        private loading: LoadingService,
+        private router: Router
     ) { }
 
     getStepSummaryKeys(): number[] {
@@ -55,6 +52,9 @@ export class DeviceAddUpdateAdvancedComponent {
     ngOnInit(): void {
         this.initForm();
         this.loadApis();
+
+        this.deviceId = this.router.url.includes('/edit/') ?
+            Number(this.router.url.split('/edit/')[1]) : undefined;
     }
 
     private async loadApis(): Promise<any> {
@@ -67,7 +67,7 @@ export class DeviceAddUpdateAdvancedComponent {
             ),
             tap(res => {
                 this.questions = res?.data || res?.data?.content || [];
-                this.totalSteps = this.questions.length + 1;
+                this.totalSteps = this.questions.length + 2;
 
                 this.mappedQuestions();
                 this.initAdditionalChecksForm();
@@ -297,10 +297,12 @@ export class DeviceAddUpdateAdvancedComponent {
             finalize(() => {
                 this.loading.hide();
 
-                this.onRefresh?.();
-                setTimeout(() => {
-                    this.cancel();
-                })
+                if (this.current < this.totalSteps && !this.isRejected) {
+                    this.generateStepSummary(this.current);
+
+                    this.current++;
+                    this.calcPercent();
+                }
             }),
             catchError((res) => {
                 this.message.error(res?.error?.message || 'Có lỗi xảy ra');
@@ -309,7 +311,7 @@ export class DeviceAddUpdateAdvancedComponent {
         ).subscribe((finalRes) => {
             if (finalRes?.code === '00') {
                 this.message.success('Hoàn tất quy trình kiểm tra thiết bị');
-                this.modalRef.close(true);
+                this.resultCheck = finalRes.data;
             }
         });
     }
@@ -400,7 +402,7 @@ export class DeviceAddUpdateAdvancedComponent {
         } else {
             this.additionalChecksForms.get('FUNCTION_WEB')?.setValue('LOAI_1');
         }
-        
+
         this.checkRejected();
 
         if (this.current < this.totalSteps && !this.isRejected) {
@@ -441,7 +443,7 @@ export class DeviceAddUpdateAdvancedComponent {
             if (questionIndex >= 0 && questionIndex < this.questions.length) {
                 const question = this.questions[questionIndex];
                 const questionCode = question.code;
-                const questionTitle = this.enumQuestionTitle[questionCode] || question.title || questionCode;
+                const questionTitle = question.title || questionCode;
                 const answerValue = this.additionalChecksForms.get(questionCode)?.value;
 
                 let displayValue = '';
@@ -548,17 +550,20 @@ export class DeviceAddUpdateAdvancedComponent {
     }
 
     cancel(): void {
-        this.modalRef.close(false);
+        this.router.navigateByUrl('/device-check');
     }
 
     stepSummaries: { [key: number]: string } = {};
 
-    private getDeviceTypeLabel(value: string): string {
-        const map: Record<string, string> = {
-            mobile: 'Điện thoại',
-            tablet: 'Máy tính bảng',
-            laptop: 'Laptop'
-        };
-        return map[value] || value;
+    getTypeColor(type: string | null): string {
+        return accessoryOptions.find(item => item.value === type)?.color || 'gray';
+    }
+
+    getLabelModel(value: string): string {
+        return this.modelItems.find((item) => item.value === value)?.label || 'Chưa cập nhật'
+    }
+
+    getTypeLabel(type: string | null): string {
+        return accessoryOptions.find(item => item.value === type)?.label || 'Chưa cập nhật';
     }
 }

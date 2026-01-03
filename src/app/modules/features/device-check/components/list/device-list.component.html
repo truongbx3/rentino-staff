@@ -1,17 +1,6 @@
-<div class="list-toolbar">
-  <nz-input-group class="search-box" [nzPrefix]="suffixIconSearch">
-    <input
-      [(ngModel)]="deviceNameSearch"
-      (blur)="onSearch()"
-      (keyup.enter)="onSearch()"
-      nz-input
-      placeholder="Tìm kiếm thiết bị ..."
-    />
-  </nz-input-group>
-  <ng-template #suffixIconSearch>
-    <i class="bi bi-search text-muted"></i>
-  </ng-template>
-
+<app-breadcrumb></app-breadcrumb>
+<div class="list-toolbar my-3">
+  <h3 style="color: var(--text-primary);" class="fw-bold">Danh sách thiết bị</h3>
   <button nz-button nzType="primary" (click)="onAddUpdate()">
     <i class="bi bi-plus-lg"></i>
     Thêm mới
@@ -19,7 +8,20 @@
 </div>
 
 <div class="mb-3 w-100 d-flex justify-content-between">
-  <h4 class="text-black">Danh sách thiết bị</h4>
+  <div class="search-container">
+    <nz-input-group class="search-box" [nzPrefix]="suffixIconSearch">
+      <input
+        [(ngModel)]="deviceNameSearch"
+        (blur)="onSearch()"
+        (keyup.enter)="onSearch()"
+        nz-input
+        placeholder="Tìm kiếm thiết bị ..."
+      />
+    </nz-input-group>
+    <ng-template #suffixIconSearch>
+      <i class="bi bi-search text-muted"></i>
+    </ng-template>
+  </div>
   <!-- <div class="view-mode-toggle">
     <button
       nz-button
@@ -110,9 +112,9 @@
             <i class="bi bi-pen me-2"></i>
             Sửa
           </button>
-          <button nz-button nzType="primary" nzDanger nzGhost>
-            <i class="bi bi-trash3 me-2"></i>
-            Xóa
+          <button nz-button nzType="default" nzDanger nzGhost>
+            <i class="bi bi-trash3 me-2 text-danger"></i>
+            <span class="text-danger">Xóa</span>
           </button>
         </div>
       </nz-card>

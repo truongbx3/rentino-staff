@@ -1,0 +1,12 @@
+<button
+  class="theme-toggle-btn"
+  (click)="toggleTheme()"
+  [title]="
+    isDarkMode ? 'Chuyển sang Light Mode' : 'Chuyển sang Dark Mode'
+  "
+>
+  <i
+    class="bi"
+    [ngClass]="isDarkMode ? 'bi-sun-fill' : 'bi-moon-fill'"
+  ></i>
+</button>

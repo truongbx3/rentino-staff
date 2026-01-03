@@ -1,26 +1,124 @@
+ul,
+li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 ::ng-deep {
   .ant-layout-header {
-    background-color: transparent;
-    border-bottom: 1px solid #51515147;
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.3s ease;
 
     .user-infor,
     .btn-logout {
       transition: all ease 0.3s;
       cursor: pointer;
-      color: #ccc;
+      color: var(--text-secondary);
 
       &:hover {
         opacity: 0.6;
+        color: var(--primary-color);
       }
     }
   }
 
   .header-logo {
     line-height: 1rem;
+    color: var(--text-primary);
   }
+
+  .ant-layout {
+    background-color: var(--bg-primary);
+    transition: all 0.3s ease;
+  }
+
+  .ant-layout-sider {
+    background-color: var(--bg-secondary) !important;
+    border-right: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+  }
+
+  .ant-layout-content {
+    background-color: var(--bg-primary);
+    transition: all 0.3s ease;
+  }
+
+  .ant-menu {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-right: none !important;
+  }
+
+  .ant-menu-item,
+  .ant-menu-submenu-title {
+    color: var(--text-secondary) !important;
+
+    &:hover {
+      color: var(--primary-color) !important;
+      background-color: var(--bg-tertiary) !important;
+    }
+
+    &.ant-menu-item-selected {
+      background-color: var(--bg-tertiary) !important;
+      color: var(--primary-color) !important;
+    }
+  }
+
+  .ant-menu-item-icon {
+    color: var(--text-secondary) !important;
+  }
+
+  .ant-menu-item-selected .ant-menu-item-icon {
+    color: var(--primary-color) !important;
+  }
+
+  .ant-layout-sider-collapsed .ant-menu-item,
+  .ant-layout-sider-collapsed .ant-menu-submenu-title {
+    padding: 0 !important;
+    text-align: center !important;
+  }
+
+  .ant-layout-sider-collapsed .ant-menu-item-icon {
+    margin-right: 0 !important;
+  }
+
+  .ant-layout-sider-children {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.sidebar-footer {
+  text-align: center !important;
+  margin-top: 40px;
 }
 
 .logo-icon {
   font-size: 48px;
-  color: #40c4ff;
+  color: var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-dropdown {
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-md) !important;
+
+  .ant-dropdown-menu-item {
+    color: var(--text-primary) !important;
+
+    &:hover {
+      background-color: var(--bg-tertiary) !important;
+      color: var(--primary-color) !important;
+    }
+  }
 }
