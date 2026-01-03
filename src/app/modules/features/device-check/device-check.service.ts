@@ -30,6 +30,7 @@ export class DeviceCheckService {
     private readonly baseUrl = environment.apiUrl + environment.contextPath;
     private readonly contextPath = `${this.baseUrl}/deviceInfo`;
     private readonly attachFileUrl = `${this.baseUrl}/attach-file/create`;
+    private readonly allQuestionsUrl = `${this.baseUrl}/deviceQuestion`;
 
     constructor(private http: HttpClient) { }
 
@@ -95,5 +96,13 @@ export class DeviceCheckService {
 
     getTransactionId(): Observable<any> {
         return this.http.get(`${this.contextPath}/getTransaction`);
+    }
+
+    getAllQuestions(type: string): Observable<any> {
+        return this.http.get(`${this.allQuestionsUrl}/getQuestion`, {
+            params: {
+                type: type
+            }
+        });
     }
 }

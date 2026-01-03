@@ -21,9 +21,17 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { LoadingComponent } from './components/loading/loading.component';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzResultModule } from 'ng-zorro-antd/result';
+import { NzProgressModule } from 'ng-zorro-antd/progress';
+import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
+import { SwitchCustomComponent } from './components/switch-custom/switch-custom.component';
+import { SingleSelectComponent } from './components/single-select/single-select.component';
+import { CustomCheckboxComponent } from './components/checkbox-custom/checkbox-custom.component';
 @NgModule({
   declarations: [
-    LoadingComponent
+    LoadingComponent,
+    SwitchCustomComponent,
+    SingleSelectComponent,
+    CustomCheckboxComponent
   ],
   imports: [
     CommonModule,
@@ -44,7 +52,8 @@ import { NzResultModule } from 'ng-zorro-antd/result';
     NzTagModule,
     NzCardModule,
     NzPaginationModule,
-    NzSpinModule
+    NzSpinModule,
+    NzDescriptionsModule,
   ],
   exports: [
     CommonModule,
@@ -66,7 +75,12 @@ import { NzResultModule } from 'ng-zorro-antd/result';
     NzPaginationModule,
     NzSpinModule,
     LoadingComponent,
-    NzResultModule
+    NzResultModule,
+    NzProgressModule,
+    NzDescriptionsModule,
+    SwitchCustomComponent,
+    SingleSelectComponent,
+    CustomCheckboxComponent
   ]
 })
 export class SharesModule { }

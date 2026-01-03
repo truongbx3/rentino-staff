@@ -11,7 +11,7 @@
   }
 
   button {
-    height: 40px;
+    height: 40px !important;
     border-radius: 12px;
     font-weight: 500;
     padding: 0 24px;
@@ -25,15 +25,16 @@
   border-radius: 20px;
   overflow: hidden;
   transition: all 0.3s ease;
-  background: rgba(15, 22, 36, 0.45);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  // background: rgba(15, 22, 36, 0.45);
+  background: transparent;
+  // backdrop-filter: blur(20px);
+  // -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(100, 160, 220, 0.18);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 5px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05), 0 5px 15px rgba(0, 0, 0, 0.05);
 
   &:hover {
     transform: translateY(-8px);
-    box-shadow: 0 4px 16px 8px rgba(12, 67, 92, 0.2);
+    box-shadow: 0 4px 16px 8px rgba(168, 227, 255, 0.2);
     border-color: rgba(64, 196, 255, 0.3);
   }
 
@@ -44,6 +45,7 @@
     border: none !important;
     padding: 0;
     margin-bottom: 16px;
+    background-color: transparent;
 
     .title {
       display: flex;
@@ -68,10 +70,8 @@
           margin: 0;
           font-size: 18px;
           font-weight: 600;
-          color: white;
         }
         span {
-          color: rgba(255, 255, 255, 0.7);
           font-size: 14px;
         }
       }
@@ -90,7 +90,6 @@
     grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin-bottom: 16px;
-    color: rgba(255, 255, 255, 0.8);
     font-size: 14px;
 
     .bi {
@@ -115,7 +114,6 @@
   }
 
   .desc {
-    color: rgba(255, 255, 255, 0.85);
     line-height: 1.6;
     font-size: 15px;
     margin: 0 0 20px 0;
@@ -135,7 +133,8 @@
 
 ::ng-deep {
   .ant-layout {
-    background: linear-gradient(130deg, #0a0f18 0%, #101a2b 50%, #152844 100%);
+    // background: linear-gradient(130deg, #0a0f18 0%, #101a2b 50%, #152844 100%);
+    background-color: #fff;
   }
 
   .tag-type-5 {
@@ -156,41 +155,29 @@
     color: #40c4ff !important;
   }
 
-  .ant-btn-primary {
-    height: 38px;
-    border-radius: 16px;
-    font-size: 17px;
-    font-weight: 600;
-    background: linear-gradient(135deg, #40c4ff, #0091ea);
-    border: none;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background: linear-gradient(135deg, #5dd1ff, #00a0ff);
-    }
-  }
-
   .ant-modal-content {
     background-color: transparent;
   }
 
   .ant-modal-body,
   .ant-modal-header {
-    background-color: #141b2f;
+    // background-color: #141b2f;
+    background-color: #FAFAFA;
   }
 
   .ant-modal-body {
     border-radius: 0 0 24px 24px;
+    padding: 12px 24px 24px 24px;
   }
 
   .ant-modal-header {
     border: none !important;
-    color: #fff;
     border-radius: 24px 24px 0 0;
 
     .ant-modal-title {
-      color: #fff;
-      font-size: 18px;
+      // color: #fff;
+      color: #0a0f18;
+      font-size: 20px;
     }
   }
 
@@ -204,7 +191,7 @@
   }
 
   .ant-modal-close-icon {
-    color: #fff !important;
+    color: #000 !important;
   }
 
   .ant-card-body {

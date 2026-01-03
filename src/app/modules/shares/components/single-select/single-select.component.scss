@@ -1,0 +1,43 @@
+.single-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option-card {
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fff;
+
+  &:hover {
+    border-color: #4191E4;
+  }
+
+  &.active {
+    border-color: #4191E4;
+    background: #f4f9ff;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .description {
+    font-size: 12px;
+    font-weight: 500;
+  }
+}
+
+.continue-btn {
+  margin-top: 16px;
+  height: 48px;
+  border-radius: 12px;
+  font-weight: 600;
+  background: #ff8a00;
+  border-color: #ff8a00;
+}

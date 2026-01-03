@@ -3,24 +3,53 @@
     <div class="header-logo d-flex align-items-center gap-2 h-100">
       <i nz-icon nzType="appstore" nzTheme="outline" class="logo-icon"></i>
       <div class="d-flex flex-column h-100 justify-content-center gap-2">
-        <div class="fs-5 fw-bold text-white">Device Check</div>
-        <span style="font-size: 12px;" class="text-muted">Hệ thống kiểm tra thiết bị</span>
+        <div class="fs-5 fw-bold text-primary">Device Check</div>
+        <span style="font-size: 12px" class="text-black"
+          >Hệ thống kiểm tra thiết bị</span
+        >
       </div>
     </div>
     <div class="header-actions d-flex gap-4">
       <div class="user-infor d-flex align-items-center">
-        <i class="me-1 bi bi-person"></i>
-        <span>{{ user.firstName }} {{ user.lastName }}</span>
+        <i class="me-1 bi bi-person text-black"></i>
+        <span class="text-black">{{ user.firstName }} {{ user.lastName }}</span>
       </div>
       <div class="actions">
-        <i
-          (click)="auth.logout()"
-          class="btn-logout bi bi-box-arrow-right"
-        ></i>
+        <i (click)="auth.logout()" class="btn-logout bi bi-box-arrow-right text-black"></i>
       </div>
     </div>
   </nz-header>
-  <nz-content style="padding: 16px 32px">
-    <router-outlet></router-outlet>
-  </nz-content>
+  <nz-layout>
+    <!-- <nz-sider nzCollapsible [(nzCollapsed)]="isCollapsed" [nzTrigger]="null">
+      <div class="logo"></div>
+      <ul nz-menu nzTheme="dark" nzMode="inline">
+        <li nz-submenu nzTitle="User" nzIcon="user">
+          <ul>
+            <li nz-menu-item>Tom</li>
+            <li nz-menu-item>Bill</li>
+            <li nz-menu-item>Alex</li>
+          </ul>
+        </li>
+        <li nz-submenu nzTitle="Team" nzIcon="team">
+          <ul>
+            <li nz-menu-item>Team 1</li>
+            <li nz-menu-item>Team 2</li>
+          </ul>
+        </li>
+        <li nz-menu-item>
+          <i nz-icon nzType="file"></i>
+          <span>File</span>
+        </li>
+      </ul>
+      <i
+        class="trigger"
+        nz-icon
+        [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"
+        (click)="isCollapsed = !isCollapsed"
+      ></i>
+    </nz-sider> -->
+    <nz-content style="padding: 16px 32px">
+      <router-outlet></router-outlet>
+    </nz-content>
+  </nz-layout>
 </nz-layout>

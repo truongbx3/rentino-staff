@@ -4,14 +4,15 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(130deg, #0a0f18 0%, #101a2b 50%, #152844 100%);
+  // background: linear-gradient(130deg, #0a0f18 0%, #101a2b 50%, #152844 100%);
   padding: 20px;
 }
 
 .login-header {
   text-align: center;
   margin-bottom: 20px;
-  color: white;
+  // color: white;
+  color: #000;
 
   .logo-icon {
     font-size: 60px;
@@ -20,13 +21,15 @@
   }
 
   .logo-text {
-    color: white;
+    // color: white;
+    color: #40c4ff;
     font-size: 28px;
     font-weight: bold;
   }
 
   span {
-    color: rgba(255, 255, 255, 0.7);
+    // color: rgba(255, 255, 255, 0.7);
+    color: #414141;
     font-size: 16px;
   }
 }
@@ -36,77 +39,63 @@
   max-width: 90%;
   padding: 40px 32px 20px 32px;
   border-radius: 24px;
-  background: rgba(15, 22, 36, 0.45);
+  // background: rgba(15, 22, 36, 0.45);
+  background-color: transparent;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(100, 160, 220, 0.18);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 5px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15), 0 5px 15px rgba(0, 0, 0, 0.15);
 
   label {
-    color: white !important;
+    // color: white !important;
+    color: #000 !important;
     font-weight: 500;
     font-size: 15px;
   }
 
-  .ant-input-group-wrapper {
-    width: 100%;
-  }
+  // .ant-input-group-wrapper {
+  //   width: 100%;
+  // }
 
-  .ant-input-affix-wrapper {
-    background: rgba(30, 40, 60, 0.4) !important;
-    border: none !important;
-    border-radius: 16px !important;
-    padding: 12px 16px !important;
-    height: 56px;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+  // .ant-input-affix-wrapper {
+  //   background: rgba(30, 40, 60, 0.4) !important;
+  //   border: none !important;
+  //   border-radius: 16px !important;
+  //   padding: 12px 16px !important;
+  //   height: 56px;
+  //   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
 
-    &:hover,
-    &:focus,
-    &.ant-input-affix-wrapper-focused {
-      background: rgba(35, 45, 70, 0.5) !important;
-      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4),
-        0 0 0 2px rgba(64, 196, 255, 0.3);
-    }
-  }
+  //   &:hover,
+  //   &:focus,
+  //   &.ant-input-affix-wrapper-focused {
+  //     background: rgba(35, 45, 70, 0.5) !important;
+  //     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4),
+  //       0 0 0 2px rgba(64, 196, 255, 0.3);
+  //   }
+  // }
 
-  .ant-select.ant-select-selector, .ant-input {
-    background: transparent !important;
-    border: none !important;
-    color: rgba(255, 255, 255, 0.9) !important;
-    font-size: 16px;
+  // .ant-select.ant-select-selector, .ant-input {
+  //   background: transparent !important;
+  //   border: none !important;
+  //   color: rgba(255, 255, 255, 0.9) !important;
+  //   font-size: 16px;
 
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.5) !important;
-    }
-
-    &:focus {
-      box-shadow: none !important;
-    }
-  }
+  //   &:focus {
+  //     box-shadow: none !important;
+  //   }
+  // }
 
   .ant-input-prefix {
     margin-right: 12px;
-    color: rgba(255, 255, 255, 0.6);
     font-size: 20px;
   }
 
-  .ant-btn-primary {
-    height: 56px;
-    border-radius: 16px;
-    font-size: 17px;
-    font-weight: 600;
-    margin-top: 24px;
-    background: linear-gradient(135deg, #40c4ff, #0091ea);
-    border: none;
-    box-shadow: 0 4px 16px rgba(64, 196, 255, 0.4),
-      0 0 12px rgba(64, 196, 255, 0.2);
-    transition: all 0.3s ease;
+  input::placeholder {
+    color: rgba(71, 71, 71, 0.5) !important;
+  }
 
-    &:hover {
-      background: linear-gradient(135deg, #5dd1ff, #00a0ff);
-      box-shadow: 0 8px 20px rgba(64, 196, 255, 0.5),
-        0 0 16px rgba(64, 196, 255, 0.3);
-    }
+  .anticon-lock {
+    color: #6c757d !important;
   }
 
   .ant-form-item-explain.ant-form-item-explain-error {
@@ -115,8 +104,9 @@
 
   .card-footer {
     margin-top: 32px;
-    color: rgba(255, 255, 255, 0.6);
+    color: #000 !important;
     font-size: 14px;
+    background-color: transparent;
 
     span {
       position: relative;
@@ -130,7 +120,7 @@
         transform: translateY(-50%);
         width: 4px;
         height: 4px;
-        background: rgba(255, 255, 255, 0.6);
+        // background: rgba(255, 255, 255, 0.6);
         border-radius: 50%;
       }
     }
@@ -138,7 +128,7 @@
 }
 
 .login-footer {
-  color: #ccc;
+  color: #242424;
 }
 
 nz-form-item {
