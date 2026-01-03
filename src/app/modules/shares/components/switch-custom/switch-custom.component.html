@@ -1,0 +1,28 @@
+<div
+  class="switch-card mb-2"
+  [class.active]="value === true"
+  [class.inactive]="value === false"
+>
+  <div class="header">
+    <div>
+      <div class="title">{{ title }}</div>
+      <div class="desc" *ngIf="description">{{ description }}</div>
+    </div>
+
+    <span *ngIf="value !== null" class="edit" (click)="reset()">Edit</span>
+  </div>
+
+  <div class="actions" *ngIf="value === null">
+    <button nz-button nzType="primary" (click)="select(true)">Có</button>
+    <button nz-button nzType="default" (click)="select(false)">Không</button>
+  </div>
+
+  <div
+    class="result"
+    [class.active]="value === true"
+    [class.inactive]="value === false"
+    *ngIf="value !== null"
+  >
+    {{ value ? 'Có' : 'Không' }}
+  </div>
+</div>

@@ -19,7 +19,27 @@
 </div>
 
 <div class="mb-3 w-100 d-flex justify-content-between">
-  <h4 class="text-white">Danh sách thiết bị</h4>
+  <h4 class="text-black">Danh sách thiết bị</h4>
+  <!-- <div class="view-mode-toggle">
+    <button
+      nz-button
+      nzType="text"
+      [ngClass]="{ active: viewMode === 'grid' }"
+      (click)="setView('grid')"
+    >
+      <span nz-icon nzType="appstore"></span>sdfsdf
+    </button>
+
+    <button
+      nz-button
+      nzType="text"
+      [ngClass]="{ active: viewMode === 'list' }"
+      (click)="setView('list')"
+    >
+      <span nz-icon nzType="unordered-list"></span>sdfsdf
+    </button>
+  </div> -->
+
   <nz-pagination
     [nzPageIndex]="pageIndex"
     [nzPageSize]="pageSize"
@@ -32,7 +52,14 @@
 </div>
 <ng-container *ngIf="devices.length; else noData">
   <nz-row [nzGutter]="16">
-    <nz-col nzSpan="8" class="mb-4" *ngFor="let d of devices">
+    <nz-col
+      [nzXs]="24"
+      [nzSm]="viewMode === 'grid' ? 12 : 24"
+      [nzMd]="viewMode === 'grid' ? 12 : 24"
+      [nzLg]="viewMode === 'grid' ? 8 : 24"
+      class="mb-4"
+      *ngFor="let d of devices"
+    >
       <nz-card class="device-card h-100">
         <div class="card-header">
           <div class="title">
@@ -40,7 +67,9 @@
               <i class="bi bi-phone"></i>
             </div>
             <div>
-              <h3>{{ (d.deviceName || 'Chưa cập nhật').toLocaleUpperCase() }}</h3>
+              <h3>
+                {{ (d.deviceName || "Chưa cập nhật").toLocaleUpperCase() }}
+              </h3>
               <span>{{ getLabelModel(d.model) }}</span>
             </div>
           </div>
@@ -52,8 +81,12 @@
 
         <div class="card-body m-0 p-0">
           <div class="card-info">
-            <div><i class="bi bi-cpu"></i>{{ d.totalRam || 'Chưa cập nhật' }}</div>
-            <div><i class="bi bi-hdd"></i>{{ d.storage || 'Chưa cập nhật' }}</div>
+            <div>
+              <i class="bi bi-cpu"></i>{{ d.totalRam || "Chưa cập nhật" }}
+            </div>
+            <div>
+              <i class="bi bi-hdd"></i>{{ d.storage || "Chưa cập nhật" }}
+            </div>
             <div>
               <i class="bi bi-calendar4"></i>{{ formatDate(d.updatedDate) }}
             </div>
@@ -91,10 +124,10 @@
   <div
     class="d-flex flex-column align-items-center justify-content-center text-white"
   >
-    <i style="font-size: 56px" class="bi bi-search mb-3"></i>
+    <i style="font-size: 56px" class="text-muted bi bi-search mb-3"></i>
     <div class="fs-3 fw-bold" style="color: #40c4ff">
       Không tìm thấy kết quả
     </div>
-    <span>Vui lòng thử lại</span>
+    <span class="text-muted">Vui lòng thử lại</span>
   </div>
 </ng-template>

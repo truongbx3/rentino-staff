@@ -8,6 +8,7 @@ import { AuthService } from "src/app/core/services/auth.service";
 })
 export class MainLayoutComponent {
   user: any;
+  isCollapsed = false;
 
   constructor(public auth: AuthService) { }
 

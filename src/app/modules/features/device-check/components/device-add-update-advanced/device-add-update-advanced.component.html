@@ -1,0 +1,220 @@
+<div class="steps-header d-flex align-items-center gap-3 w-100">
+  <i
+    (click)="prev()"
+    class="bi bi-arrow-left fs-4"
+    style="color: #333; cursor: pointer"
+  ></i>
+  <div class="progress-container flex-grow-1">
+    <nz-progress
+      [nzPercent]="percent"
+      [nzSteps]="totalSteps"
+      nzStrokeColor="#0091ea"
+      [nzStrokeWidth]="10"
+      [nzFormat]="formatStep"
+      [nzShowInfo]="true"
+    ></nz-progress>
+  </div>
+</div>
+
+<!-- [nzStrokeColor]="{ direction: 'to right', '0%': '#40c4ff', '100%': '#0091ea' }" -->
+
+<div class="wizard-container mt-4">
+  <div class="summary-section">
+    <h5 class="mb-3 fw-bold">Kết quả ước tính</h5>
+    <div class="summary-box">
+      <ng-container *ngIf="getStepSummaryKeys().length > 0; else noData">
+        <div
+          *ngFor="let step of getStepSummaryKeys()"
+          [innerHTML]="stepSummaries[step]"
+        ></div>
+      </ng-container>
+    </div>
+
+    <ng-template #noData>
+      <div class="d-flex align-items-center justify-content-center">
+        Chưa có kết quả
+      </div>
+    </ng-template>
+  </div>
+  <div class="steps-section d-flex flex-column justify-content-between">
+    <div class="steps-content">
+      <div *ngIf="!isRejected">
+        <div *ngIf="current === 1">
+          <div class="step-title mb-3 text-muted">
+            <h4 class="mb-2 fw-bold">Thông tin cơ bản</h4>
+            <span class="mb-2"> Kiểm tra thông tin của thiết bị. </span>
+          </div>
+          <form nz-row [nzGutter]="24" [formGroup]="deviceForm">
+            <div nz-col nzSpan="24">
+              <nz-form-item class="mb-2">
+                <label class="w-100 text-muted mb-1">Loại thiết bị</label>
+                <nz-form-control>
+                  <nz-select
+                    formControlName="type"
+                    nzAllowClear
+                    nzPlaceHolder="Chọn loại thiết bị"
+                  >
+                    <nz-option
+                      nzValue="mobile"
+                      nzLabel="Điện thoại"
+                    ></nz-option>
+                    <nz-option
+                      nzValue="tablet"
+                      nzLabel="Máy tính bảng"
+                    ></nz-option>
+                    <nz-option nzValue="laptop" nzLabel="Laptop"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="24">
+              <nz-form-item class="mb-2">
+                <label class="w-100 text-muted mb-1">Model</label>
+                <nz-form-control>
+                  <nz-select
+                    formControlName="model"
+                    nzAllowClear
+                    nzPlaceHolder="Chọn model"
+                    (ngModelChange)="onModelChange($event)"
+                  >
+                    <nz-option
+                      *ngFor="let opt of modelItems"
+                      [nzValue]="opt.value"
+                      [nzLabel]="opt.label"
+                    ></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="24">
+              <nz-form-item class="mb-2">
+                <label class="w-100 text-muted mb-1">Tên thiết bị</label>
+                <nz-form-control>
+                  <nz-select
+                    formControlName="deviceCode"
+                    nzAllowClear
+                    nzShowSearch
+                    nzPlaceHolder="Chọn thiết bị"
+                    (ngModelChange)="onDeviceChange($event)"
+                  >
+                    <nz-option
+                      *ngFor="let opt of devicesOptions"
+                      [nzValue]="opt.value"
+                      [nzLabel]="opt.label"
+                    ></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="24">
+              <nz-form-item>
+                <label class="w-100 text-muted mb-1">Phiên bản OS</label>
+                <nz-form-control>
+                  <nz-input-group>
+                    <input
+                      nz-input
+                      formControlName="osVersion"
+                      placeholder="Nhập phiên bản"
+                    />
+                  </nz-input-group>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </form>
+        </div>
+
+        <ng-container *ngFor="let q of questions">
+          <div *ngIf="current === q.order + 1">
+            <div class="step-title mb-3 text-muted">
+              <h4 class="mb-2 fw-bold">
+                {{ enumQuestionTitle[q.code] || q.code }}
+              </h4>
+              <span class="mb-2">{{ q.question }}</span>
+            </div>
+            <ng-container
+              *ngIf="q.code === 'FUNCTION_WEB'; else NORMAL_QUESTION"
+            >
+              <form
+                class="step-function-list"
+                [formGroup]="functionChecksForms"
+              >
+                <ng-container *ngFor="let item of switchItems; let i = index">
+                  <app-switch-custom
+                    *ngIf="canShowSwitch(i)"
+                    [title]="item.label"
+                    [description]="item.description"
+                    [formControlName]="item.key"
+                  ></app-switch-custom>
+                </ng-container>
+              </form>
+            </ng-container>
+
+            <ng-template #NORMAL_QUESTION>
+              <form [formGroup]="additionalChecksForms">
+                <app-single-select
+                  [formControlName]="q.code"
+                  [options]="q.deviceQuestionAnswerDtos"
+                ></app-single-select>
+              </form>
+            </ng-template>
+          </div>
+        </ng-container>
+      </div>
+
+      <ng-container *ngIf="isRejected">
+        <div class="result-card text-center mt-3">
+          <div style="font-size: 56px;">😞</div>
+          <span class="fs-5">Xin lỗi! Chúng tôi không thể mua lại thiết bị này.</span>
+          <p class="text-muted mx-3">
+            Do các vấn đề đã được báo cáo, chúng tôi không thể mua lại thiết bị.
+            Bạn có thể mang đi tái chế hoặc giữ lại làm điện thoại dự phòng.
+          </p>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="steps-action">
+      <button
+        nz-button
+        nzType="primary"
+        class="w-100"
+        (click)="next()"
+        [disabled]="!isCurrentStepValid()"
+        *ngIf="current < totalSteps && !isRejected"
+      >
+        Tiếp theo
+        <i class="bi bi-arrow-right ms-2"></i>
+      </button>
+
+      <button
+        nz-button
+        nzType="primary"
+        nzSize="large"
+        (click)="submit()"
+        *ngIf="current === totalSteps && !isRejected"
+      >
+        Hoàn tất
+      </button>
+
+      <button
+        *ngIf="isRejected"
+        nz-button
+        nzType="default"
+        class="w-100 mb-2"
+        (click)="edit()"
+      >
+        Sửa
+      </button>
+
+      <button
+        *ngIf="isRejected"
+        nz-button
+        nzType="primary"
+        class="w-100"
+        (click)="startOver()"
+      >
+        Bắt đầu lại
+      </button>
+    </div>
+  </div>
+</div>

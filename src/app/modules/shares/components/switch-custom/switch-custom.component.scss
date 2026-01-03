@@ -1,0 +1,61 @@
+.switch-card {
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  background: #fff;
+
+  &.active {
+    border-color: #22c55e;
+    background: #ecfdf5;
+  }
+
+  &.inactive {
+    border-color: #fb923c;
+    background: #fff7ed;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+  }
+
+  .title {
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .desc {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+
+  .edit {
+    color: #fb923c;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .result {
+    margin-top: 4px;
+    font-weight: 600;
+    color: #16a34a;
+
+    &.active {
+      color: #22c55e;
+    }
+
+    &.inactive {
+      color: #ee3300;
+    }
+  }
+}

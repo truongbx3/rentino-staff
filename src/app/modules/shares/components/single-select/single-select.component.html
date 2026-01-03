@@ -1,0 +1,14 @@
+<div class="single-select-container">
+  <div
+    class="option-card d-flex flex-column"
+    *ngFor="let option of options"
+    [class.active]="option.value === value"
+    [class.disabled]="option.disabled || disabled"
+    (click)="select(option)"
+  >
+    <span class="fs-6">{{ option.label || option.answer }}</span>
+    <span class="description text-muted">
+      {{ option.description }}
+    </span>
+  </div>
+</div>

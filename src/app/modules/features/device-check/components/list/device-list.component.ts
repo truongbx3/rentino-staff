@@ -3,9 +3,9 @@ import { DeviceCheckModel } from '../../configs/device-check.model';
 import { DeviceCheckService } from '../../device-check.service';
 import { accessoryOptions, modelItems } from '../../configs/device.check.constant';
 import { NzModalService } from 'ng-zorro-antd/modal';
-import { DeviceAddUpdateComponent } from '../device-add-update/device-add-update.component';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { finalize } from 'rxjs/operators';
+import { DeviceAddUpdateAdvancedComponent } from '../device-add-update-advanced/device-add-update-advanced.component';
 
 @Component({
   selector: 'app-device-list',
@@ -26,6 +26,7 @@ export class DeviceListComponent {
   total = 0;
 
   modelItems = modelItems;
+  viewMode: 'grid' | 'list' = 'grid';
 
   ngOnInit(): void {
     this.getAllList();
@@ -51,6 +52,9 @@ export class DeviceListComponent {
       }:${d.getSeconds().toString().padStart(2, '0')}`;
   }
 
+  setView(mode: 'grid' | 'list') {
+    this.viewMode = mode;
+  }
 
   getTypeLabel(type: string | null): string {
     return accessoryOptions.find(item => item.value === type)?.label || 'Chưa cập nhật';
@@ -79,7 +83,8 @@ export class DeviceListComponent {
   onAddUpdate(id?: number): void {
     const modalRef = this.modalService.create({
       nzTitle: !!id ? 'Chỉnh sửa thiết bị' : 'Thêm thiết bị mới',
-      nzContent: DeviceAddUpdateComponent,
+      nzContent: DeviceAddUpdateAdvancedComponent,
+      // nzContent: DeviceAddUpdateComponent,
       nzWidth: '70vw',
       nzComponentParams: {
         deviceId: id,

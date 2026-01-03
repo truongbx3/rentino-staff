@@ -1,0 +1,14 @@
+<div
+  class="checkbox-card"
+  [class.checked]="value"
+  [class.disabled]="disabled"
+  (click)="toggle()"
+>
+  <div class="checkbox-icon">
+    <i *ngIf="value" class="bi bi-check-lg"></i>
+  </div>
+
+  <span class="label">
+    {{ label }}
+  </span>
+</div>

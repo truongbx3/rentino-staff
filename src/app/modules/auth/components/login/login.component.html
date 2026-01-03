@@ -9,15 +9,15 @@
   <div class="login-card">
     <form nz-form [formGroup]="form" (ngSubmit)="submit()">
       <nz-form-item class="mb-3">
-        <label class="w-100 mb-1 text-white">Tài khoản</label>
+        <label class="w-100 mb-1 text-primary">Tài khoản</label>
         <nz-form-control
           nzErrorTip="Vui lòng nhập tài khoản"
           [nzValidateStatus]="form.controls.phone"
         >
           <nz-input-group class="p-2" [nzPrefix]="prefixTemplateUser">
-            <input nz-input placeholder="Tài khoản" formControlName="phone" />
+            <input class="py-2" nz-input placeholder="Tài khoản" formControlName="phone" />
             <ng-template #prefixTemplateUser
-              ><i nz-icon nzType="user"></i
+              ><i class="text-muted" nz-icon nzType="user"></i
             ></ng-template>
           </nz-input-group>
         </nz-form-control>
@@ -28,13 +28,13 @@
           nzErrorTip="Vui lòng nhập mật khẩu"
           [nzValidateStatus]="form.controls.password"
         >
-          <label class="w-100 mb-1 text-white">Mật khẩu</label>
+          <label class="w-100 mb-1 text-primary">Mật khẩu</label>
           <nz-input-group
             class="p-2"
-            nzPrefixIcon="lock"
+            [nzPrefix]="prefixTemplateLock"
             [nzSuffix]="suffixTemplate"
           >
-            <input
+            <input class="py-2"
               nz-input
               [type]="passwordVisible ? 'text' : 'password'"
               placeholder="Mật khẩu"
@@ -43,16 +43,18 @@
             <ng-template #suffixTemplate>
               <i
                 nz-icon
-                class="text-white"
+                class="text-muted"
                 [nzType]="passwordVisible ? 'eye-invisible' : 'eye'"
                 (click)="passwordVisible = !passwordVisible"
               ></i>
             </ng-template>
+            <ng-template #prefixTemplateLock
+              ><i class="bi bi-lock text-muted"></i></ng-template>
           </nz-input-group>
         </nz-form-control>
       </nz-form-item>
 
-      <button nz-button nzType="primary" nzBlock>Đăng nhập</button>
+      <button class="py-2" nz-button nzType="primary" nzBlock>Đăng nhập</button>
     </form>
 
     <div class="card-footer d-flex justify-content-center gap-3">
