@@ -10,6 +10,7 @@ import { NzButtonModule } from "ng-zorro-antd/button";
 import { NzCheckboxModule } from "ng-zorro-antd/checkbox";
 import { NzMessageModule } from "ng-zorro-antd/message";
 import { NzIconModule } from "ng-zorro-antd/icon";
+import { SharesModule } from "../shares/shares.module";
 
 @NgModule({
     declarations: [
@@ -26,7 +27,8 @@ import { NzIconModule } from "ng-zorro-antd/icon";
         NzButtonModule,
         NzCheckboxModule,
         NzMessageModule,
-        NzIconModule
+        NzIconModule,
+        SharesModule
     ],
     exports: [
     ]

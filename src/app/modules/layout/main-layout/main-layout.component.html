@@ -8,7 +8,6 @@
       </div>
     </div>
     <div class="header-actions d-flex gap-4">
-      <app-theme-toggle></app-theme-toggle>
       <div class="user-infor d-flex align-items-center">
         <i class="me-1 bi bi-person"></i>
         <span>{{ user.firstName }} {{ user.lastName }}</span>
@@ -27,29 +26,28 @@
     >
       <div class="logo"></div>
       <ul
+        class="menu-navigation"
         [class]="isCollapsed ? 'text-center' : 'text-left'"
         nz-menu
         nzTheme="dark"
         nzMode="inline"
       >
-        <li nz-submenu nzIcon="phone">
-          <ul>
-            <li
-              style="color: var(--text-primary);"
-              class="d-flex align-items-center gap-2"
-              [class]="isCollapsed ? 'justify-content-center' : ''"
-              nz-menu-item
-              [routerLink]="['/device-check']"
-              routerLinkActive="ant-menu-item-selected"
-            >
-              <i nz-icon nzType="unordered-list"></i>
-              <span *ngIf="!isCollapsed">Danh sách thiết bị</span>
-            </li>
-          </ul>
+        <li
+          style="color: var(--text-primary); cursor: pointer"
+          class="d-flex align-items-center gap-3 menu-item"
+          [class]="isCollapsed ? 'justify-content-center' : ''"
+          nz-menu-item
+          [routerLink]="['/device-check']"
+          routerLinkActive="ant-menu-item-selected"
+        >
+          <i class="bi bi-phone fs-5"></i>
+          <div *ngIf="!isCollapsed">Danh sách thiết bị</div>
         </li>
       </ul>
-      <div class="sidebar-footer d-flex flex-column gap-3 align-items-center">
-        <span (click)="isCollapsed = !isCollapsed">
+      <div
+        class="sidebar-footer d-flex flex-column gap-3 align-items-center justify-content-end"
+      >
+        <span style="border: 1px solid var(--text-primary);" class="menu-item" (click)="isCollapsed = !isCollapsed">
           <i
             *ngIf="isCollapsed; else expand"
             class="bi bi-arrow-bar-right"
