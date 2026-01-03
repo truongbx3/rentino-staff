@@ -14,10 +14,6 @@ const routes: Routes = [
             {
                 path: '',
                 component: DeviceListComponent,
-                data: {
-                    breadcrumb: 'Danh sách thiết bị',
-                    breadcrumbIcon: 'bi-list-ul'
-                }
             },
             {
                 path: 'add',

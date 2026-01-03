@@ -18,7 +18,7 @@ export class DeviceAddUpdateAdvancedComponent {
     deviceId?: number;
     current = 1;
     totalSteps!: number;
-    percent = Math.round((this.current / this.totalSteps) * 100);
+    percent = 0;
     isRejected = false;
     transactionID: string = '';
     questions: any = [];
@@ -46,6 +46,10 @@ export class DeviceAddUpdateAdvancedComponent {
         private router: Router
     ) { }
 
+    get visibleSteps(): number {
+        return Math.max(1, (this.totalSteps || 0) - 1);
+    }
+
     getStepSummaryKeys(): number[] {
         return Object.keys(this.stepSummaries).map(Number).sort((a, b) => a - b);
     }
@@ -69,6 +73,7 @@ export class DeviceAddUpdateAdvancedComponent {
                 this.questions = res?.data || res?.data?.content || [];
                 this.totalSteps = this.questions.length + 2;
 
+                this.calcPercent();
                 this.mappedQuestions();
                 this.initAdditionalChecksForm();
             }),
@@ -317,11 +322,26 @@ export class DeviceAddUpdateAdvancedComponent {
     }
 
     calcPercent(): void {
-        this.percent = Math.round((this.current / this.totalSteps) * 100);
+        if (!this.totalSteps || this.totalSteps <= 1) {
+            this.percent = 0;
+            return;
+        }
+
+        const visible = this.visibleSteps;
+
+        if (this.current >= this.totalSteps) {
+            this.percent = 100;
+            return;
+        }
+
+        const raw = Math.ceil((this.current / visible) * 100);
+        this.percent = Math.min(100, Math.max(1, raw));
     }
 
     formatStep = (): string => {
-        return `${this.current} / ${this.totalSteps}`;
+        const visible = this.visibleSteps;
+        const displayCurrent = Math.min(this.current, visible);
+        return `${displayCurrent} / ${visible}`;
     };
 
     edit(): void {
@@ -332,7 +352,7 @@ export class DeviceAddUpdateAdvancedComponent {
             this.rejectedQuestionKey
         ) {
             this.current = this.rejectedQuestionIndex + 1;
-            this.percent = Math.round((this.current / this.totalSteps) * 100);
+            this.calcPercent();
 
             this.additionalChecksForms
                 .get(this.rejectedQuestionKey)
@@ -348,7 +368,7 @@ export class DeviceAddUpdateAdvancedComponent {
 
         this.isRejected = false;
         this.current = this.rejectedQuestionIndex + 1;
-        this.percent = Math.round((this.current / this.totalSteps) * 100);
+        this.calcPercent();
 
         this.additionalChecksForms
             .get(this.rejectedQuestionKey)
@@ -377,7 +397,6 @@ export class DeviceAddUpdateAdvancedComponent {
             return false;
         });
     }
-
 
     next(): void {
         if (this.deviceForm.invalid) {

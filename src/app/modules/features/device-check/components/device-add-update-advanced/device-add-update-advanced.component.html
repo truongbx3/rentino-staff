@@ -1,17 +1,30 @@
 <app-breadcrumb></app-breadcrumb>
-<h3 style="color: var(--text-primary)" class="fw-bold my-3">
-  {{ !deviceId ? "Thêm mới thiết bị" : "Cập nhật thiết bị" }}
-</h3>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 style="color: var(--text-primary)" class="fw-bold my-3">
+    {{ !deviceId ? "Thêm mới thiết bị" : "Cập nhật thiết bị" }}
+  </h3>
+  <button
+    nz-button
+    nzType="default"
+    class="d-flex align-items-center gap-2"
+    (click)="cancel()"
+  >
+    <i class="bi bi-x-circle"></i>
+    Hủy bỏ
+  </button>
+</div>
 <div class="steps-header d-flex align-items-center gap-3 w-100">
   <i
     (click)="prev()"
-    class="bi bi-arrow-left fs-4"
+    nz-tooltip
+    nzTooltipTitle="Bước trước"
+    class="bi bi-box-arrow-in-left fs-3"
     style="cursor: pointer"
   ></i>
   <div class="progress-container flex-grow-1">
     <nz-progress
       [nzPercent]="percent"
-      [nzSteps]="totalSteps"
+      [nzSteps]="visibleSteps"
       nzStrokeColor="#0091ea"
       [nzStrokeWidth]="10"
       [nzFormat]="formatStep"
@@ -164,33 +177,46 @@
           </div>
         </ng-container>
 
-        <ng-container *ngIf="current === totalSteps && resultCheck">
-          <div class="result-card flex-column text-center mt-3">
-            <h3 class="fw-bold">🎉 Chúc mừng!</h3>
-            <span class="mb-2"
-              >Thiết bị của bạn đã vượt qua tất cả các kiểm tra.</span
-            >
-            <h3 class="fw-bold my-3">
-              {{ (resultCheck.deviceName || "").toUpperCase() }}
-            </h3>
+        <ng-container *ngIf="current === totalSteps">
+          <ng-container *ngIf="resultCheck; else notChecked">
+            <div class="result-card flex-column text-center mt-3">
+              <h3 class="fw-bold">🎉 Chúc mừng!</h3>
+              <span class="mb-2"
+                >Thiết bị của bạn đã vượt qua tất cả các kiểm tra.</span
+              >
+              <h3 class="fw-bold my-3">
+                {{ (resultCheck.deviceName || "").toUpperCase() }}
+              </h3>
 
-            <nz-tag
-              class="mb-2"
-              [nzColor]="getTypeColor(resultCheck.finalSummary || null)"
-            >
-              {{ getTypeLabel(resultCheck.finalSummary) }}
-            </nz-tag>
+              <nz-tag
+                class="mb-2"
+                [nzColor]="getTypeColor(resultCheck.finalSummary || null)"
+              >
+                {{ getTypeLabel(resultCheck.finalSummary) }}
+              </nz-tag>
 
-            <div style="color: #0091ea"
-              >Thiết bị của bạn đủ điều kiện để được mua lại với giá ước
-              tính:</div>
-            
-            <h2 class="fw-bold mt-2" style="color: #0091ea">
-              {{
-                resultCheck.price || 0 | currency : "VND" : "symbol" : "1.0-0"
-              }}
-            </h2>
-          </div>
+              <div style="color: #0091ea">
+                Thiết bị của bạn đủ điều kiện để được mua lại với giá ước tính:
+              </div>
+
+              <h2 class="fw-bold mt-2" style="color: #0091ea">
+                {{
+                  resultCheck.price || 0 | currency : "VND" : "symbol" : "1.0-0"
+                }}
+              </h2>
+            </div>
+          </ng-container>
+
+          <ng-template #notChecked>
+            <div class="result-card text-center mt-3">
+              <div style="font-size: 56px">🤔</div>
+              <span class="fs-5">Chưa có kết quả kiểm tra thiết bị.</span>
+              <p class="text-muted mx-3">
+                Vui lòng thử lại các bước kiểm tra để nhận được báo giá mua lại
+                thiết bị.
+              </p>
+            </div>
+          </ng-template>
         </ng-container>
       </div>
 
@@ -215,7 +241,7 @@
         class="w-100"
         (click)="next()"
         [disabled]="!isCurrentStepValid()"
-        *ngIf="current < totalSteps - 1 && !isRejected"
+        *ngIf="current < visibleSteps && !isRejected"
       >
         Tiếp theo
         <i class="bi bi-arrow-right ms-2"></i>
@@ -225,10 +251,11 @@
         nz-button
         nzType="primary"
         nzSize="large"
-        class="w-100"
+        class="w-100 gap-2"
         (click)="submit()"
-        *ngIf="current === totalSteps - 1 && !isRejected"
+        *ngIf="current === visibleSteps && !isRejected"
       >
+        <i class="bi bi-check-circle"></i>
         Hoàn tất
       </button>
 
@@ -239,6 +266,7 @@
         class="w-100 mb-2"
         (click)="edit()"
       >
+        <i class="bi bi-pen me-2"></i>
         Sửa
       </button>
 
@@ -246,9 +274,10 @@
         *ngIf="current === totalSteps && !isRejected"
         nz-button
         nzType="default"
-        class="w-100 mb-2"
+        class="w-100 mb-2 gap-2"
         (click)="cancel()"
       >
+        <i class="bi bi-arrow-left"></i>
         Quay lại
       </button>
 
@@ -256,9 +285,10 @@
         *ngIf="isRejected"
         nz-button
         nzType="primary"
-        class="w-100"
+        class="w-100 gap-2"
         (click)="startOver()"
       >
+        <i class="bi bi-arrow-counterclockwise"></i>
         Bắt đầu lại
       </button>
     </div>

@@ -8,7 +8,8 @@ li {
 ::ng-deep {
   .ant-layout-header {
     background-color: var(--bg-primary);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--bg-tertiary);
+    box-shadow: var(--shadow-md) !important;
     transition: all 0.3s ease;
 
     .user-infor,
@@ -35,14 +36,35 @@ li {
   }
 
   .ant-layout-sider {
-    background-color: var(--bg-secondary) !important;
-    border-right: 1px solid var(--border-color);
-    transition: all 0.3s ease;
+    background-color: var(--bg-primary) !important;
+    box-shadow: var(--shadow-md) !important;
   }
 
   .ant-layout-content {
     background-color: var(--bg-primary);
     transition: all 0.3s ease;
+
+    overflow-y: scroll;
+    height: 89vh;
+    padding: 16px 32px;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 4px;
+
+      &:hover {
+        background: var(--primary-color);
+      }
+    }
   }
 
   .ant-menu {
@@ -61,6 +83,7 @@ li {
     }
 
     &.ant-menu-item-selected {
+      padding: 6px;
       background-color: var(--bg-tertiary) !important;
       color: var(--primary-color) !important;
     }
@@ -91,9 +114,26 @@ li {
   }
 }
 
+.menu-navigation {
+  min-height: 400px;
+}
+
+.menu-item {
+  font-size: 14px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border-radius: 16px;
+  color: var(--text-primary);
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--primary-color) 30%, transparent);
+  }
+}
+
 .sidebar-footer {
   text-align: center !important;
-  margin-top: 40px;
+  margin-top: 16px;
+  flex: 2;
 }
 
 .logo-icon {
