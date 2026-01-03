@@ -1,0 +1,40 @@
+<div class="breadcrumb-container">
+  <div class="breadcrumb-wrapper">
+    <button 
+      *ngIf="showBackButton"
+      class="btn-back"
+      (click)="goBack()"
+      nz-button
+      nzType="default"
+      nz-tooltip
+      nzTooltipTitle="Quay lại"
+    >
+      <i class="bi bi-arrow-left-circle-fill fs-4"></i>
+    </button>
+
+    <button 
+      *ngIf="showHomeButton"
+      class="btn-home"
+      (click)="goHome()"
+      nz-button
+      nzType="text"
+    >
+      <span class="home-label">{{ homeLabel }}</span>
+    </button>
+
+    <div class="breadcrumb-items">
+      <ng-container *ngFor="let item of breadcrumbs; let i = index">
+        <i class="bi bi-chevron-right breadcrumb-separator"></i>
+
+        <div 
+          class="breadcrumb-item"
+          [class.active]="isLastItem(i)"
+          [class.clickable]="!isLastItem(i)"
+          (click)="!isLastItem(i) && navigateTo(item.url)"
+        >
+          <span class="breadcrumb-label">{{ item.label }}</span>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

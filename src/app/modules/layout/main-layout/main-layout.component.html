@@ -4,50 +4,67 @@
       <i nz-icon nzType="appstore" nzTheme="outline" class="logo-icon"></i>
       <div class="d-flex flex-column h-100 justify-content-center gap-2">
         <div class="fs-5 fw-bold text-primary">Device Check</div>
-        <span style="font-size: 12px" class="text-black"
-          >Hệ thống kiểm tra thiết bị</span
-        >
+        <span style="font-size: 12px">Hệ thống kiểm tra thiết bị</span>
       </div>
     </div>
     <div class="header-actions d-flex gap-4">
+      <app-theme-toggle></app-theme-toggle>
       <div class="user-infor d-flex align-items-center">
-        <i class="me-1 bi bi-person text-black"></i>
-        <span class="text-black">{{ user.firstName }} {{ user.lastName }}</span>
+        <i class="me-1 bi bi-person"></i>
+        <span>{{ user.firstName }} {{ user.lastName }}</span>
       </div>
       <div class="actions">
-        <i (click)="auth.logout()" class="btn-logout bi bi-box-arrow-right text-black"></i>
+        <i (click)="auth.logout()" class="btn-logout bi bi-box-arrow-right"></i>
       </div>
     </div>
   </nz-header>
   <nz-layout>
-    <!-- <nz-sider nzCollapsible [(nzCollapsed)]="isCollapsed" [nzTrigger]="null">
+    <nz-sider
+      class="px-3 py-4"
+      nzCollapsible
+      [(nzCollapsed)]="isCollapsed"
+      [nzTrigger]="null"
+    >
       <div class="logo"></div>
-      <ul nz-menu nzTheme="dark" nzMode="inline">
-        <li nz-submenu nzTitle="User" nzIcon="user">
+      <ul
+        [class]="isCollapsed ? 'text-center' : 'text-left'"
+        nz-menu
+        nzTheme="dark"
+        nzMode="inline"
+      >
+        <li nz-submenu nzIcon="phone">
           <ul>
-            <li nz-menu-item>Tom</li>
-            <li nz-menu-item>Bill</li>
-            <li nz-menu-item>Alex</li>
+            <li
+              style="color: var(--text-primary);"
+              class="d-flex align-items-center gap-2"
+              [class]="isCollapsed ? 'justify-content-center' : ''"
+              nz-menu-item
+              [routerLink]="['/device-check']"
+              routerLinkActive="ant-menu-item-selected"
+            >
+              <i nz-icon nzType="unordered-list"></i>
+              <span *ngIf="!isCollapsed">Danh sách thiết bị</span>
+            </li>
           </ul>
-        </li>
-        <li nz-submenu nzTitle="Team" nzIcon="team">
-          <ul>
-            <li nz-menu-item>Team 1</li>
-            <li nz-menu-item>Team 2</li>
-          </ul>
-        </li>
-        <li nz-menu-item>
-          <i nz-icon nzType="file"></i>
-          <span>File</span>
         </li>
       </ul>
-      <i
-        class="trigger"
-        nz-icon
-        [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"
-        (click)="isCollapsed = !isCollapsed"
-      ></i>
-    </nz-sider> -->
+      <div class="sidebar-footer d-flex flex-column gap-3 align-items-center">
+        <span (click)="isCollapsed = !isCollapsed">
+          <i
+            *ngIf="isCollapsed; else expand"
+            class="bi bi-arrow-bar-right"
+            style="cursor: pointer; font-size: 18px"
+          ></i>
+          <ng-template #expand>
+            <i
+              class="bi bi-arrow-bar-left"
+              style="cursor: pointer; font-size: 18px"
+            ></i>
+          </ng-template>
+        </span>
+        <app-theme-toggle></app-theme-toggle>
+      </div>
+    </nz-sider>
     <nz-content style="padding: 16px 32px">
       <router-outlet></router-outlet>
     </nz-content>

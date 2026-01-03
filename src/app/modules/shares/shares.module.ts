@@ -26,12 +26,18 @@ import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { SwitchCustomComponent } from './components/switch-custom/switch-custom.component';
 import { SingleSelectComponent } from './components/single-select/single-select.component';
 import { CustomCheckboxComponent } from './components/checkbox-custom/checkbox-custom.component';
+import { ThemeToggleComponent } from './theme/theme.component';
+import { ThemeService } from 'src/app/core/services/theme.service';
+import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
+import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
 @NgModule({
   declarations: [
     LoadingComponent,
     SwitchCustomComponent,
     SingleSelectComponent,
-    CustomCheckboxComponent
+    CustomCheckboxComponent,
+    ThemeToggleComponent,
+    BreadcrumbComponent
   ],
   imports: [
     CommonModule,
@@ -54,6 +60,7 @@ import { CustomCheckboxComponent } from './components/checkbox-custom/checkbox-c
     NzPaginationModule,
     NzSpinModule,
     NzDescriptionsModule,
+    NzBreadCrumbModule
   ],
   exports: [
     CommonModule,
@@ -80,7 +87,12 @@ import { CustomCheckboxComponent } from './components/checkbox-custom/checkbox-c
     NzDescriptionsModule,
     SwitchCustomComponent,
     SingleSelectComponent,
-    CustomCheckboxComponent
+    CustomCheckboxComponent,
+    ThemeToggleComponent,
+    BreadcrumbComponent
+  ],
+  providers: [
+    ThemeService
   ]
 })
 export class SharesModule { }

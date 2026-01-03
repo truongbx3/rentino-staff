@@ -1,8 +1,12 @@
+<app-breadcrumb></app-breadcrumb>
+<h3 style="color: var(--text-primary)" class="fw-bold my-3">
+  {{ !deviceId ? "Thêm mới thiết bị" : "Cập nhật thiết bị" }}
+</h3>
 <div class="steps-header d-flex align-items-center gap-3 w-100">
   <i
     (click)="prev()"
     class="bi bi-arrow-left fs-4"
-    style="color: #333; cursor: pointer"
+    style="cursor: pointer"
   ></i>
   <div class="progress-container flex-grow-1">
     <nz-progress
@@ -127,7 +131,7 @@
           <div *ngIf="current === q.order + 1">
             <div class="step-title mb-3 text-muted">
               <h4 class="mb-2 fw-bold">
-                {{ enumQuestionTitle[q.code] || q.code }}
+                {{ q.title || q.code }}
               </h4>
               <span class="mb-2">{{ q.question }}</span>
             </div>
@@ -159,12 +163,43 @@
             </ng-template>
           </div>
         </ng-container>
+
+        <ng-container *ngIf="current === totalSteps && resultCheck">
+          <div class="result-card flex-column text-center mt-3">
+            <h3 class="fw-bold">🎉 Chúc mừng!</h3>
+            <span class="mb-2"
+              >Thiết bị của bạn đã vượt qua tất cả các kiểm tra.</span
+            >
+            <h3 class="fw-bold my-3">
+              {{ (resultCheck.deviceName || "").toUpperCase() }}
+            </h3>
+
+            <nz-tag
+              class="mb-2"
+              [nzColor]="getTypeColor(resultCheck.finalSummary || null)"
+            >
+              {{ getTypeLabel(resultCheck.finalSummary) }}
+            </nz-tag>
+
+            <div style="color: #0091ea"
+              >Thiết bị của bạn đủ điều kiện để được mua lại với giá ước
+              tính:</div>
+            
+            <h2 class="fw-bold mt-2" style="color: #0091ea">
+              {{
+                resultCheck.price || 0 | currency : "VND" : "symbol" : "1.0-0"
+              }}
+            </h2>
+          </div>
+        </ng-container>
       </div>
 
       <ng-container *ngIf="isRejected">
         <div class="result-card text-center mt-3">
-          <div style="font-size: 56px;">😞</div>
-          <span class="fs-5">Xin lỗi! Chúng tôi không thể mua lại thiết bị này.</span>
+          <div style="font-size: 56px">😞</div>
+          <span class="fs-5"
+            >Xin lỗi! Chúng tôi không thể mua lại thiết bị này.</span
+          >
           <p class="text-muted mx-3">
             Do các vấn đề đã được báo cáo, chúng tôi không thể mua lại thiết bị.
             Bạn có thể mang đi tái chế hoặc giữ lại làm điện thoại dự phòng.
@@ -180,7 +215,7 @@
         class="w-100"
         (click)="next()"
         [disabled]="!isCurrentStepValid()"
-        *ngIf="current < totalSteps && !isRejected"
+        *ngIf="current < totalSteps - 1 && !isRejected"
       >
         Tiếp theo
         <i class="bi bi-arrow-right ms-2"></i>
@@ -190,8 +225,9 @@
         nz-button
         nzType="primary"
         nzSize="large"
+        class="w-100"
         (click)="submit()"
-        *ngIf="current === totalSteps && !isRejected"
+        *ngIf="current === totalSteps - 1 && !isRejected"
       >
         Hoàn tất
       </button>
@@ -204,6 +240,16 @@
         (click)="edit()"
       >
         Sửa
+      </button>
+
+      <button
+        *ngIf="current === totalSteps && !isRejected"
+        nz-button
+        nzType="default"
+        class="w-100 mb-2"
+        (click)="cancel()"
+      >
+        Quay lại
       </button>
 
       <button
