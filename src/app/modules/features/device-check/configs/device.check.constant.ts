@@ -1,4 +1,4 @@
-import { DeviceEnumType } from "./device-check.enum";
+import { DeviceEnumType, DeviceStatus } from "./device-check.enum";
 
 export const accessoryOptions = [
   {
@@ -27,6 +27,39 @@ export const accessoryOptions = [
     color: 'red',
   }
 ]
+
+export const deviceStatusOptions = [
+  {
+    value: DeviceStatus.PROCESSING,
+    label: 'Đang xử lý',
+    color: 'blue',
+  },
+  {
+    value: DeviceStatus.REJECTED,
+    label: 'Từ chối',
+    color: 'red',
+  },
+  {
+    value: DeviceStatus.CANCELED,
+    label: 'Đã hủy',
+    color: 'gray',
+  },
+  {
+    value: DeviceStatus.WAIT_APPROVE,
+    label: 'Chờ phê duyệt',
+    color: 'orange',
+  },
+  {
+    value: DeviceStatus.APPROVED,
+    label: 'Đã phê duyệt',
+    color: 'green',
+  },
+  {
+    value: DeviceStatus.DISBURSED,
+    label: 'Đã giải ngân',
+    color: 'purple',
+  }
+];
 
 export const switchItems = [
   {

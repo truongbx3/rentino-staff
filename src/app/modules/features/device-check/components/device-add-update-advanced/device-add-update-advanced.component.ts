@@ -1,13 +1,15 @@
 import { Component, Input, TemplateRef, ViewChild } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { EMPTY, Observable, of } from 'rxjs';
+import { EMPTY, iif, Observable, of } from 'rxjs';
 import { catchError, concatMap, finalize, tap } from 'rxjs/operators';
 import { DeviceCheckService } from '../../device-check.service';
 import { accessoryOptions, modelItems, switchItems } from '../../configs/device.check.constant';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { DeviceEnumType } from '../../configs/device-check.enum';
 import { Router } from '@angular/router';
+import { NzUploadFile } from 'ng-zorro-antd/upload';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 @Component({
     selector: 'app-device-add-update-advanced',
@@ -15,6 +17,8 @@ import { Router } from '@angular/router';
     styleUrls: ['./device-add-update-advanced.component.scss']
 })
 export class DeviceAddUpdateAdvancedComponent {
+    @ViewChild('liquidationContent') liquidationContent!: TemplateRef<any>;
+
     deviceId?: number;
     current = 1;
     totalSteps!: number;
@@ -23,6 +27,9 @@ export class DeviceAddUpdateAdvancedComponent {
     transactionID: string = '';
     questions: any = [];
     resultCheck: any = null;
+
+    fileList: NzUploadFile[] = [];
+    videoSrc: string | null = null;
 
     // Forms
     deviceForm!: FormGroup;
@@ -43,8 +50,40 @@ export class DeviceAddUpdateAdvancedComponent {
         private deviceCheckService: DeviceCheckService,
         private message: NzMessageService,
         private loading: LoadingService,
-        private router: Router
+        private router: Router,
+        private modal: NzModalService
     ) { }
+
+
+    beforeUpload = (file: any): boolean => {
+        const isVideo = file.type.startsWith('video/');
+        const isLimit = file.size! / 1024 / 1024 <= 100;
+
+        if (!isVideo) {
+            alert('Chỉ hỗ trợ video!');
+            return false;
+        }
+        if (!isLimit) {
+            alert('Video quá lớn! Giới hạn 100MB.');
+            return false;
+        }
+
+        this.fileList = [file];
+
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+            this.videoSrc = e.target.result;
+        };
+        reader.readAsDataURL(file as any);
+
+        return false;
+    };
+
+    handleRemove(): boolean {
+        this.fileList = [];
+        this.videoSrc = null;
+        return true;
+    }
 
     get visibleSteps(): number {
         return Math.max(1, (this.totalSteps || 0) - 1);
@@ -105,6 +144,7 @@ export class DeviceAddUpdateAdvancedComponent {
             osVersion: [''],
             storage: [''],
             totalRam: [''],
+            videoUrl: [null]
         });
 
         this.initFunctionChecksForms();
@@ -154,6 +194,7 @@ export class DeviceAddUpdateAdvancedComponent {
                     this.loadDeviceCheckDetail(device.transactionId);
 
                     this.deviceForm.patchValue(device);
+                    this.videoSrc = device.videoUrl || null;
                 }
             }),
             finalize(() => this.loading.hide())
@@ -263,6 +304,12 @@ export class DeviceAddUpdateAdvancedComponent {
         });
     }
 
+    private createFormData(file: any): FormData {
+        const formData = new FormData();
+        formData.append('files', file);
+        return formData;
+    }
+
     submit(): void {
         const functionChecks = switchItems.map((item) => ({
             item: this.mapFormKeyToApiItem(item.key),
@@ -282,21 +329,29 @@ export class DeviceAddUpdateAdvancedComponent {
             transactionID: this.transactionID
         };
 
-        const devicePayload = {
-            ...this.deviceForm.value,
-            transactionId: this.transactionID,
-        };
-
         this.loading.show();
 
-        this.deviceCheckService.saveDeviceInfor(devicePayload).pipe(
+        iif(
+            () => this.fileList.length > 0,
+            this.deviceCheckService.attachFiles(this.createFormData(this.fileList[0])),
+            of(null)
+        ).pipe(
+            concatMap((fileResp: any) => {
+                const devicePayload = {
+                    ...this.deviceForm.value,
+                    transactionId: this.transactionID,
+                    typeCheck: "STAFF_CHECK",
+                    videoUrl: fileResp?.data?.[0]?.pathName || this.deviceForm.value.videoUrl
+                };
+
+                return this.deviceCheckService.saveDeviceInfor(devicePayload);
+            }),
             concatMap((res) => {
                 this.message.success('Lưu thông tin thiết bị thành công');
                 return this.deviceCheckService.saveCheckDeviceInfor(payload);
             }),
             concatMap((res) => {
                 this.message.success('Lưu kết quả kiểm tra thành công');
-
                 return this.deviceCheckService.checkDeviceStatus(this.transactionID);
             }),
             finalize(() => {
@@ -313,7 +368,7 @@ export class DeviceAddUpdateAdvancedComponent {
                 this.message.error(res?.error?.message || 'Có lỗi xảy ra');
                 return of(null);
             })
-        ).subscribe((finalRes) => {
+        ).subscribe((finalRes: any) => {
             if (finalRes?.code === '00') {
                 this.message.success('Hoàn tất quy trình kiểm tra thiết bị');
                 this.resultCheck = finalRes.data;
@@ -584,5 +639,69 @@ export class DeviceAddUpdateAdvancedComponent {
 
     getTypeLabel(type: string | null): string {
         return accessoryOptions.find(item => item.value === type)?.label || 'Chưa cập nhật';
+    }
+
+    bankingInforForm: FormGroup = this.fb.group({
+        imei: ['', [Validators.required, this.imeiValidator]],
+        bankingNumber: [null, Validators.required],
+        bankingName: [null, Validators.required],
+        bankingUser: [null, Validators.required]
+    });
+
+    imeiValidator(control: AbstractControl): ValidationErrors | null {
+        const value = control.value;
+
+        if (!value) return null;
+
+        if (!/^\d{15}$/.test(value)) {
+            return { imeiFormat: true };
+        }
+
+        const digits = value.split('').map(Number);
+        let sum = 0;
+
+        for (let i = 0; i < 14; i++) {
+            let num = digits[i];
+
+            if (i % 2 === 1) {
+                num *= 2;
+                if (num > 9) num -= 9;
+            }
+            sum += num;
+        }
+
+        const checkDigit = (10 - (sum % 10)) % 10;
+
+        return checkDigit === digits[14] ? null : { imeiInvalid: true };
+    }
+
+    openBankingInfor(): void {
+        this.modal.create({
+            nzTitle: 'Thanh lý thiết bị',
+            nzContent: this.liquidationContent,
+            nzOkText: 'Xác nhận',
+            nzCancelText: 'Hủy',
+            nzOnOk: (): any => {
+                if (this.bankingInforForm.invalid) {
+                    this.message.warning('Vui lòng điền đầy đủ thông tin bắt buộc');
+                    Object.values(this.bankingInforForm.controls).forEach(control => {
+                        if (control.invalid) {
+                            control.markAsDirty();
+                            control.updateValueAndValidity({ onlySelf: true });
+                        }
+                    });
+                    return false;
+                }
+                this.deviceCheckService.updateBankingInfor({
+                    id: this.deviceId,
+                    ...this.bankingInforForm.value,
+                }).subscribe({
+                    next: () => {
+                        this.message.success('Cập nhật thông tin thanh lý thành công');
+                        this.router.navigateByUrl('/device-check');
+                    }
+                });
+            },
+        })
     }
 }

@@ -94,6 +94,10 @@ export class DeviceCheckService {
         });
     }
 
+    updateBankingInfor(payload: any): Observable<any> {
+        return this.http.post(`${this.contextPath}/updateBankingInfo`, payload);
+    }
+
     getTransactionId(): Observable<any> {
         return this.http.get(`${this.contextPath}/getTransaction`);
     }

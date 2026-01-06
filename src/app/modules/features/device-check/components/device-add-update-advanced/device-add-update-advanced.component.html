@@ -126,7 +126,7 @@
             <div nz-col nzSpan="24">
               <nz-form-item>
                 <label class="w-100 text-muted mb-1">Phiên bản OS</label>
-                <nz-form-control>
+                <nz-form-control class="m-0">
                   <nz-input-group>
                     <input
                       nz-input
@@ -134,6 +134,62 @@
                       placeholder="Nhập phiên bản"
                     />
                   </nz-input-group>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="24">
+              <nz-form-item>
+                <label class="w-100 text-white mb-1">Video</label>
+                <nz-form-control>
+                  <nz-upload
+                    *ngIf="!videoSrc"
+                    [nzBeforeUpload]="beforeUpload"
+                    [nzShowUploadList]="{ showRemoveIcon: true }"
+                    [nzFileList]="fileList"
+                    [nzAccept]="'video/*'"
+                    nzType="drag"
+                    (nzRemove)="handleRemove()"
+                  >
+                    <span class="ant-upload-drag-icon">
+                      <i class="bi bi-upload fs-3"></i>
+                    </span>
+                    <p class="ant-upload-text">
+                      Kéo thả video vào đây hoặc nhấn để chọn file
+                    </p>
+                    <p class="ant-upload-hint">
+                      Chỉ hỗ trợ video, tối đa 100MB, 1 video/lần
+                    </p>
+                  </nz-upload>
+                  <div
+                    *ngIf="videoSrc"
+                    style="position: relative; display: inline-block"
+                  >
+                    <video
+                      [src]="videoSrc"
+                      controls
+                      width="100%"
+                      style="border-radius: 16px"
+                    ></video>
+                    <button
+                      (click)="handleRemove()"
+                      style="
+                        position: absolute;
+                        top: 8px;
+                        right: 8px;
+                        background: var(--bg-danger);
+                        color: white;
+                        border: none;
+                        border-radius: 50%;
+                        width: 30px;
+                        height: 30px;
+                        cursor: pointer;
+                        font-weight: bold;
+                      "
+                      title="Gỡ bỏ video"
+                    >
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </div>
                 </nz-form-control>
               </nz-form-item>
             </div>
@@ -270,16 +326,31 @@
         Sửa
       </button>
 
-      <button
-        *ngIf="current === totalSteps && !isRejected"
-        nz-button
-        nzType="default"
-        class="w-100 mb-2 gap-2"
-        (click)="cancel()"
-      >
-        <i class="bi bi-arrow-left"></i>
-        Quay lại
-      </button>
+      <div *ngIf="current === totalSteps && !isRejected">
+        <div class="d-flex gap-2">
+          <button
+            *ngIf="current === totalSteps && !isRejected"
+            nz-button
+            nzType="default"
+            class="w-100 mb-2 gap-2"
+            (click)="cancel()"
+          >
+            <i class="bi bi-arrow-left"></i>
+            Quay lại
+          </button>
+
+          <button
+            *ngIf="current === totalSteps && !isRejected"
+            nz-button
+            nzType="primary"
+            class="w-100 mb-2 gap-2"
+            (click)="openBankingInfor()"
+          >
+            <i class="bi bi-currency-dollar"></i>
+            Thanh lý
+          </button>
+        </div>
+      </div>
 
       <button
         *ngIf="isRejected"
@@ -294,3 +365,107 @@
     </div>
   </div>
 </div>
+
+<ng-template #liquidationContent>
+  <form nz-row nzGutter="24" [formGroup]="bankingInforForm">
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <label style="color: var(--text-primary)" class="w-100 mb-1">
+          IMEI <span class="fw-bold text-danger">*</span>
+        </label>
+
+        <nz-form-control
+          class="m-0"
+          [nzValidateStatus]="bankingInforForm.controls.imei"
+          [nzErrorTip]="imeiErrorTpl"
+        >
+          <nz-input-group>
+            <input
+              nz-input
+              formControlName="imei"
+              placeholder="Nhập IMEI"
+              maxlength="15"
+            />
+          </nz-input-group>
+        </nz-form-control>
+
+        <ng-template #imeiErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('required')">
+            Vui lòng nhập IMEI
+          </ng-container>
+
+          <ng-container *ngIf="control.hasError('imeiFormat')">
+            IMEI phải gồm đúng 15 chữ số
+          </ng-container>
+
+          <ng-container *ngIf="control.hasError('imeiInvalid')">
+            IMEI không hợp lệ
+          </ng-container>
+        </ng-template>
+      </nz-form-item>
+    </div>
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <label style="color: var(--text-primary)" class="w-100 mb-1"
+          >Số tài khoản
+          <span class="fw-bold text-danger">*</span>
+        </label>
+        <nz-form-control
+          class="m-0"
+          nzErrorTip="Vui lòng nhập tài khoản"
+          [nzValidateStatus]="bankingInforForm.controls.bankingNumber"
+        >
+          <nz-input-group>
+            <input
+              nz-input
+              formControlName="bankingNumber"
+              placeholder="Nhập số tài khoản"
+            />
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <label style="color: var(--text-primary)" class="w-100 mb-1"
+          >Tên ngân hàng
+          <span class="fw-bold text-danger">*</span>
+        </label>
+        <nz-form-control
+          class="m-0"
+          nzErrorTip="Vui lòng nhập tên ngân hàng"
+          [nzValidateStatus]="bankingInforForm.controls.bankingName"
+        >
+          <nz-input-group>
+            <input
+              nz-input
+              formControlName="bankingName"
+              placeholder="Nhập tên ngân hàng"
+            />
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col nzSpan="24">
+      <nz-form-item>
+        <label style="color: var(--text-primary)" class="w-100 mb-1"
+          >Chủ tài khoản
+          <span class="fw-bold text-danger">*</span>
+        </label>
+        <nz-form-control
+          class="m-0"
+          nzErrorTip="Vui lòng nhập tên chủ tài khoản"
+          [nzValidateStatus]="bankingInforForm.controls.bankingUser"
+        >
+          <nz-input-group>
+            <input
+              nz-input
+              formControlName="bankingUser"
+              placeholder="Nhập tên chủ tài khoản"
+            />
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </form>
+</ng-template>

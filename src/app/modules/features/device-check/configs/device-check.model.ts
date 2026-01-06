@@ -18,4 +18,6 @@ export interface DeviceCheckModel {
     functionCheck: string | null;
     finalSummary: string | null;
     additionCheck: string | null;
+    status: string | null;
+    imei: string | null;
 }

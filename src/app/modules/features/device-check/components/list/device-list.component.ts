@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DeviceCheckModel } from '../../configs/device-check.model';
 import { DeviceCheckService } from '../../device-check.service';
-import { accessoryOptions, modelItems } from '../../configs/device.check.constant';
+import { accessoryOptions, deviceStatusOptions, modelItems } from '../../configs/device.check.constant';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { finalize } from 'rxjs/operators';
@@ -67,6 +67,14 @@ export class DeviceListComponent {
 
   getLabelModel(value: string): string {
     return this.modelItems.find((item) => item.value === value)?.label || 'Chưa cập nhật'
+  }
+
+  getDeviceStatusLabel(value: string): string {
+    return deviceStatusOptions.find(option => option.value === value)?.label || '';
+  }
+
+  getDeviceStatusColor(value: string): string {
+    return deviceStatusOptions.find(option => option.value === value)?.color || 'Chưa cập nhật';
   }
 
   getSummary(device: DeviceCheckModel): string {
