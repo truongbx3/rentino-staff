@@ -6,3 +6,12 @@ export enum DeviceEnumType {
     LOAI_5 = 'Loại 5',
     LOAI_6 = 'Loại 6',
 }
+
+export enum DeviceStatus {
+  PROCESSING = "processing",
+  REJECTED = "reject",
+  CANCELED = "cancel",
+  WAIT_APPROVE = "wait_approve",
+  APPROVED = "approve",
+  DISBURSED = "disbursed"
+}

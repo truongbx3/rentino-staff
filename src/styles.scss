@@ -3,6 +3,7 @@
   --bg-primary: #ffffff;
   --bg-secondary: #f5f7fa;
   --bg-tertiary: #e8ecf1;
+  --bg-danger: #ee3300;
   
   --text-primary: #1a1a1a;
   --text-secondary: #5a5a5a;
@@ -226,6 +227,13 @@ body {
   color: var(--text-primary) !important;
 }
 
+.ant-modal-footer {
+  display: flex;
+  justify-content: end;
+  border-top: none !important;
+  margin-bottom: 12px;
+}
+
 .ant-table {
   background-color: var(--bg-primary) !important;
   color: var(--text-primary) !important;
@@ -262,6 +270,15 @@ body {
   box-shadow: var(--shadow-md) !important;
 }
 
+.ant-upload.ant-upload-drag {
+  border-radius: 16px;
+  background-color: transparent !important;
+  
+  .ant-upload-drag-icon, .ant-upload-text, .ant-upload-hint {
+    color: var(--text-primary) !important;
+    opacity: 0.5;
+  }
+}
 
 .text-primary {
   color: var(--primary-color) !important;

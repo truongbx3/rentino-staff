@@ -1,6 +1,6 @@
 <app-breadcrumb></app-breadcrumb>
 <div class="list-toolbar my-3">
-  <h3 style="color: var(--text-primary);" class="fw-bold">Danh sách thiết bị</h3>
+  <h3 style="color: var(--text-primary)" class="fw-bold">Danh sách thiết bị</h3>
   <button nz-button nzType="primary" (click)="onAddUpdate()">
     <i class="bi bi-plus-lg"></i>
     Thêm mới
@@ -76,8 +76,8 @@
             </div>
           </div>
 
-          <nz-tag [nzColor]="getTypeColor(d.finalSummary || null)">
-            {{ getTypeLabel(d.finalSummary) }}
+          <nz-tag [nzColor]="getDeviceStatusColor(d.status || '')">
+            {{ getDeviceStatusLabel(d.status || "Chưa cập nhật") }}
           </nz-tag>
         </div>
 
@@ -95,6 +95,16 @@
             <div>
               <i class="bi bi-currency-dollar"></i>{{ getPrice(d.price) }}
             </div>
+            <div>
+              <i class="bi bi-currency-dollar"></i
+              ><nz-tag [nzColor]="getTypeColor(d.finalSummary || null)">
+                {{ getTypeLabel(d.finalSummary) }}
+              </nz-tag>
+            </div>
+          </div>
+
+          <div class="px-3 py-2 mb-3" style="background-color: color-mix(in srgb, var(--primary-color) 20%, transparent); color: var(--text-primary); border-radius: 8px;">
+            IMEI: {{ d.imei || "-" }}
           </div>
 
           <div class="check">
