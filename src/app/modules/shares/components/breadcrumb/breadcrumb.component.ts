@@ -13,7 +13,7 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
   @Input() showBackButton = true;
   @Input() showHomeButton = true;
   @Input() homeUrl = '/';
-  @Input() homeLabel = 'Trang chủ';
+  @Input() homeLabel = '';
   @Input() homeIcon = 'bi-house-door';
 
   breadcrumbs: Breadcrumb[] = [];
