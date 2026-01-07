@@ -345,6 +345,7 @@
             nzType="primary"
             class="w-100 mb-2 gap-2"
             (click)="openBankingInfor()"
+            [disabled]="!this.resultCheck"
           >
             <i class="bi bi-currency-dollar"></i>
             Thanh lý
