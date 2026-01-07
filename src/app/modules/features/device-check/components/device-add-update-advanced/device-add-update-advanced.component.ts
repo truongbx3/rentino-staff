@@ -1,7 +1,7 @@
 import { Component, Input, TemplateRef, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { EMPTY, iif, Observable, of } from 'rxjs';
+import { EMPTY, iif, Observable, of, timer } from 'rxjs';
 import { catchError, concatMap, finalize, tap } from 'rxjs/operators';
 import { DeviceCheckService } from '../../device-check.service';
 import { accessoryOptions, modelItems, switchItems } from '../../configs/device.check.constant';
@@ -27,6 +27,7 @@ export class DeviceAddUpdateAdvancedComponent {
     transactionID: string = '';
     questions: any = [];
     resultCheck: any = null;
+    isEditMode = false;
 
     fileList: NzUploadFile[] = [];
     videoSrc: string | null = null;
@@ -35,6 +36,7 @@ export class DeviceAddUpdateAdvancedComponent {
     deviceForm!: FormGroup;
     additionalChecksForms!: FormGroup;
     functionChecksForms!: FormGroup;
+    bankingInforForm!: FormGroup;
 
     // Options
     switchItems = switchItems;
@@ -96,8 +98,10 @@ export class DeviceAddUpdateAdvancedComponent {
         this.initForm();
         this.loadApis();
 
-        this.deviceId = this.router.url.includes('/edit/') ?
-            Number(this.router.url.split('/edit/')[1]) : undefined;
+        if (this.router.url.includes('/edit/')) {
+            this.deviceId = Number(this.router.url.split('/edit/')[1]);
+            this.isEditMode = true;
+        }
     }
 
     private async loadApis(): Promise<any> {
@@ -148,6 +152,16 @@ export class DeviceAddUpdateAdvancedComponent {
         });
 
         this.initFunctionChecksForms();
+        this.initBankingInforForm();
+    }
+
+    private initBankingInforForm(): void {
+        this.bankingInforForm = this.fb.group({
+            imei: ['', [Validators.required]],
+            bankingNumber: [null, Validators.required],
+            bankingName: [null, Validators.required],
+            bankingUser: [null, Validators.required]
+        });
     }
 
     private initFunctionChecksForms(): void {
@@ -329,12 +343,12 @@ export class DeviceAddUpdateAdvancedComponent {
             transactionID: this.transactionID
         };
 
-        this.loading.show();
+        this.loading.show('Đang tải thông tin thiết bị...');
 
         iif(
             () => this.fileList.length > 0,
             this.deviceCheckService.attachFiles(this.createFormData(this.fileList[0])),
-            of(null)
+            of(null),
         ).pipe(
             concatMap((fileResp: any) => {
                 const devicePayload = {
@@ -343,11 +357,11 @@ export class DeviceAddUpdateAdvancedComponent {
                     typeCheck: "STAFF_CHECK",
                     videoUrl: fileResp?.data?.[0]?.pathName || this.deviceForm.value.videoUrl
                 };
-
                 return this.deviceCheckService.saveDeviceInfor(devicePayload);
             }),
             concatMap((res) => {
-                this.message.success('Lưu thông tin thiết bị thành công');
+                this.deviceId = res.data?.id;
+                this.loading.show('Đang kiểm tra thiết bị...');;
                 return this.deviceCheckService.saveCheckDeviceInfor(payload);
             }),
             concatMap((res) => {
@@ -641,12 +655,7 @@ export class DeviceAddUpdateAdvancedComponent {
         return accessoryOptions.find(item => item.value === type)?.label || 'Chưa cập nhật';
     }
 
-    bankingInforForm: FormGroup = this.fb.group({
-        imei: ['', [Validators.required, this.imeiValidator]],
-        bankingNumber: [null, Validators.required],
-        bankingName: [null, Validators.required],
-        bankingUser: [null, Validators.required]
-    });
+
 
     imeiValidator(control: AbstractControl): ValidationErrors | null {
         const value = control.value;
@@ -692,6 +701,7 @@ export class DeviceAddUpdateAdvancedComponent {
                     });
                     return false;
                 }
+                console.log('Device ID for liquidation:', this.deviceId);
                 this.deviceCheckService.updateBankingInfor({
                     id: this.deviceId,
                     ...this.bankingInforForm.value,

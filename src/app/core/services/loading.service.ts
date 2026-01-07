@@ -6,9 +6,13 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class LoadingService {
   private loadingSubject = new BehaviorSubject<boolean>(false);
-  loading$ = this.loadingSubject.asObservable();
+  private labelSubject = new BehaviorSubject<string>('Đang xử lý...');
 
-  show(): void {
+  loading$ = this.loadingSubject.asObservable();
+  label$ = this.labelSubject.asObservable();
+
+  show(label: string = 'Đang xử lý...'): void {
+    this.labelSubject.next(label);
     this.loadingSubject.next(true);
   }
 
