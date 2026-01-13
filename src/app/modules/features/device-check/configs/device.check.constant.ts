@@ -61,6 +61,33 @@ export const deviceStatusOptions = [
   }
 ];
 
+export const ramOptions = [
+  {
+    value: '64GB',
+    label: '64GB',
+  },
+  {
+    value: '128GB',
+    label: '128GB',
+  },
+  {
+    value: '256GB',
+    label: '256GB',
+  },
+  {
+    value: '512GB',
+    label: '512GB',
+  },
+  {
+    value: '1TB',
+    label: '1TB',
+  },
+  {
+    value: '2TB',
+    label: '2TB',
+  }
+];
+
 export const switchItems = [
   {
     key: 'wifi',

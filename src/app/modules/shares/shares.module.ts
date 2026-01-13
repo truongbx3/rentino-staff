@@ -13,6 +13,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageModule } from 'ng-zorro-antd/message'; 
+import { NzTableModule } from 'ng-zorro-antd/table';
 
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -30,6 +31,9 @@ import { ThemeToggleComponent } from './theme/theme.component';
 import { ThemeService } from 'src/app/core/services/theme.service';
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
+import { TableCustomComponent } from './components/table/table.component';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 @NgModule({
   declarations: [
     LoadingComponent,
@@ -37,7 +41,8 @@ import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
     SingleSelectComponent,
     CustomCheckboxComponent,
     ThemeToggleComponent,
-    BreadcrumbComponent
+    BreadcrumbComponent,
+    TableCustomComponent
   ],
   imports: [
     CommonModule,
@@ -60,7 +65,10 @@ import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
     NzPaginationModule,
     NzSpinModule,
     NzDescriptionsModule,
-    NzBreadCrumbModule
+    NzBreadCrumbModule,
+    NzTableModule,
+    NzToolTipModule,
+    NzDropDownModule
   ],
   exports: [
     CommonModule,
@@ -89,7 +97,8 @@ import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
     SingleSelectComponent,
     CustomCheckboxComponent,
     ThemeToggleComponent,
-    BreadcrumbComponent
+    BreadcrumbComponent,
+    TableCustomComponent
   ],
   providers: [
     ThemeService

@@ -6,6 +6,8 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { TableColumn } from 'src/app/modules/shares/models/table-column.model';
+import { deviceCheckColumns } from '../../configs/device-check.colum';
 
 @Component({
   selector: 'app-device-list',
@@ -20,6 +22,9 @@ export class DeviceListComponent {
     private router: Router
   ) { }
 
+  columns: TableColumn[] = deviceCheckColumns;
+  lastSearchPayload: any = null;
+
   devices: DeviceCheckModel[] = [];
   deviceNameSearch!: string;
   pageIndex: number = 1;
@@ -33,14 +38,19 @@ export class DeviceListComponent {
     this.getAllList();
   }
 
-  getAllList() {
-    const payload = this.buildPayload();
+  getAllList(payload?: any) {
+    if (!payload) {
+      payload = this.buildPayload();
+    }
     this.loading.show();
 
     this.deviceCheckService.getAllDevices(payload).pipe((finalize(() => {
       this.loading.hide();
     }))).subscribe(res => {
-      this.devices = res.data.content || [];
+      this.devices = res.data.content.map((item: any, index: number) => ({
+        index: (this.pageIndex - 1) * this.pageSize + index + 1,
+        ...item
+      })) || [];
       this.total = res.data.totalElements || 0;
     });
   }
@@ -55,14 +65,6 @@ export class DeviceListComponent {
 
   setView(mode: 'grid' | 'list') {
     this.viewMode = mode;
-  }
-
-  getTypeLabel(type: string | null): string {
-    return accessoryOptions.find(item => item.value === type)?.label || 'Chưa cập nhật';
-  }
-
-  getTypeColor(type: string | null): string {
-    return accessoryOptions.find(item => item.value === type)?.color || 'gray';
   }
 
   getLabelModel(value: string): string {
@@ -106,16 +108,6 @@ export class DeviceListComponent {
 
   buildPayload() {
     const conditions: any[] = [];
-
-    if (this.deviceNameSearch?.trim()) {
-      conditions.push({
-        operator: 'LIKE',
-        property: 'deviceName',
-        propertyType: 'string',
-        value: this.deviceNameSearch.trim()
-      });
-    }
-
     return {
       page: this.pageIndex - 1,
       size: this.pageSize,
@@ -129,19 +121,36 @@ export class DeviceListComponent {
     };
   }
 
+  onSearch(payload: any) {
+    this.pageIndex = 1;
 
-  onSearch(): void {
-    this.getAllList();
+    this.lastSearchPayload = {
+      ...payload,
+      page: 0,
+      size: this.pageSize
+    };
+
+    this.getAllList(this.lastSearchPayload);
   }
-
   onPageIndexChange(page: number) {
     this.pageIndex = page;
-    this.getAllList();
+
+    const payload = this.lastSearchPayload
+      ? { ...this.lastSearchPayload, page: page - 1 }
+      : this.buildPayload();
+
+    this.getAllList(payload);
   }
 
   onPageSizeChange(size: number) {
     this.pageSize = size;
     this.pageIndex = 1;
-    this.getAllList();
+
+    const payload = this.lastSearchPayload
+      ? { ...this.lastSearchPayload, size, page: 0 }
+      : this.buildPayload();
+
+    this.getAllList(payload);
   }
+
 }

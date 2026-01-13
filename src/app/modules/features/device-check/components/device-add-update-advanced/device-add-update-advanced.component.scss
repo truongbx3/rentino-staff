@@ -177,7 +177,7 @@
   }
 }
 
-::ng-deep .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+:host ::ng-deep .ant-select:not(.ant-select-customize-input) .ant-select-selector {
   border: 1.5px solid var(--border-color) !important;
   font-size: 16px;
   background-color: var(--bg-secondary) !important;
@@ -191,13 +191,6 @@
   &:hover {
     border-color: var(--border-color-hover) !important;
   }
-}
-
-.ant-tag {
-  border-radius: 16px;
-  padding: 6px 18px;
-  font-size: 12px;
-  font-weight: bold;
 }
 
 ::ng-deep .ant-select-arrow {
