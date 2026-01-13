@@ -1,0 +1,119 @@
+<nz-table
+  [nzData]="data"
+  nzBordered
+  nzShowPagination="false"
+  [nzScroll]="{ x: '1200px', y: '50vh' }"
+>
+  <thead>
+    <tr>
+      <ng-container *ngFor="let col of columns">
+        <th [nzWidth]="col.width || '150px'">
+          <ng-container *ngIf="col.type !== 'action'">
+            <div class="th-wrapper">
+              <span>{{ col.title }}</span>
+
+              <ng-container
+                [ngSwitch]="col.filter?.type"
+                *ngIf="col.searchable"
+              >
+                <nz-select
+                  *ngSwitchCase="'select'"
+                  nzAllowClear
+                  [class]="col.classes"
+                  [nzPlaceHolder]="col.placeholder || 'Chọn'"
+                  [(ngModel)]="searchValues[col.key]"
+                  (ngModelChange)="triggerSearch()"
+                  [nzOptions]="col.filter?.options || []"
+                >
+                </nz-select>
+                <nz-input-group
+                  *ngSwitchCase="'input'"
+                  class="search-box"
+                  [nzPrefix]="suffixIconSearch"
+                >
+                  <input
+                    class="search-input"
+                    nz-input
+                    nzAllowClear
+                    [class]="col.classes"
+                    [placeholder]="col.placeholder || 'Tìm kiếm...'"
+                    [(ngModel)]="searchValues[col.key]"
+                    (blur)="triggerSearch()"
+                    (keyup.enter)="triggerSearch()"
+                  />
+                </nz-input-group>
+                <ng-template #suffixIconSearch>
+                  <i class="bi bi-search text-muted fs-6"></i>
+                </ng-template>
+
+                <!-- <nz-range-picker
+              *ngSwitchCase="'dateRange'"
+              [class]="col.classes"
+              (ngOnChange)="onDateRangeChange($event, col.key)"
+            >
+            </nz-range-picker> -->
+              </ng-container>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="col.type === 'action'">
+            {{ col.title }}
+          </ng-container>
+        </th>
+      </ng-container>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let row of data">
+      <td *ngFor="let col of columns">
+        <ng-container *ngIf="!col.type || col.type === 'text'">
+          <span
+            [style]="{ 'max-width': col.width }"
+            class="text-ellipsis"
+            nz-tooltip
+            [nzTooltipTitle]="row[col.key]"
+          >
+            {{ row[col.key] }}
+          </span>
+        </ng-container>
+
+        <ng-container *ngIf="col.type === 'tag'">
+          <div class="d-flex justify-content-center">
+            <nz-tag
+              nz-tooltip
+              [nzTooltipTitle]="getTagLabel(col, row)"
+              [nzColor]="getTagColor(col, row)"
+            >
+              {{ getTagLabel(col, row) }}
+            </nz-tag>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="col.type === 'date'">
+          {{ row[col.key] | date : "dd/MM/yyyy HH:mm:ss" }}
+        </ng-container>
+
+        <ng-container *ngIf="col.type === 'action'">
+          <ng-container
+            *ngTemplateOutlet="actionTemplate; context: { $implicit: row }"
+          >
+          </ng-container>
+        </ng-container>
+      </td>
+    </tr>
+  </tbody>
+</nz-table>
+<div class="d-flex gap-3 align-items-center justify-content-end mt-3">
+  <div style="font-size: 14px">
+    Tổng số: <span class="text-primary fw-bold">{{ total }}</span>
+  </div>
+  <nz-pagination
+    [nzPageIndex]="pageIndex"
+    [nzPageSize]="pageSize"
+    [nzTotal]="total"
+    [nzShowSizeChanger]="true"
+    [nzPageSizeOptions]="[10, 30, 50, 100, 500]"
+    (nzPageIndexChange)="pageIndexChange.emit($event)"
+    (nzPageSizeChange)="pageSizeChange.emit($event)"
+  >
+  </nz-pagination>
+</div>
