@@ -7,7 +7,8 @@ export const deviceCheckColumns: TableColumn[] = [
         key: 'index',
         title: 'STT',
         searchable: false,
-        width: '58px'
+        width: '58px',
+        classes: 'text-center'
     },
     {
         key: 'action',
@@ -75,7 +76,7 @@ export const deviceCheckColumns: TableColumn[] = [
         key: 'imei',
         title: 'Số IMEI',
         searchable: true,
-        width: '200px',
+        width: '150px',
         filter: {
             type: 'input'
         }
