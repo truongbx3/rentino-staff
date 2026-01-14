@@ -18,6 +18,26 @@
     padding: 0px 24px !important;
   }
 
+  .ant-table {
+    height: 100%;
+  }
+
+  .ant-table-container {
+    height: 70vh;
+  }
+
+  .ant-table-header {
+    height: 80px;
+  }
+
+  .ant-table-header tr th {
+    height: 80px !important;
+  }
+
+  .ant-table-body {
+    max-height: calc(100% - 80px) !important;
+  }
+
   .ant-table.ant-table-bordered
     > .ant-table-container
     > .ant-table-body
@@ -144,6 +164,17 @@
     border-top: none !important;
   }
 
+  .ant-table tfoot > tr > td,
+  .ant-table tfoot > tr > th,
+  .ant-table-tbody > tr:not(.ant-table-measure-now) > td {
+    height: 45px !important;
+    padding: 0 10px !important;
+  }
+
+  .ant-table-thead > tr > th {
+    padding: 8px 10px 10px 10px !important;
+  }
+
   .ant-table.ant-table-bordered > .ant-table-container {
     border: 1px solid var(--border-color) !important;
     border-radius: 16px;
@@ -153,9 +184,15 @@
   .ant-table-tbody > tr:last-child > td {
     border-bottom: none !important;
   }
+  .ant-table-measure-now {
+    height: 0 !important;
+    visibility: hidden;
+  }
 
-  .ant-table-body .ant-table-measure-now > .nz-disable-td.ng-star-inserted {
-    border-bottom: none !important;
+  .ant-table-measure-now > td {
+    height: 0 !important;
+    padding: 0 !important;
+    border: none !important;
   }
 
   .ant-table-body {
@@ -163,21 +200,29 @@
     scrollbar-color: #c1c1c1 transparent;
   }
 
-  .ant-table-body::-webkit-scrollbar {
-    width: 6px;
+  td.ant-table-cell-fix-left,
+  .ant-table-cell-fix-right {
+    background-color: var(--bg-primary) !important;
   }
 
-  .ant-table-body::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: 6px;
-  }
+  .ant-table-content {
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
 
-  .ant-table-body::-webkit-scrollbar-track {
-    background: transparent;
-  }
+    &::-webkit-scrollbar-track {
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+    }
 
-  .ant-table-body::-webkit-scrollbar-button {
-    display: none;
+    &::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
+
+      &:hover {
+        background: var(--primary-color);
+      }
+    }
   }
 
   .nz-table-hide-scrollbar {
