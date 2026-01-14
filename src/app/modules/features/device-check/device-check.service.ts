@@ -42,6 +42,10 @@ export class DeviceCheckService {
         return this.http.post(`${this.baseUrl}/devicePrice/search`, payload);
     }
 
+    getModelOptions(params?: any): Observable<any> {
+        return this.http.get(`${this.baseUrl}/devicePrice/getModel`, { params });
+    }
+
     getDeviceDetail(id: number): Observable<any> {
         const params = new HttpParams().set('ids', id.toString());
         return this.http.get(`${this.contextPath}/findByIds`, { params });

@@ -43,6 +43,7 @@ export class DeviceAddUpdateAdvancedComponent {
     accessoryOptions = accessoryOptions;
     modelItems = modelItems;
     devicesOptions: any[] = [];
+    modelOptions: any[] = [];
 
     rejectedQuestionIndex: number | null = null;
     rejectedQuestionKey: string | null = null;
@@ -119,6 +120,15 @@ export class DeviceAddUpdateAdvancedComponent {
                 this.calcPercent();
                 this.mappedQuestions();
                 this.initAdditionalChecksForm();
+            }),
+            concatMap(() =>
+                this.deviceCheckService.getModelOptions()
+            ),
+            tap(res => {
+                this.modelOptions = (res?.data || res?.data?.content || []).map((item: any) => ({
+                    label: item,
+                    value: item
+                }));
             }),
             concatMap(() => {
                 if (this.deviceId) {
@@ -203,12 +213,17 @@ export class DeviceAddUpdateAdvancedComponent {
             }),
             tap((response) => {
                 if (response?.code === '00' && response.data?.length > 0) {
-                    const device = response.data[0];
+                    const data = response.data[0];
+                    const device = {
+                        ...data,
+                        model: data.model.toUpperCase()
+                    };
 
                     this.loadDeviceCheckDetail(device.transactionId);
 
                     this.deviceForm.patchValue(device);
                     this.videoSrc = device.videoUrl || null;
+                    
                 }
             }),
             finalize(() => this.loading.hide())
