@@ -10,7 +10,8 @@ export interface TableColumn {
         name?: string;
         options?: any[]
         format?: string;
-    }
+    },
+    isSort?: boolean;
 }
 
 export interface SearchCondition {

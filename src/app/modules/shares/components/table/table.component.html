@@ -12,10 +12,28 @@
             class="text-center"
             [nzWidth]="col.width || '150px'"
             [nzLeft]="col.type === 'action'"
+            [class.sortable]="col.isSort"
+            (click)="onSort(col)"
           >
             <ng-container *ngIf="col.type !== 'action'">
               <div class="th-wrapper">
-                <span>{{ col.title }}</span>
+                <span class="d-flex justify-content-center gap-2">
+                  {{ col.title }}
+                  <ng-container *ngIf="col.isSort">
+                    <i
+                      class="bi bi-arrow-down-up"
+                      *ngIf="getSortDirection(col.key) === null"
+                    ></i>
+                    <i
+                      class="bi bi-caret-up-fill"
+                      *ngIf="getSortDirection(col.key) === 'ASC'"
+                    ></i>
+                    <i
+                      class="bi bi-caret-down-fill"
+                      *ngIf="getSortDirection(col.key) === 'DESC'"
+                    ></i>
+                  </ng-container>
+                </span>
 
                 <ng-container
                   [ngSwitch]="col.filter?.type"
@@ -96,8 +114,14 @@
             </div>
           </ng-container>
 
+          <ng-container *ngIf="col.type === 'number'">
+            <div class="text-end">
+              {{ row[col.key] || 0 | number: "1.0-2" }}
+            </div>
+          </ng-container>
+
           <ng-container *ngIf="col.type === 'date'">
-            {{ row[col.key] | date : "dd/MM/yyyy HH:mm:ss" }}
+            {{ row[col.key] | date: "dd/MM/yyyy HH:mm:ss" }}
           </ng-container>
 
           <ng-container *ngIf="col.type === 'action'">

@@ -12,8 +12,9 @@ import { SharesModule } from './modules/shares/shares.module';
 import { NZ_I18N, vi_VN } from 'ng-zorro-antd/i18n';
 import { registerLocaleData } from '@angular/common';
 import vi from '@angular/common/locales/vi';
-import { ThemeService } from './core/services/theme.service';
+import { LOCALE_ID } from '@angular/core';
 registerLocaleData(vi);
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -29,9 +30,8 @@ registerLocaleData(vi);
     SharesModule
   ],
   providers: [
-    {
-      provide: NZ_I18N, useValue: vi_VN,
-    },
+    { provide: LOCALE_ID, useValue: 'vi-VN' },
+    { provide: NZ_I18N, useValue: vi_VN },
   ],
   bootstrap: [AppComponent]
 })

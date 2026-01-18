@@ -1,10 +1,13 @@
 import { Component, EventEmitter, Input, OnChanges, Output, TemplateRef } from '@angular/core';
 import { SearchCondition, TableColumn } from '../../models/table-column.model';
+
+type SortDirection = 'ASC' | 'DESC' | null;
 @Component({
   selector: 'app-table-custom',
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss']
 })
+
 
 export class TableCustomComponent {
   @Input() pageIndex = 1;
@@ -22,7 +25,45 @@ export class TableCustomComponent {
 
   private lastSearchSnapshot = '';
 
-  triggerSearch(): void {
+  defaultSort = {
+    fieldName: 'updatedDate',
+    sort: 'DESC' as const
+  };
+
+  sortFields: Array<{
+    fieldName: string;
+    sort: SortDirection;
+  }> = [];
+
+
+  onSort(col: TableColumn): void {
+    if (!col.isSort) return;
+
+    const index = this.sortFields.findIndex(
+      s => s.fieldName === col.key
+    );
+
+    if (index === -1) {
+      this.sortFields.push({
+        fieldName: col.key,
+        sort: 'ASC'
+      });
+    }
+
+    else if (this.sortFields[index].sort === 'ASC') {
+      this.sortFields[index].sort = 'DESC';
+    }
+
+    else {
+      this.sortFields.splice(index, 1);
+    }
+
+    this.triggerSearch(true);
+  }
+
+
+
+  triggerSearch(force = false): void {
     const conditions: SearchCondition[] = [];
 
     this.columns.forEach(col => {
@@ -36,7 +77,7 @@ export class TableCustomComponent {
           operator: 'EQUAL',
           property: col.key,
           propertyType: 'date',
-          value: value ? new Date(value).getTime() : value
+          value: new Date(value).getTime()
         });
         return;
       }
@@ -61,9 +102,7 @@ export class TableCustomComponent {
 
     const snapshot = JSON.stringify(conditions);
 
-    if (snapshot === this.lastSearchSnapshot) {
-      return;
-    }
+    if (!force && snapshot === this.lastSearchSnapshot) return;
 
     this.lastSearchSnapshot = snapshot;
 
@@ -71,17 +110,14 @@ export class TableCustomComponent {
       page: 0,
       size: this.pageSize,
       lsCondition: conditions,
-      sortField: [
-        {
-          fieldName: 'updatedDate',
-          sort: 'DESC'
-        }
-      ]
+      sortField:
+        this.sortFields.length > 0
+          ? this.sortFields
+          : [this.defaultSort]
     };
 
     this.search.emit(payload);
   }
-
 
   getTagLabel(col: TableColumn, row: any): string {
     const value = row[col.key];
@@ -107,4 +143,14 @@ export class TableCustomComponent {
     return option?.color ?? 'default';
   }
 
+  getSortDirection(field: string): 'ASC' | 'DESC' | null {
+    return this.sortFields.find(s => s.fieldName === field)?.sort ?? null;
+  }
+
+  getSortIndex(field: string): number | null {
+    const index = this.sortFields.findIndex(
+      s => s.fieldName === field
+    );
+    return index === -1 ? null : index;
+  }
 }
