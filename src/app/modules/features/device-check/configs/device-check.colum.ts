@@ -38,7 +38,7 @@ export const deviceCheckColumns: TableColumn[] = [
         key: 'osVersion',
         title: 'Phiên bản OS',
         searchable: true,
-        width: '180px',
+        width: '150px',
         filter: {
             type: 'input'
         }
@@ -47,10 +47,10 @@ export const deviceCheckColumns: TableColumn[] = [
         key: 'totalRam',
         title: 'RAM',
         searchable: true,
-        width: '150px',
+        width: '120px',
         filter: {
             type: 'input'
-        }
+        },
     },
     {
         key: 'storage',
@@ -59,7 +59,7 @@ export const deviceCheckColumns: TableColumn[] = [
         width: '150px',
         filter: {
             type: 'input'
-        }
+        },
     },
     {
         key: 'finalSummary',
@@ -93,23 +93,32 @@ export const deviceCheckColumns: TableColumn[] = [
         }
     },
     {
+        key: 'price',
+        title: 'Giá thánh',
+        type: 'number',
+        width: '150px',
+        isSort: true
+    },
+    {
         key: 'createdDate',
         title: 'Ngày tạo',
         type: 'date',
         searchable: true,
-        width: '250px',
+        width: '200px',
         filter: {
             type: 'date_picker'
-        }
+        },
+        isSort: true
     },
     {
         key: 'updatedDate',
         title: 'Ngày cập nhật',
         type: 'date',
         searchable: true,
-        width: '250px',
+        width: '200px',
         filter: {
             type: 'date_picker'
-        }
+        },
+        isSort: true
     }
 ]
