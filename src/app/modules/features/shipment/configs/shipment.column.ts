@@ -1,4 +1,4 @@
-import { TableColumn } from 'src/app/modules/shares/models/table-column.model';
+﻿import { TableColumn } from 'src/app/modules/shares/models/table-column.model';
 
 export const shipmentColumns: TableColumn[] = [
   {

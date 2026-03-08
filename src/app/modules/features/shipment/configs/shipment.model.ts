@@ -1,4 +1,4 @@
-export interface ShipmentModel {
+﻿export interface ShipmentModel {
   id: number;
   trackingNumber: string;
   carrierCode: string;
