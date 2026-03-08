@@ -25,9 +25,9 @@ export class TableCustomComponent {
 
   private lastSearchSnapshot = '';
 
-  defaultSort = {
+  @Input() defaultSort: { fieldName: string; sort: 'ASC' | 'DESC' } = {
     fieldName: 'updatedDate',
-    sort: 'DESC' as const
+    sort: 'DESC'
   };
 
   sortFields: Array<{
@@ -82,7 +82,7 @@ export class TableCustomComponent {
         return;
       }
 
-      if (col.type === 'select') {
+      if (col.filter?.type === 'select') {
         conditions.push({
           operator: 'EQUAL',
           property: col.key,
@@ -122,13 +122,16 @@ export class TableCustomComponent {
   getTagLabel(col: TableColumn, row: any): string {
     const value = row[col.key];
 
-    if (!value || !col.filter?.options?.length) {
+    if (value === null || value === undefined || value === '') {
       return 'Chưa cập nhật';
     }
 
-    const option = col.filter.options?.find(opt => opt.value === value);
+    if (!col.filter?.options?.length) {
+      return value;
+    }
 
-    return option?.label ?? 'Chưa cập nhật';
+    const option = col.filter.options?.find(opt => opt.value === value);
+    return option?.label ?? value;
   }
 
   getTagColor(col: TableColumn, row: any): string {

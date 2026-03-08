@@ -43,6 +43,17 @@
           <i class="bi bi-phone fs-5"></i>
           <div *ngIf="!isCollapsed">Danh sách thiết bị</div>
         </li>
+        <li
+          style="color: var(--text-primary); cursor: pointer"
+          class="d-flex align-items-center gap-3 menu-item"
+          [class]="isCollapsed ? 'justify-content-center' : ''"
+          nz-menu-item
+          [routerLink]="['/shipment']"
+          routerLinkActive="ant-menu-item-selected"
+        >
+          <i class="bi bi-truck fs-5"></i>
+          <div *ngIf="!isCollapsed">Danh sách Shipment</div>
+        </li>
       </ul>
       <div
         class="sidebar-footer d-flex flex-column gap-3 align-items-center justify-content-end"

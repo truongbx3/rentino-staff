@@ -24,6 +24,10 @@ const routes: Routes = [
       {
         path: 'device-check',
         loadChildren: () => import('./modules/features/device-check/device-check.module').then(m => m.DeviceCheckModule)
+      },
+      {
+        path: 'shipment',
+        loadChildren: () => import('./modules/features/shipment/shipment.module').then(m => m.ShipmentModule)
       }
     ]
   },

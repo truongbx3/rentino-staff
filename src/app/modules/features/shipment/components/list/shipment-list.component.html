@@ -1,0 +1,25 @@
+<app-breadcrumb></app-breadcrumb>
+<div class="list-toolbar my-3">
+  <h3 style="color: var(--text-primary)" class="fw-bold">Danh sách Shipment</h3>
+</div>
+
+<app-table-custom
+  [columns]="columns"
+  [data]="shipments"
+  [pageIndex]="pageIndex"
+  [pageSize]="pageSize"
+  [total]="total"
+  [defaultSort]="defaultSort"
+  (search)="onSearch($event)"
+  [actionTemplate]="actionTpl"
+  (pageIndexChange)="onPageIndexChange($event)"
+  (pageSizeChange)="onPageSizeChange($event)">
+</app-table-custom>
+
+<ng-template #actionTpl let-row>
+  <div class="d-flex justify-content-around">
+    <span nz-tooltip nzTooltipTitle="Chi tiết" class="cursor-pointer primary p-2 fs-6">
+      <i class="bi bi-eye"></i>
+    </span>
+  </div>
+</ng-template>
