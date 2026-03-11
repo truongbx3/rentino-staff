@@ -1,0 +1,67 @@
+<nz-card [nzTitle]="'Danh mục cấu hình máy / Giá'" [nzExtra]="extraTemplate">
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="onAdd()">
+      <i class="bi bi-plus me-1"></i> Thêm mới
+    </button>
+  </ng-template>
+  <app-table-custom [columns]="columns" [data]="devicePrices" [total]="total" [pageIndex]="pageIndex"
+    [pageSize]="pageSize" [defaultSort]="defaultSort" [actionTemplate]="action" [scrollY]="'calc(100vh - 340px)'"
+    (search)="onSearch($event)" (pageIndexChange)="onPageIndexChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)">
+    <ng-template #action let-row>
+      <div class="d-flex align-items-center justify-content-center gap-3">
+        <span nz-tooltip nzTooltipTitle="Cấu hình chi tiết giá" class="action-icon text-primary cursor-pointer"
+          (click)="onConfig(row)">
+          <span nz-icon nzType="setting"></span>
+        </span>
+        <span class="action-icon cursor-pointer" style="color: #1890ff" nz-tooltip nzTooltipTitle="Chỉnh sửa"
+          (click)="onEdit(row)">
+          <span nz-icon nzType="edit"></span>
+        </span>
+        <span class="action-icon cursor-pointer" style="color: #ff4d4f" nz-tooltip nzTooltipTitle="Xóa" nz-popconfirm
+          nzPopconfirmTitle="Bạn có chắc chắn muốn xóa?" (nzOnConfirm)="onDelete(row)">
+          <span nz-icon nzType="delete"></span>
+        </span>
+      </div>
+    </ng-template>
+  </app-table-custom>
+</nz-card>
+
+<nz-modal [(nzVisible)]="isVisible"
+  [nzTitle]="isEditing ? 'Sửa thông tin Giá / Thiết bị' : 'Thêm thông tin Giá / Thiết bị'" (nzOnCancel)="handleCancel()"
+  (nzOnOk)="handleOk()" [nzOkLoading]="isConfirmLoading">
+  <ng-container *nzModalContent>
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label>Mã thiết bị <span class="text-danger">*</span></label>
+          <input nz-input formControlName="deviceCode" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Tên thiết bị <span class="text-danger">*</span></label>
+          <input nz-input formControlName="deviceName" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Loại <span class="text-danger">*</span></label>
+          <input nz-input formControlName="type" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Dòng máy <span class="text-danger">*</span></label>
+          <input nz-input formControlName="model" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Dung lượng (Storage) <span class="text-danger">*</span></label>
+          <input nz-input formControlName="storage" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>RAM (Total RAM) <span class="text-danger">*</span></label>
+          <input nz-input formControlName="totalRam" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Loại câu hỏi (Question Type)</label>
+          <input nz-input formControlName="questionType" />
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

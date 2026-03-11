@@ -106,11 +106,15 @@ export class DeviceCheckService {
         return this.http.get(`${this.contextPath}/getTransaction`);
     }
 
-    getAllQuestions(type: string): Observable<any> {
-        return this.http.get(`${this.allQuestionsUrl}/getQuestion`, {
-            params: {
-                type: type
-            }
-        });
+    getDeviceStatuses(): Observable<any> {
+        return this.http.get(`${this.contextPath}/getStatus`);
+    }
+
+    getAllQuestions(type: string, transactionId?: string): Observable<any> {
+        const params: any = { type };
+        if (transactionId) {
+            params['transactionId'] = transactionId;
+        }
+        return this.http.get(`${this.allQuestionsUrl}/getQuestion`, { params });
     }
 }

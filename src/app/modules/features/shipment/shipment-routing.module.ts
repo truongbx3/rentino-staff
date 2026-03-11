@@ -1,4 +1,4 @@
-﻿import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ShipmentListComponent } from './components/list/shipment-list.component';
 
@@ -6,7 +6,7 @@ const routes: Routes = [
   {
     path: '',
     data: {
-      breadcrumb: 'Quản lý Shipment',
+      breadcrumb: 'Danh sách vận chuyển',
       breadcrumbIcon: 'bi-truck'
     },
     children: [

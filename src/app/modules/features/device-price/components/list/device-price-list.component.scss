@@ -1,0 +1,9 @@
+::ng-deep .ant-popover-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  
+  button {
+    margin: 0 !important;
+  }
+}

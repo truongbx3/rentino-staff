@@ -1,10 +1,11 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ShipmentModel } from '../../configs/shipment.model';
 import { ShipmentService } from '../../shipment.service';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { finalize } from 'rxjs/operators';
 import { TableColumn } from 'src/app/modules/shares/models/table-column.model';
 import { shipmentColumns } from '../../configs/shipment.column';
+import { NzMessageService } from 'ng-zorro-antd/message';
 
 @Component({
   selector: 'app-shipment-list',
@@ -23,7 +24,8 @@ export class ShipmentListComponent implements OnInit {
 
   constructor(
     private shipmentService: ShipmentService,
-    private loading: LoadingService
+    private loading: LoadingService,
+    private message: NzMessageService
   ) {}
 
   ngOnInit(): void {
@@ -32,11 +34,17 @@ export class ShipmentListComponent implements OnInit {
   }
 
   loadStatuses(): void {
+    const colorMap: Record<string, string> = {
+      received: 'green',
+      sent: 'blue',
+      cancel: 'red'
+    };
     this.shipmentService.getStatuses().subscribe(res => {
       const statuses: any[] = res.data || res || [];
       const options = statuses.map((s: any) => ({
         label: s.value ?? s,
-        value: s.status ?? s.value ?? s
+        value: s.status ?? s.value ?? s,
+        color: colorMap[s.status] ?? 'default'
       }));
       const statusCol = this.columns.find(c => c.key === 'status');
       if (statusCol && statusCol.filter) {
@@ -80,8 +88,7 @@ export class ShipmentListComponent implements OnInit {
     this.lastSearchPayload = {
       ...payload,
       page: 0,
-      size: this.pageSize,
-      sortField: [{ fieldName: 'createdDate', sort: 'DESC' }]
+      size: this.pageSize
     };
     this.getAllList(this.lastSearchPayload);
   }
@@ -101,5 +108,21 @@ export class ShipmentListComponent implements OnInit {
       ? { ...this.lastSearchPayload, size, page: 0 }
       : this.buildPayload();
     this.getAllList(payload);
+  }
+
+  onReceive(row: any): void {
+    this.loading.show();
+    this.shipmentService.receiveShipment(row.trackingNumber).pipe(
+      finalize(() => this.loading.hide())
+    ).subscribe({
+      next: () => {
+        this.message.success('Cập nhật trạng thái thành công!');
+        this.getAllList(this.lastSearchPayload || this.buildPayload());
+      },
+      error: (err) => {
+        const errMsg = err?.error?.message || err?.message || 'Có lỗi xảy ra, vui lòng thử lại!';
+        this.message.error(errMsg);
+      }
+    });
   }
 }

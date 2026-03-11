@@ -1,68 +1,31 @@
 <div class="table-container">
-  <nz-table
-    [nzData]="data"
-    nzBordered
-    nzShowPagination="false"
-    [nzScroll]="{ x: '1200px' }"
-  >
+  <nz-table [nzData]="data" nzBordered nzShowPagination="false"
+    [nzScroll]="{ x: scrollX ?? undefined, y: scrollY ?? undefined }">
     <thead>
       <tr>
         <ng-container *ngFor="let col of columns">
-          <th
-            class="text-center"
-            [nzWidth]="col.width || '150px'"
-            [nzLeft]="col.type === 'action'"
-            [class.sortable]="col.isSort"
-            (click)="onSort(col)"
-          >
+          <th class="text-center" [nzWidth]="col.width || '150px'" [nzLeft]="col.type === 'action'"
+            [class.sortable]="col.isSort" (click)="onSort(col)">
             <ng-container *ngIf="col.type !== 'action'">
               <div class="th-wrapper">
                 <span class="d-flex justify-content-center gap-2">
                   {{ col.title }}
                   <ng-container *ngIf="col.isSort">
-                    <i
-                      class="bi bi-arrow-down-up"
-                      *ngIf="getSortDirection(col.key) === null"
-                    ></i>
-                    <i
-                      class="bi bi-caret-up-fill"
-                      *ngIf="getSortDirection(col.key) === 'ASC'"
-                    ></i>
-                    <i
-                      class="bi bi-caret-down-fill"
-                      *ngIf="getSortDirection(col.key) === 'DESC'"
-                    ></i>
+                    <i class="bi bi-arrow-down-up" *ngIf="getSortDirection(col.key) === null"></i>
+                    <i class="bi bi-caret-up-fill" *ngIf="getSortDirection(col.key) === 'ASC'"></i>
+                    <i class="bi bi-caret-down-fill" *ngIf="getSortDirection(col.key) === 'DESC'"></i>
                   </ng-container>
                 </span>
 
-                <ng-container
-                  [ngSwitch]="col.filter?.type"
-                  *ngIf="col.searchable"
-                >
-                  <nz-select
-                    *ngSwitchCase="'select'"
-                    nzAllowClear
-                    [nzPlaceHolder]="col.placeholder || 'Chọn'"
-                    [(ngModel)]="searchValues[col.key]"
-                    (ngModelChange)="triggerSearch()"
-                    [nzOptions]="col.filter?.options || []"
-                  >
+                <ng-container [ngSwitch]="col.filter?.type" *ngIf="col.searchable">
+                  <nz-select *ngSwitchCase="'select'" nzAllowClear [nzPlaceHolder]="col.placeholder || 'Chọn'"
+                    [(ngModel)]="searchValues[col.key]" (ngModelChange)="triggerSearch()"
+                    [nzOptions]="col.filter?.options || []">
                   </nz-select>
-                  <nz-input-group
-                    *ngSwitchCase="'input'"
-                    class="search-box"
-                    [nzPrefix]="suffixIconSearch"
-                  >
-                    <input
-                      class="search-input"
-                      nz-input
-                      nzAllowClear
-                      [class]="col.classes"
-                      [placeholder]="col.placeholder || 'Tìm kiếm...'"
-                      [(ngModel)]="searchValues[col.key]"
-                      (blur)="triggerSearch()"
-                      (keyup.enter)="triggerSearch()"
-                    />
+                  <nz-input-group *ngSwitchCase="'input'" class="search-box" [nzPrefix]="suffixIconSearch">
+                    <input class="search-input" nz-input nzAllowClear [class]="col.classes"
+                      [placeholder]="col.placeholder || 'Tìm kiếm...'" [(ngModel)]="searchValues[col.key]"
+                      (blur)="triggerSearch()" (keyup.enter)="triggerSearch()" />
                   </nz-input-group>
                   <ng-template #suffixIconSearch>
                     <i class="bi bi-search text-muted fs-6"></i>
@@ -86,29 +49,16 @@
     </thead>
     <tbody>
       <tr *ngFor="let row of data">
-        <td
-          *ngFor="let col of columns"
-          [class]="col.classes"
-          [nzLeft]="col.type === 'action'"
-        >
+        <td *ngFor="let col of columns" [class]="col.classes" [nzLeft]="col.type === 'action'">
           <ng-container *ngIf="!col.type || col.type === 'text'">
-            <span
-              [style]="{ 'max-width': col.width }"
-              class="text-ellipsis"
-              nz-tooltip
-              [nzTooltipTitle]="row[col.key]"
-            >
+            <span [style]="{ 'max-width': col.width }" class="text-ellipsis" nz-tooltip [nzTooltipTitle]="row[col.key]">
               {{ row[col.key] }}
             </span>
           </ng-container>
 
           <ng-container *ngIf="col.type === 'tag'">
-            <div class="d-flex justify-content-center">
-              <nz-tag
-                nz-tooltip
-                [nzTooltipTitle]="getTagLabel(col, row)"
-                [nzColor]="getTagColor(col, row)"
-              >
+            <div class="d-flex justify-content-start">
+              <nz-tag nz-tooltip [nzTooltipTitle]="getTagLabel(col, row)" [nzColor]="getTagColor(col, row)">
                 {{ getTagLabel(col, row) }}
               </nz-tag>
             </div>
@@ -125,9 +75,7 @@
           </ng-container>
 
           <ng-container *ngIf="col.type === 'action'">
-            <ng-container
-              *ngTemplateOutlet="actionTemplate; context: { $implicit: row }"
-            >
+            <ng-container *ngTemplateOutlet="actionTemplate; context: { $implicit: row }">
             </ng-container>
           </ng-container>
         </td>
@@ -139,14 +87,8 @@
   <div style="font-size: 14px">
     Tổng số: <span class="text-primary fw-bold">{{ total }}</span>
   </div>
-  <nz-pagination
-    [nzPageIndex]="pageIndex"
-    [nzPageSize]="pageSize"
-    [nzTotal]="total"
-    [nzShowSizeChanger]="true"
-    [nzPageSizeOptions]="[10, 30, 50, 100, 500]"
-    (nzPageIndexChange)="pageIndexChange.emit($event)"
-    (nzPageSizeChange)="pageSizeChange.emit($event)"
-  >
+  <nz-pagination [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzTotal]="total" [nzShowSizeChanger]="true"
+    [nzPageSizeOptions]="[10, 30, 50, 100, 500]" (nzPageIndexChange)="pageIndexChange.emit($event)"
+    (nzPageSizeChange)="pageSizeChange.emit($event)">
   </nz-pagination>
 </div>

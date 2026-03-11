@@ -1,4 +1,4 @@
-﻿import { TableColumn } from 'src/app/modules/shares/models/table-column.model';
+import { TableColumn } from 'src/app/modules/shares/models/table-column.model';
 
 export const shipmentColumns: TableColumn[] = [
   {
@@ -25,27 +25,9 @@ export const shipmentColumns: TableColumn[] = [
   },
   {
     key: 'carrierCode',
-    title: 'Carrier',
+    title: 'DV vận chuyển',
     searchable: true,
-    width: '120px',
-    filter: {
-      type: 'input'
-    }
-  },
-  {
-    key: 'senderName',
-    title: 'Người gửi',
-    searchable: true,
-    width: '180px',
-    filter: {
-      type: 'input'
-    }
-  },
-  {
-    key: 'receiverName',
-    title: 'Người nhận',
-    searchable: true,
-    width: '180px',
+    width: '160px',
     filter: {
       type: 'input'
     }
@@ -83,6 +65,31 @@ export const shipmentColumns: TableColumn[] = [
     filter: {
       type: 'select',
       options: []
+    }
+  },
+  {
+    key: 'createdDate',
+    title: 'Ngày nhận',
+    type: 'date',
+    width: '180px',
+    isSort: true
+  },
+  {
+    key: 'senderName',
+    title: 'Người gửi',
+    searchable: true,
+    width: '180px',
+    filter: {
+      type: 'input'
+    }
+  },
+  {
+    key: 'receiverName',
+    title: 'Người nhận',
+    searchable: true,
+    width: '180px',
+    filter: {
+      type: 'input'
     }
   }
 ];

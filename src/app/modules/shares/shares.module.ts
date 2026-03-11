@@ -12,7 +12,7 @@ import { NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzMessageModule } from 'ng-zorro-antd/message'; 
+import { NzMessageModule } from 'ng-zorro-antd/message';
 import { NzTableModule } from 'ng-zorro-antd/table';
 
 import { NzDividerModule } from 'ng-zorro-antd/divider';
@@ -93,6 +93,11 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
     NzResultModule,
     NzProgressModule,
     NzDescriptionsModule,
+    NzIconModule,
+    NzToolTipModule,
+    NzTableModule,
+    NzBreadCrumbModule,
+    NzDropDownModule,
     SwitchCustomComponent,
     SingleSelectComponent,
     CustomCheckboxComponent,

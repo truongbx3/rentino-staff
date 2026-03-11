@@ -52,7 +52,18 @@
           routerLinkActive="ant-menu-item-selected"
         >
           <i class="bi bi-truck fs-5"></i>
-          <div *ngIf="!isCollapsed">Danh sách Shipment</div>
+          <div *ngIf="!isCollapsed">Danh sách vận chuyển</div>
+        </li>
+        <li
+          style="color: var(--text-primary); cursor: pointer"
+          class="d-flex align-items-center gap-3 menu-item"
+          [class]="isCollapsed ? 'justify-content-center' : ''"
+          nz-menu-item
+          [routerLink]="['/device-price']"
+          routerLinkActive="ant-menu-item-selected"
+        >
+          <i class="bi bi-tag fs-5"></i>
+          <div *ngIf="!isCollapsed">Giá / Cấu hình thiết bị</div>
         </li>
       </ul>
       <div

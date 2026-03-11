@@ -16,6 +16,8 @@ export class TableCustomComponent {
   @Input() columns: any[] = [];
   @Input() data: any[] = [];
   @Input() actionTemplate: TemplateRef<any> | null = null;
+  @Input() scrollX: string | null = '1200px';
+  @Input() scrollY: string | null = 'calc(100vh - 370px)';
 
   @Output() search = new EventEmitter<any>();
   @Output() pageIndexChange = new EventEmitter<number>();

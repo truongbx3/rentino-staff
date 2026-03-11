@@ -1,0 +1,62 @@
+<nz-card>
+  <div class="page-header mb-4 d-flex align-items-center gap-3">
+    <button nz-button nzType="default" (click)="goBack()">
+      <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </button>
+    <h5 class="m-0">Cấu hình chi tiết giá thiết bị: <strong>{{ deviceCode }}</strong></h5>
+  </div>
+
+  <div class="mb-3 d-flex justify-content-between align-items-center">
+    <h6 class="m-0">Danh sách giá theo ngày</h6>
+    <button nz-button nzType="primary" (click)="onAdd()">
+      <i class="bi bi-plus me-1"></i> Thêm cấu hình
+    </button>
+  </div>
+
+  <app-table-custom [columns]="columns" [data]="devicePriceDetails" [total]="total" [pageIndex]="pageIndex"
+    [pageSize]="pageSize" [actionTemplate]="action" [scrollX]="null" [scrollY]="'calc(100vh - 340px)'"
+    (pageIndexChange)="onPageIndexChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+    <ng-template #action let-row>
+      <div class="d-flex align-items-center justify-content-center gap-3">
+        <span class="action-icon cursor-pointer" style="color: #1890ff" nz-tooltip nzTooltipTitle="Chỉnh sửa"
+          (click)="onEdit(row)">
+          <span nz-icon nzType="edit"></span>
+        </span>
+        <span class="action-icon cursor-pointer" style="color: #ff4d4f" nz-tooltip nzTooltipTitle="Xóa" nz-popconfirm
+          nzPopconfirmTitle="Bạn có chắc chắn muốn xóa cấu hình này?" (nzOnConfirm)="onDelete(row)">
+          <span nz-icon nzType="delete"></span>
+        </span>
+      </div>
+    </ng-template>
+  </app-table-custom>
+</nz-card>
+
+<!-- Modal thêm/sửa cấu hình -->
+<nz-modal [(nzVisible)]="isFormVisible" [nzTitle]="isEditing ? 'Sửa cấu hình' : 'Thêm cấu hình mới'"
+  (nzOnCancel)="handleFormCancel()" (nzOnOk)="handleFormOk()" [nzOkLoading]="isConfirmLoading">
+  <ng-container *nzModalContent>
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label>Loại <span class="text-danger">*</span></label>
+          <nz-select formControlName="type" class="w-100" nzPlaceHolder="Chọn loại">
+            <nz-option *ngFor="let t of availableTypes" [nzValue]="t" [nzLabel]="t"></nz-option>
+          </nz-select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Giá (Price) <span class="text-danger">*</span></label>
+          <nz-input-number formControlName="price" class="w-100" [nzMin]="0"></nz-input-number>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Từ ngày (From Date)</label>
+          <nz-date-picker formControlName="fromDate" class="w-100"></nz-date-picker>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Đến ngày (To Date)</label>
+          <nz-date-picker formControlName="toDate" class="w-100"></nz-date-picker>
+        </div>
+      </div>
+
+    </form>
+  </ng-container>
+</nz-modal>

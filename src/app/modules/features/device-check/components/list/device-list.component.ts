@@ -34,8 +34,41 @@ export class DeviceListComponent {
   modelItems = modelItems;
   viewMode: 'grid' | 'list' = 'grid';
 
+  // Color map for each status code (API does not return color)
+  private readonly statusColorMap: Record<string, string> = {
+    'processing': 'blue',
+    'wait_approve': 'orange',
+    'cust_approve': 'cyan',
+    'approve': 'green',
+    'vcm_approve': 'purple',
+    'checking': 'gold',
+    'verified': 'lime',
+    'sent_vcm': 'geekblue',
+  };
+
   ngOnInit(): void {
+    this.loadStatusOptions();
     this.getAllList();
+  }
+
+  private loadStatusOptions(): void {
+    this.deviceCheckService.getDeviceStatuses().subscribe({
+      next: (res: any) => {
+        if (res?.data?.length) {
+          const options = res.data.map((item: any) => ({
+            label: item.value,
+            value: item.status,
+            color: this.statusColorMap[item.status] || 'default'
+          }));
+          // Update the status column's filter options dynamically
+          const statusCol = this.columns.find(c => c.key === 'status');
+          if (statusCol?.filter) {
+            statusCol.filter.options = options;
+          }
+        }
+      },
+      error: () => { /* keep existing static options as fallback */ }
+    });
   }
 
   getAllList(payload?: any) {
@@ -93,17 +126,6 @@ export class DeviceListComponent {
 
   onAddUpdate(id?: number): void {
     this.router.navigateByUrl(id ? `/device-check/edit/${id}` : '/device-check/add');
-    // const modalRef = this.modalService.create({
-    //   nzTitle: !!id ? 'Chỉnh sửa thiết bị' : 'Thêm thiết bị mới',
-    //   nzContent: DeviceAddUpdateAdvancedComponent,
-    //   // nzContent: DeviceAddUpdateComponent,
-    //   nzWidth: '70vw',
-    //   nzComponentParams: {
-    //     deviceId: id,
-    //     onRefresh: () => this.getAllList()
-    //   },
-    //   nzFooter: null
-    // });
   }
 
   buildPayload() {

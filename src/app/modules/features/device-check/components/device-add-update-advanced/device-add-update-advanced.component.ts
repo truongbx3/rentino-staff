@@ -105,21 +105,10 @@ export class DeviceAddUpdateAdvancedComponent {
         }
     }
 
-    private async loadApis(): Promise<any> {
+    private loadApis(): void {
         this.deviceCheckService.getTransactionId().pipe(
             tap((res: any) => {
                 this.transactionID = res.data;
-            }),
-            concatMap(() =>
-                this.deviceCheckService.getAllQuestions('MOBILE_WEB')
-            ),
-            tap(res => {
-                this.questions = res?.data || res?.data?.content || [];
-                this.totalSteps = this.questions.length + 2;
-
-                this.calcPercent();
-                this.mappedQuestions();
-                this.initAdditionalChecksForm();
             }),
             concatMap(() =>
                 this.deviceCheckService.getModelOptions()
@@ -130,12 +119,42 @@ export class DeviceAddUpdateAdvancedComponent {
                     value: item
                 }));
             }),
+            // If edit mode: load device detail first to get its transactionId
             concatMap(() => {
                 if (this.deviceId) {
-                    return this.loadDeviceDetail(this.deviceId);
+                    this.loading.show();
+                    return this.deviceCheckService.getDeviceDetail(this.deviceId).pipe(
+                        tap((response) => {
+                            if (response?.code === '00' && response.data?.length > 0) {
+                                const data = response.data[0];
+                                const device = { ...data, model: data.model.toUpperCase() };
+                                // Use the device's existing transactionId
+                                if (device.transactionId) {
+                                    this.transactionID = device.transactionId;
+                                }
+                                this.deviceForm.patchValue(device);
+                                this.videoSrc = device.videoUrl || null;
+                            }
+                        }),
+                        finalize(() => this.loading.hide())
+                    );
                 }
-
-                return EMPTY;
+                return of(null);
+            }),
+            // getAllQuestions now uses the transactionId from findByIds (edit) or getTransaction (add)
+            concatMap(() =>
+                this.deviceCheckService.getAllQuestions('MOBILE', this.transactionID)
+            ),
+            tap(res => {
+                this.questions = res?.data || res?.data?.content || [];
+                this.totalSteps = this.questions.length + 2;
+                this.calcPercent();
+                this.mappedQuestions();
+                this.initAdditionalChecksForm();
+                // Load check detail after form has been initialized
+                if (this.isEditMode && this.transactionID) {
+                    this.loadDeviceCheckDetail(this.transactionID);
+                }
             })
         ).subscribe({
             error: err => console.error(err)
@@ -223,7 +242,7 @@ export class DeviceAddUpdateAdvancedComponent {
 
                     this.deviceForm.patchValue(device);
                     this.videoSrc = device.videoUrl || null;
-                    
+
                 }
             }),
             finalize(() => this.loading.hide())

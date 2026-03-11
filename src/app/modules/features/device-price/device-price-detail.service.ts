@@ -6,23 +6,21 @@ import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root'
 })
-export class ShipmentService {
+export class DevicePriceDetailService {
   private readonly baseUrl = environment.apiUrl + environment.contextPath;
-  private readonly contextPath = `${this.baseUrl}/shipment`;
+  private readonly contextPath = `${this.baseUrl}/devicePriceDetail`;
 
   constructor(private http: HttpClient) {}
 
-  searchShipments(payload: any): Observable<any> {
+  searchDevicePriceDetails(payload: any): Observable<any> {
     return this.http.post(`${this.contextPath}/search`, payload);
   }
 
-  getStatuses(): Observable<any> {
-    return this.http.get(`${this.contextPath}/statuses`);
+  saveDevicePriceDetail(payload: any): Observable<any> {
+    return this.http.post(`${this.contextPath}/create-update`, payload);
   }
 
-  receiveShipment(trackingNumber: string): Observable<any> {
-    return this.http.post(`${this.contextPath}/receiveShipment`, null, {
-      params: { trackingNumber }
-    });
+  deleteDevicePriceDetail(ids: any[]): Observable<any> {
+    return this.http.post(`${this.contextPath}/deleteByIds`, ids);
   }
 }
