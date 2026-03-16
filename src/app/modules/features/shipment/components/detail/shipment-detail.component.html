@@ -1,0 +1,69 @@
+<app-breadcrumb></app-breadcrumb>
+
+<!-- Summary card -->
+<div class="summary-card my-3" *ngIf="shipmentInfo">
+    <div class="summary-title">
+        <span nz-icon nzType="info-circle" style="color: #1890ff;"></span>
+        <span>Thông tin chung đơn hàng</span>
+    </div>
+    <div class="summary-body">
+        <div class="summary-item">
+            <span class="summary-label">Mã vận đơn</span>
+            <span class="summary-value fw-bold" style="color: #1890ff;">{{ trackingNumber }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Trạng thái</span>
+            <nz-tag [nzColor]="getStatusColor(shipmentInfo.status)">{{ getStatusLabel(shipmentInfo.status) }}</nz-tag>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Người nhận</span>
+            <span class="summary-value">{{ shipmentInfo.receiverName || '—' }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Ngày nhận</span>
+            <span class="summary-value">{{ (shipmentInfo.createdDate | date:'dd/MM/yyyy HH:mm') || '—' }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Tổng thiết bị</span>
+            <span class="summary-value highlight">{{ shipmentInfo.total ?? total }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">DV vận chuyển</span>
+            <span class="summary-value">{{ shipmentInfo.carrierCode || '—' }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Người gửi</span>
+            <span class="summary-value">{{ shipmentInfo.senderName || '—' }}</span>
+        </div>
+    </div>
+</div>
+
+<app-table-custom [columns]="columns" [data]="devices" [pageIndex]="pageIndex" [pageSize]="pageSize" [total]="total"
+    [actionTemplate]="actionTpl" (search)="onSearch($event)" (pageIndexChange)="onPageIndexChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)">
+</app-table-custom>
+
+<ng-template #actionTpl let-row>
+    <div class="d-flex align-items-center justify-content-center gap-3">
+        <!-- Icon Nhân viên chỉnh sửa: active khi vcm_approve hoặc verified, disabled khi sent_vcm -->
+        <span
+            class="action-icon"
+            [class.cursor-pointer]="row.status === 'vcm_approve' || row.status === 'verified'"
+            [class.action-icon-disabled]="row.status !== 'vcm_approve' && row.status !== 'verified'"
+            [style.color]="(row.status === 'vcm_approve' || row.status === 'verified') ? '#722ed1' : '#bbb'"
+            nz-tooltip nzTooltipTitle="Nhân viên chỉnh sửa"
+            (click)="(row.status === 'vcm_approve' || row.status === 'verified') && onAddUpdate(row.id)">
+            <i class="fa-solid fa-user-pen"></i>
+        </span>
+        <!-- Icon Gửi Xác nhận: active khi verified, disabled khi vcm_approve hoặc sent_vcm -->
+        <span
+            class="action-icon"
+            [class.cursor-pointer]="row.status === 'verified'"
+            [class.action-icon-disabled]="row.status !== 'verified'"
+            [style.color]="row.status === 'verified' ? '#52c41a' : '#bbb'"
+            nz-tooltip nzTooltipTitle="Gửi Xác nhận"
+            (click)="row.status === 'verified' && onApproveRevaluate(row.transactionId)">
+            <i class="bi bi-send-check-fill"></i>
+        </span>
+    </div>
+</ng-template>

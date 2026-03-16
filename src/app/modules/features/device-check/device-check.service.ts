@@ -81,6 +81,16 @@ export class DeviceCheckService {
         return this.http.post(`${this.contextPath}/save`, payload);
     }
 
+    staffSaveWithShipment(payload: any): Observable<any> {
+        return this.http.post(`${this.contextPath}/staffSaveWithShipment`, payload);
+    }
+
+    approveRevaluate(transactionId: string): Observable<any> {
+        return this.http.post(`${this.contextPath}/approve-revaluate`, null, {
+            params: { transaction: transactionId }
+        });
+    }
+
     saveCheckDeviceInfor(payload: {
         functionChecks: { item: string; value: boolean }[];
         mirrorChecks: { item: string; value: string }[];

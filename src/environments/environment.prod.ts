@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
 
-  apiUrl: 'https://tnmgroup.vn',
+  apiUrl: 'http://72.60.111.172:8878',
   contextPath: '/api/v1/rentino',
   authContextPath: '/api/v1/auth',
 };

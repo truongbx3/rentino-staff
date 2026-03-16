@@ -6,6 +6,7 @@ import { finalize } from 'rxjs/operators';
 import { TableColumn } from 'src/app/modules/shares/models/table-column.model';
 import { shipmentColumns } from '../../configs/shipment.column';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-shipment-list',
@@ -25,8 +26,9 @@ export class ShipmentListComponent implements OnInit {
   constructor(
     private shipmentService: ShipmentService,
     private loading: LoadingService,
-    private message: NzMessageService
-  ) {}
+    private message: NzMessageService,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     this.loadStatuses();
@@ -123,6 +125,12 @@ export class ShipmentListComponent implements OnInit {
         const errMsg = err?.error?.message || err?.message || 'Có lỗi xảy ra, vui lòng thử lại!';
         this.message.error(errMsg);
       }
+    });
+  }
+  onViewDetail(row: any): void {
+    this.router.navigate(['/shipment/detail', row.trackingNumber], {
+      queryParams: { id: row.id },
+      state: { shipmentInfo: row }
     });
   }
 }

@@ -1,10 +1,10 @@
-<app-breadcrumb></app-breadcrumb>
+<app-breadcrumb [showBackButton]="false"></app-breadcrumb>
 <div class="list-toolbar my-3">
   <h3 style="color: var(--text-primary)" class="fw-bold">Danh sách thiết bị</h3>
-  <button nz-button nzType="primary" (click)="onAddUpdate()">
+  <!-- <button nz-button nzType="primary" (click)="onAddUpdate()">
     <i class="bi bi-plus-lg"></i>
     Thêm mới
-  </button>
+  </button> -->
 </div>
 <!-- 
 <div class="mb-3 w-100 d-flex justify-content-between">
@@ -137,14 +137,14 @@
 
 <ng-template #actionTpl let-row>
   <div class="d-flex align-items-center justify-content-center gap-3">
-    <span class="action-icon cursor-pointer" style="color: #1890ff" nz-tooltip nzTooltipTitle="Chỉnh sửa"
+    <!-- <span class="action-icon cursor-pointer" style="color: #1890ff" nz-tooltip nzTooltipTitle="Chỉnh sửa"
       (click)="onAddUpdate(row.id)">
       <span nz-icon nzType="edit"></span>
     </span>
     <span class="action-icon cursor-pointer" style="color: #ff4d4f" nz-tooltip nzTooltipTitle="Xóa" nz-popconfirm
       nzPopconfirmTitle="Bạn có chắc chắn muốn xóa?">
       <span nz-icon nzType="delete"></span>
-    </span>
+    </span> -->
   </div>
 </ng-template>
 <!-- <ng-template #noData>

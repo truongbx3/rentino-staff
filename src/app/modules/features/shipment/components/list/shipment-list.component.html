@@ -1,4 +1,4 @@
-<app-breadcrumb></app-breadcrumb>
+<app-breadcrumb [showBackButton]="false"></app-breadcrumb>
 <div class="list-toolbar my-3">
   <h3 style="color: var(--text-primary)" class="fw-bold">Danh sách vận chuyển</h3>
 </div>
@@ -10,7 +10,8 @@
 
 <ng-template #actionTpl let-row>
   <div class="d-flex align-items-center justify-content-center gap-3">
-    <span class="action-icon cursor-pointer" style="color: #1890ff" nz-tooltip nzTooltipTitle="Chi tiết">
+    <span class="action-icon cursor-pointer" style="color: #1890ff" nz-tooltip nzTooltipTitle="Chi tiết"
+      (click)="onViewDetail(row)">
       <span nz-icon nzType="eye"></span>
     </span>
     <span *ngIf="row.status === 'sent'" class="action-icon cursor-pointer" style="color: #52c41a" nz-tooltip

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ShipmentListComponent } from './components/list/shipment-list.component';
+import { ShipmentDetailComponent } from './components/detail/shipment-detail.component';
 
 const routes: Routes = [
   {
@@ -13,6 +14,11 @@ const routes: Routes = [
       {
         path: '',
         component: ShipmentListComponent
+      },
+      {
+        path: 'detail/:trackingNumber',
+        component: ShipmentDetailComponent,
+        data: { breadcrumb: 'Chi tiết vận đơn' }
       }
     ]
   }
@@ -22,4 +28,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class ShipmentRoutingModule {}
+export class ShipmentRoutingModule { }
