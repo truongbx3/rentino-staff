@@ -127,4 +127,9 @@ export class DeviceCheckService {
         }
         return this.http.get(`${this.allQuestionsUrl}/getQuestion`, { params });
     }
+
+    getQuestionsByDeviceCode(type: string, deviceCode: string): Observable<any> {
+        const params: any = { type, deviceCode };
+        return this.http.get(`${this.allQuestionsUrl}/getQuestionByDeviceCode`, { params });
+    }
 }

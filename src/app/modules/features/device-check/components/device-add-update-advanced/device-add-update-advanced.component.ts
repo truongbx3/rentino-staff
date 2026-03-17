@@ -32,6 +32,7 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
     fromShipmentDetail = false;
     deviceCurrentStatus: string = '';
     shipmentDetailUrl: string = '';
+    private suppressDeviceReload = false; // ngăn reload câu hỏi khi set giá trị ban đầu
 
     fileList: NzUploadFile[] = [];
     videoSrc: string | null = null;
@@ -103,20 +104,35 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
         return Object.keys(this.stepSummaries).map(Number).sort((a, b) => a - b);
     }
     ngOnInit(): void {
-        // If opened from shipment detail, override breadcrumb after NavigationEnd fires
+        // Lưu thông tin shipment vào sessionStorage để giữ qua refresh
         if (history.state?.fromShipmentDetail) {
-            const trackingNumber = history.state.trackingNumber;
-            const shipmentId = history.state.shipmentInfoId;
+            sessionStorage.setItem('shipmentBreadcrumb', JSON.stringify({
+                fromShipmentDetail: true,
+                trackingNumber: history.state.trackingNumber,
+                shipmentInfoId: history.state.shipmentInfoId
+            }));
+        }
+
+        // Đọc từ history.state hoặc sessionStorage (fallback khi refresh)
+        const savedState = sessionStorage.getItem('shipmentBreadcrumb');
+        const shipmentState = history.state?.fromShipmentDetail
+            ? history.state
+            : (savedState ? JSON.parse(savedState) : null);
+
+        if (shipmentState?.fromShipmentDetail) {
+            const trackingNumber = shipmentState.trackingNumber;
+            const shipmentId = shipmentState.shipmentInfoId;
             const detailUrl = shipmentId
                 ? `/shipment/detail/${trackingNumber}?id=${shipmentId}`
                 : `/shipment/detail/${trackingNumber}`;
+            // Tăng delay để đảm bảo breadcrumb route đã render xong
             setTimeout(() => {
                 this.breadcrumbService.setBreadcrumbs([
                     { label: 'Danh sách vận chuyển', url: '/shipment' },
                     { label: 'Chi tiết vận đơn', url: detailUrl },
                     { label: 'Chỉnh sửa thiết bị', url: '' }
                 ]);
-            }, 0);
+            }, 100);
         }
 
         // Must be set BEFORE loadApis() so iif(isEditMode) works correctly
@@ -125,10 +141,15 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
             this.isEditMode = true;
         }
 
-        this.fromShipmentDetail = !!history.state?.fromShipmentDetail;
+        // Lấy fromShipmentDetail từ state hoặc sessionStorage
+        const _saved = sessionStorage.getItem('shipmentBreadcrumb');
+        const _state = history.state?.fromShipmentDetail
+            ? history.state
+            : (_saved ? JSON.parse(_saved) : null);
+        this.fromShipmentDetail = !!_state?.fromShipmentDetail;
         if (this.fromShipmentDetail) {
-            const trackingNumber = history.state.trackingNumber;
-            const shipmentId = history.state.shipmentInfoId;
+            const trackingNumber = _state.trackingNumber;
+            const shipmentId = _state.shipmentInfoId;
             this.shipmentDetailUrl = shipmentId
                 ? `/shipment/detail/${trackingNumber}?id=${shipmentId}`
                 : `/shipment/detail/${trackingNumber}`;
@@ -175,6 +196,17 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
                                 this.deviceCurrentStatus = device.status || '';
                                 this.deviceForm.patchValue(device);
                                 this.videoSrc = device.videoUrl || null;
+
+                                // Load dropdown options cho model này, rồi re-patch deviceCode để dropdown hiển thị đúng
+                                if (device.model) {
+                                    this.onModelChange(device.model, () => {
+                                        // Tắt reload để patchValue không trigger reloadQuestionsByDeviceCode
+                                        this.suppressDeviceReload = true;
+                                        this.deviceForm.patchValue({ deviceCode: device.deviceCode });
+                                        // Bật lại sau 1 microtask
+                                        setTimeout(() => this.suppressDeviceReload = false, 0);
+                                    });
+                                }
                             }
                         }),
                         finalize(() => this.loading.hide())
@@ -214,6 +246,7 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
             id: [null],
             type: ['mobile', Validators.required],
             deviceName: [''],
+            realDeviceName: [''],
             deviceCode: [null, Validators.required],
             model: ['', Validators.required],
             osVersion: [''],
@@ -297,7 +330,19 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
 
         this.deviceCheckService.getDeviceCheckDetail(transId).subscribe((res: any) => {
             if (res?.code === '00' && Array.isArray(res.data)) {
-                res.data.forEach((check: any) => {
+                // Lọc bỏ bản ghi đã xóa mềm, rồi dedup: mỗi item chỉ giữ bản ghi mới nhất
+                const latestPerItem = new Map<string, any>();
+                res.data
+                    .filter((check: any) => check.isDeleted === 0)
+                    .forEach((check: any) => {
+                        const key = check.item;
+                        const existing = latestPerItem.get(key);
+                        if (!existing || check.createdDate > existing.createdDate) {
+                            latestPerItem.set(key, check);
+                        }
+                    });
+
+                latestPerItem.forEach((check) => {
                     const key = check.item;
                     const value = check.value;
 
@@ -314,7 +359,7 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
                     }
                 });
 
-                this.generateAllStepSummaries()
+                this.generateAllStepSummaries();
             }
             this.loading.hide();
         });
@@ -348,7 +393,7 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
         return map[key] || key.toUpperCase();
     }
 
-    onModelChange(value: string): void {
+    onModelChange(value: string, callback?: () => void): void {
         if (value) {
             const payload = {
                 page: 0,
@@ -379,12 +424,14 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
                             deviceName: item.deviceName
                         }
                     })) || [];
+                    // Gọi callback sau khi options đã load xong (dùng cho edit mode)
+                    if (callback) callback();
                 });
         }
     }
 
-    onDeviceChange(deviceName: string): void {
-        const selected = this.devicesOptions.find(d => d.value === deviceName);
+    onDeviceChange(deviceCode: string): void {
+        const selected = this.devicesOptions.find(d => d.value === deviceCode);
         if (!selected) return;
 
         this.deviceForm.patchValue({
@@ -392,6 +439,42 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
             storage: selected.infor?.storage || '',
             deviceName: selected.infor?.deviceName || ''
         });
+
+        // Reload câu hỏi theo deviceCode mới (bỏ qua nếu đang set giá trị ban đầu)
+        if (!this.suppressDeviceReload) {
+            this.reloadQuestionsByDeviceCode(deviceCode);
+        }
+    }
+
+    private reloadQuestionsByDeviceCode(deviceCode: string): void {
+        this.loading.show('Đang tải câu hỏi...');
+        this.deviceCheckService.getQuestionsByDeviceCode('MOBILE', deviceCode)
+            .pipe(finalize(() => this.loading.hide()))
+            .subscribe({
+                next: (res: any) => {
+                    const list = Array.isArray(res?.data) ? res.data : (res?.data?.content || []);
+                    this.questions = list.sort((a: any, b: any) => a.order - b.order);
+                    this.totalSteps = this.questions.length + 2;
+                    this.calcPercent();
+
+                    // Giữ lại đáp án cũ cho các câu hỏi vẫn tồn tại trong danh sách mới
+                    const oldValues = this.additionalChecksForms?.value || {};
+                    const newGroup: { [key: string]: any } = {};
+                    this.questions.forEach((q: any) => {
+                        // Nếu câu hỏi đã có đáp án trước đó → giữ lại, nếu không → null
+                        newGroup[q.code] = [oldValues[q.code] ?? null];
+                    });
+                    this.additionalChecksForms = this.fb.group(newGroup);
+
+                    // Rebuild left panel với câu hỏi mới + đáp án cũ (nếu có)
+                    this.generateAllStepSummaries();
+
+                    // Reset về bước 1 (thông tin thiết bị)
+                    this.current = 1;
+                    this.calcPercent();
+                },
+                error: (err: any) => console.error('Lỗi tải câu hỏi:', err)
+            });
     }
 
     private createFormData(file: any): FormData {
@@ -433,8 +516,8 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
                     typeCheck: "STAFF_CHECK",
                     videoUrl: fileResp?.data?.[0]?.pathName || this.deviceForm.value.videoUrl
                 };
-                // Dùng staffSaveWithShipment nếu từ màn vận đơn và status là vcm_approve
-                const useStaffSave = this.fromShipmentDetail && this.deviceCurrentStatus === 'vcm_approve';
+                // Dùng staffSaveWithShipment khi đến từ màn vận đơn (fromShipmentDetail được giữ qua sessionStorage)
+                const useStaffSave = this.fromShipmentDetail;
                 return useStaffSave
                     ? this.deviceCheckService.staffSaveWithShipment(devicePayload)
                     : this.deviceCheckService.saveDeviceInfor(devicePayload);

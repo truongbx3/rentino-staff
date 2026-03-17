@@ -195,7 +195,7 @@ export class ShipmentDetailComponent implements OnInit {
                         this.message.error(res?.message || 'Có lỗi xảy ra');
                     }
                 },
-                error: () => this.message.error('Gửi xác nhận thất bại')
+                error: () => { }
             });
     }
 }

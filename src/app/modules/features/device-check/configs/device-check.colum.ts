@@ -26,6 +26,15 @@ export const deviceCheckColumns: TableColumn[] = [
         }
     },
     {
+        key: 'realDeviceName',
+        title: 'Tên thực tế',
+        searchable: true,
+        width: '200px',
+        filter: {
+            type: 'input'
+        }
+    },
+    {
         key: 'model',
         title: 'Model',
         searchable: true,

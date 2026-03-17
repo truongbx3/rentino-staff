@@ -45,25 +45,43 @@
 
 <ng-template #actionTpl let-row>
     <div class="d-flex align-items-center justify-content-center gap-3">
-        <!-- Icon Nhân viên chỉnh sửa: active khi vcm_approve hoặc verified, disabled khi sent_vcm -->
-        <span
-            class="action-icon"
-            [class.cursor-pointer]="row.status === 'vcm_approve' || row.status === 'verified'"
-            [class.action-icon-disabled]="row.status !== 'vcm_approve' && row.status !== 'verified'"
-            [style.color]="(row.status === 'vcm_approve' || row.status === 'verified') ? '#722ed1' : '#bbb'"
-            nz-tooltip nzTooltipTitle="Nhân viên chỉnh sửa"
-            (click)="(row.status === 'vcm_approve' || row.status === 'verified') && onAddUpdate(row.id)">
-            <i class="fa-solid fa-user-pen"></i>
-        </span>
-        <!-- Icon Gửi Xác nhận: active khi verified, disabled khi vcm_approve hoặc sent_vcm -->
-        <span
-            class="action-icon"
-            [class.cursor-pointer]="row.status === 'verified'"
-            [class.action-icon-disabled]="row.status !== 'verified'"
-            [style.color]="row.status === 'verified' ? '#52c41a' : '#bbb'"
-            nz-tooltip nzTooltipTitle="Gửi Xác nhận"
-            (click)="row.status === 'verified' && onApproveRevaluate(row.transactionId)">
-            <i class="bi bi-send-check-fill"></i>
-        </span>
+        <!-- Guard: chỉ cho phép thao tác khi vận đơn ở trạng thái received -->
+        <ng-container *ngIf="shipmentInfo?.status === 'received'; else allDisabled">
+
+            <!-- Nhân viên xác nhận: hiển thị khi row.status là vcm_approve hoặc verified -->
+            <span
+                class="action-icon"
+                [class.cursor-pointer]="row.status === 'vcm_approve' || row.status === 'verified'"
+                [class.action-icon-disabled]="row.status !== 'vcm_approve' && row.status !== 'verified'"
+                [style.color]="(row.status === 'vcm_approve' || row.status === 'verified') ? '#722ed1' : '#bbb'"
+                nz-tooltip nzTooltipTitle="Nhân viên xác nhận"
+                (click)="(row.status === 'vcm_approve' || row.status === 'verified') && onAddUpdate(row.id)">
+                <i class="fa-solid fa-user-pen"></i>
+            </span>
+
+            <!-- Gửi xác nhận: active khi verified, disabled khi vcm_approve hoặc các status khác -->
+            <span
+                class="action-icon"
+                [class.cursor-pointer]="row.status === 'verified'"
+                [class.action-icon-disabled]="row.status !== 'verified'"
+                [style.color]="row.status === 'verified' ? '#52c41a' : '#bbb'"
+                nz-tooltip nzTooltipTitle="Gửi xác nhận"
+                (click)="row.status === 'verified' && onApproveRevaluate(row.transactionId)">
+                <i class="bi bi-send-check-fill"></i>
+            </span>
+
+        </ng-container>
+
+        <!-- Fallback: vận đơn không ở trạng thái received → disable toàn bộ -->
+        <ng-template #allDisabled>
+            <span class="action-icon action-icon-disabled" style="color: #bbb"
+                nz-tooltip nzTooltipTitle="Nhân viên xác nhận">
+                <i class="fa-solid fa-user-pen"></i>
+            </span>
+            <span class="action-icon action-icon-disabled" style="color: #bbb"
+                nz-tooltip nzTooltipTitle="Gửi xác nhận">
+                <i class="bi bi-send-check-fill"></i>
+            </span>
+        </ng-template>
     </div>
 </ng-template>

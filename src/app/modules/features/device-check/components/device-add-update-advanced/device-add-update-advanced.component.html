@@ -1,22 +1,11 @@
 <app-breadcrumb></app-breadcrumb>
 
 <div class="steps-header d-flex align-items-center gap-3 w-100">
-  <i
-    (click)="prev()"
-    nz-tooltip
-    nzTooltipTitle="Bước trước"
-    class="bi bi-box-arrow-in-left fs-3"
-    style="cursor: pointer"
-  ></i>
+  <i (click)="prev()" nz-tooltip nzTooltipTitle="Bước trước" class="bi bi-box-arrow-in-left fs-3"
+    style="cursor: pointer"></i>
   <div class="progress-container flex-grow-1">
-    <nz-progress
-      [nzPercent]="percent"
-      [nzSteps]="visibleSteps"
-      nzStrokeColor="#0091ea"
-      [nzStrokeWidth]="10"
-      [nzFormat]="formatStep"
-      [nzShowInfo]="true"
-    ></nz-progress>
+    <nz-progress [nzPercent]="percent" [nzSteps]="visibleSteps" nzStrokeColor="#0091ea" [nzStrokeWidth]="10"
+      [nzFormat]="formatStep" [nzShowInfo]="true"></nz-progress>
   </div>
 </div>
 
@@ -27,10 +16,7 @@
     <h5 class="mb-3 fw-bold">Kết quả ước tính</h5>
     <div class="summary-box">
       <ng-container *ngIf="getStepSummaryKeys().length > 0; else noData">
-        <div
-          *ngFor="let step of getStepSummaryKeys()"
-          [innerHTML]="stepSummaries[step]"
-        ></div>
+        <div *ngFor="let step of getStepSummaryKeys()" [innerHTML]="stepSummaries[step]"></div>
       </ng-container>
     </div>
 
@@ -53,19 +39,9 @@
               <nz-form-item class="mb-2">
                 <label class="w-100 text-muted mb-1">Loại thiết bị</label>
                 <nz-form-control>
-                  <nz-select
-                    formControlName="type"
-                    nzAllowClear
-                    nzPlaceHolder="Chọn loại thiết bị"
-                  >
-                    <nz-option
-                      nzValue="mobile"
-                      nzLabel="Điện thoại"
-                    ></nz-option>
-                    <nz-option
-                      nzValue="tablet"
-                      nzLabel="Máy tính bảng"
-                    ></nz-option>
+                  <nz-select formControlName="type" nzAllowClear nzPlaceHolder="Chọn loại thiết bị">
+                    <nz-option nzValue="mobile" nzLabel="Điện thoại"></nz-option>
+                    <nz-option nzValue="tablet" nzLabel="Máy tính bảng"></nz-option>
                     <nz-option nzValue="laptop" nzLabel="Laptop"></nz-option>
                   </nz-select>
                 </nz-form-control>
@@ -75,17 +51,21 @@
               <nz-form-item class="mb-2">
                 <label class="w-100 text-muted mb-1">Model</label>
                 <nz-form-control>
-                  <nz-select
-                    formControlName="model"
-                    nzAllowClear
-                    nzPlaceHolder="Chọn model"
-                    (ngModelChange)="onModelChange($event)"
-                  >
-                    <nz-option
-                      *ngFor="let opt of modelOptions"
-                      [nzValue]="opt.value"
-                      [nzLabel]="opt.label"
-                    ></nz-option>
+                  <nz-select formControlName="model" nzAllowClear nzPlaceHolder="Chọn model"
+                    (ngModelChange)="onModelChange($event)">
+                    <nz-option *ngFor="let opt of modelOptions" [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="24">
+              <nz-form-item class="mb-2">
+                <label class="w-100 text-muted mb-1">Mã thiết bị</label>
+                <nz-form-control>
+                  <nz-select formControlName="deviceCode" nzAllowClear nzShowSearch nzPlaceHolder="Chọn thiết bị"
+                    (ngModelChange)="onDeviceChange($event)">
+                    <nz-option *ngFor="let opt of devicesOptions" [nzValue]="opt.value"
+                      [nzLabel]="opt.label"></nz-option>
                   </nz-select>
                 </nz-form-control>
               </nz-form-item>
@@ -94,19 +74,9 @@
               <nz-form-item class="mb-2">
                 <label class="w-100 text-muted mb-1">Tên thiết bị</label>
                 <nz-form-control>
-                  <nz-select
-                    formControlName="deviceCode"
-                    nzAllowClear
-                    nzShowSearch
-                    nzPlaceHolder="Chọn thiết bị"
-                    (ngModelChange)="onDeviceChange($event)"
-                  >
-                    <nz-option
-                      *ngFor="let opt of devicesOptions"
-                      [nzValue]="opt.value"
-                      [nzLabel]="opt.label"
-                    ></nz-option>
-                  </nz-select>
+                  <nz-input-group>
+                    <input nz-input formControlName="realDeviceName" placeholder="Nhập tên thiết bị" />
+                  </nz-input-group>
                 </nz-form-control>
               </nz-form-item>
             </div>
@@ -115,11 +85,7 @@
                 <label class="w-100 text-muted mb-1">Phiên bản OS</label>
                 <nz-form-control class="m-0">
                   <nz-input-group>
-                    <input
-                      nz-input
-                      formControlName="osVersion"
-                      placeholder="Nhập phiên bản"
-                    />
+                    <input nz-input formControlName="osVersion" placeholder="Nhập phiên bản" />
                   </nz-input-group>
                 </nz-form-control>
               </nz-form-item>
@@ -128,15 +94,9 @@
               <nz-form-item>
                 <label class="w-100 text-white mb-1">Video</label>
                 <nz-form-control>
-                  <nz-upload
-                    *ngIf="!videoSrc"
-                    [nzBeforeUpload]="beforeUpload"
-                    [nzShowUploadList]="{ showRemoveIcon: true }"
-                    [nzFileList]="fileList"
-                    [nzAccept]="'video/*'"
-                    nzType="drag"
-                    (nzRemove)="handleRemove()"
-                  >
+                  <nz-upload *ngIf="!videoSrc" [nzBeforeUpload]="beforeUpload"
+                    [nzShowUploadList]="{ showRemoveIcon: true }" [nzFileList]="fileList" [nzAccept]="'video/*'"
+                    nzType="drag" (nzRemove)="handleRemove()">
                     <span class="ant-upload-drag-icon">
                       <i class="bi bi-upload fs-3"></i>
                     </span>
@@ -147,20 +107,9 @@
                       Chỉ hỗ trợ video, tối đa 100MB, 1 video/lần
                     </p>
                   </nz-upload>
-                  <div
-                    *ngIf="videoSrc"
-                    class="video-container"
-                    style="position: relative; display: inline-block"
-                  >
-                    <video
-                      [src]="videoSrc"
-                      controls
-                      width="100%"
-                      style="border-radius: 16px"
-                    ></video>
-                    <button
-                      (click)="handleRemove()"
-                      style="
+                  <div *ngIf="videoSrc" class="video-container" style="position: relative; display: inline-block">
+                    <video [src]="videoSrc" controls width="100%" style="border-radius: 16px"></video>
+                    <button (click)="handleRemove()" style="
                         position: absolute;
                         top: 8px;
                         right: 8px;
@@ -172,9 +121,7 @@
                         height: 30px;
                         cursor: pointer;
                         font-weight: bold;
-                      "
-                      title="Gỡ bỏ video"
-                    >
+                      " title="Gỡ bỏ video">
                       <i class="bi bi-trash3"></i>
                     </button>
                   </div>
@@ -184,38 +131,27 @@
           </form>
         </div>
 
-        <ng-container *ngFor="let q of questions">
-          <div *ngIf="current === q.order + 1">
+        <ng-container *ngFor="let q of questions; let i = index">
+          <div *ngIf="current === i + 2">
             <div class="step-title mb-3 text-muted">
               <h4 class="mb-2 fw-bold">
                 {{ q.title || q.code }}
               </h4>
               <span class="mb-2">{{ q.question }}</span>
             </div>
-            <ng-container
-              *ngIf="q.code === 'FUNCTION_WEB'; else NORMAL_QUESTION"
-            >
-              <form
-                class="step-function-list"
-                [formGroup]="functionChecksForms"
-              >
+            <ng-container *ngIf="q.code === 'FUNCTION_WEB'; else NORMAL_QUESTION">
+              <form class="step-function-list" [formGroup]="functionChecksForms">
                 <ng-container *ngFor="let item of switchItems; let i = index">
-                  <app-switch-custom
-                    *ngIf="canShowSwitch(i)"
-                    [title]="item.label"
-                    [description]="item.description"
-                    [formControlName]="item.key"
-                  ></app-switch-custom>
+                  <app-switch-custom *ngIf="canShowSwitch(i)" [title]="item.label" [description]="item.description"
+                    [formControlName]="item.key"></app-switch-custom>
                 </ng-container>
               </form>
             </ng-container>
 
             <ng-template #NORMAL_QUESTION>
               <form [formGroup]="additionalChecksForms">
-                <app-single-select
-                  [formControlName]="q.code"
-                  [options]="q.deviceQuestionAnswerDtos"
-                ></app-single-select>
+                <app-single-select [formControlName]="q.code"
+                  [options]="q.deviceQuestionAnswerDtos"></app-single-select>
               </form>
             </ng-template>
           </div>
@@ -225,17 +161,12 @@
           <ng-container *ngIf="resultCheck; else notChecked">
             <div class="result-card flex-column text-center mt-3">
               <h3 class="fw-bold">🎉 Chúc mừng!</h3>
-              <span class="mb-2"
-                >Thiết bị của bạn đã vượt qua tất cả các kiểm tra.</span
-              >
+              <span class="mb-2">Thiết bị của bạn đã vượt qua tất cả các kiểm tra.</span>
               <h3 class="fw-bold my-3">
                 {{ (resultCheck.deviceName || "").toUpperCase() }}
               </h3>
 
-              <nz-tag
-                class="mb-2"
-                [nzColor]="getTypeColor(resultCheck.finalSummary || null)"
-              >
+              <nz-tag class="mb-2" [nzColor]="getTypeColor(resultCheck.finalSummary || null)">
                 {{ getTypeLabel(resultCheck.finalSummary) }}
               </nz-tag>
 
@@ -245,7 +176,7 @@
 
               <h2 class="fw-bold mt-2" style="color: #0091ea">
                 {{
-                  resultCheck.price || 0 | currency : "VND" : "symbol" : "1.0-0"
+                resultCheck.price || 0 | currency : "VND" : "symbol" : "1.0-0"
                 }}
               </h2>
             </div>
@@ -267,9 +198,7 @@
       <ng-container *ngIf="isRejected">
         <div class="result-card text-center mt-3">
           <div style="font-size: 56px">😞</div>
-          <span class="fs-5"
-            >Xin lỗi! Chúng tôi không thể mua lại thiết bị này.</span
-          >
+          <span class="fs-5">Xin lỗi! Chúng tôi không thể mua lại thiết bị này.</span>
           <p class="text-muted mx-3">
             Do các vấn đề đã được báo cáo, chúng tôi không thể mua lại thiết bị.
             Bạn có thể mang đi tái chế hoặc giữ lại làm điện thoại dự phòng.
@@ -279,75 +208,40 @@
     </div>
 
     <div class="steps-action">
-      <button
-        nz-button
-        nzType="primary"
-        class="w-100"
-        (click)="next()"
-        [disabled]="!isCurrentStepValid()"
-        *ngIf="current < visibleSteps && !isRejected"
-      >
+      <button nz-button nzType="primary" class="w-100" (click)="next()" [disabled]="!isCurrentStepValid()"
+        *ngIf="current < visibleSteps && !isRejected">
         Tiếp theo
         <i class="bi bi-arrow-right ms-2"></i>
       </button>
 
-      <button
-        nz-button
-        nzType="primary"
-        nzSize="large"
-        class="w-100 gap-2"
-        (click)="submit()"
-        *ngIf="current === visibleSteps && !isRejected"
-      >
+      <button nz-button nzType="primary" nzSize="large" class="w-100 gap-2" (click)="submit()"
+        *ngIf="current === visibleSteps && !isRejected">
         <i class="bi bi-check-circle"></i>
         Hoàn tất
       </button>
 
-      <button
-        *ngIf="isRejected"
-        nz-button
-        nzType="default"
-        class="w-100 mb-2"
-        (click)="edit()"
-      >
+      <button *ngIf="isRejected" nz-button nzType="default" class="w-100 mb-2" (click)="edit()">
         <i class="bi bi-pen me-2"></i>
         Sửa
       </button>
 
       <div *ngIf="current === totalSteps && !isRejected">
         <div class="d-flex gap-2">
-          <button
-            *ngIf="current === totalSteps && !isRejected"
-            nz-button
-            nzType="default"
-            class="w-100 mb-2 gap-2"
-            (click)="cancel()"
-          >
+          <button *ngIf="current === totalSteps && !isRejected" nz-button nzType="default" class="w-100 mb-2 gap-2"
+            (click)="cancel()">
             <i class="bi bi-arrow-left"></i>
             Quay lại
           </button>
 
-          <button
-            *ngIf="current === totalSteps && !isRejected"
-            nz-button
-            nzType="primary"
-            class="w-100 mb-2 gap-2"
-            (click)="onApproveRevaluate()"
-            [disabled]="!this.resultCheck"
-          >
+          <button *ngIf="current === totalSteps && !isRejected" nz-button nzType="primary" class="w-100 mb-2 gap-2"
+            (click)="onApproveRevaluate()" [disabled]="!this.resultCheck">
             <i class="bi bi-send-check-fill"></i>
             Gửi Xác nhận
           </button>
         </div>
       </div>
 
-      <button
-        *ngIf="isRejected"
-        nz-button
-        nzType="primary"
-        class="w-100 gap-2"
-        (click)="startOver()"
-      >
+      <button *ngIf="isRejected" nz-button nzType="primary" class="w-100 gap-2" (click)="startOver()">
         <i class="bi bi-arrow-counterclockwise"></i>
         Bắt đầu lại
       </button>
@@ -363,18 +257,9 @@
           IMEI <span class="fw-bold text-danger">*</span>
         </label>
 
-        <nz-form-control
-          class="m-0"
-          [nzValidateStatus]="bankingInforForm.controls.imei"
-          [nzErrorTip]="imeiErrorTpl"
-        >
+        <nz-form-control class="m-0" [nzValidateStatus]="bankingInforForm.controls.imei" [nzErrorTip]="imeiErrorTpl">
           <nz-input-group>
-            <input
-              nz-input
-              formControlName="imei"
-              placeholder="Nhập IMEI"
-              maxlength="15"
-            />
+            <input nz-input formControlName="imei" placeholder="Nhập IMEI" maxlength="15" />
           </nz-input-group>
         </nz-form-control>
 
@@ -395,63 +280,39 @@
     </div>
     <div nz-col nzSpan="24">
       <nz-form-item>
-        <label style="color: var(--text-primary)" class="w-100 mb-1"
-          >Số tài khoản
+        <label style="color: var(--text-primary)" class="w-100 mb-1">Số tài khoản
           <span class="fw-bold text-danger">*</span>
         </label>
-        <nz-form-control
-          class="m-0"
-          nzErrorTip="Vui lòng nhập tài khoản"
-          [nzValidateStatus]="bankingInforForm.controls.bankingNumber"
-        >
+        <nz-form-control class="m-0" nzErrorTip="Vui lòng nhập tài khoản"
+          [nzValidateStatus]="bankingInforForm.controls.bankingNumber">
           <nz-input-group>
-            <input
-              nz-input
-              formControlName="bankingNumber"
-              placeholder="Nhập số tài khoản"
-            />
+            <input nz-input formControlName="bankingNumber" placeholder="Nhập số tài khoản" />
           </nz-input-group>
         </nz-form-control>
       </nz-form-item>
     </div>
     <div nz-col nzSpan="24">
       <nz-form-item>
-        <label style="color: var(--text-primary)" class="w-100 mb-1"
-          >Tên ngân hàng
+        <label style="color: var(--text-primary)" class="w-100 mb-1">Tên ngân hàng
           <span class="fw-bold text-danger">*</span>
         </label>
-        <nz-form-control
-          class="m-0"
-          nzErrorTip="Vui lòng nhập tên ngân hàng"
-          [nzValidateStatus]="bankingInforForm.controls.bankingName"
-        >
+        <nz-form-control class="m-0" nzErrorTip="Vui lòng nhập tên ngân hàng"
+          [nzValidateStatus]="bankingInforForm.controls.bankingName">
           <nz-input-group>
-            <input
-              nz-input
-              formControlName="bankingName"
-              placeholder="Nhập tên ngân hàng"
-            />
+            <input nz-input formControlName="bankingName" placeholder="Nhập tên ngân hàng" />
           </nz-input-group>
         </nz-form-control>
       </nz-form-item>
     </div>
     <div nz-col nzSpan="24">
       <nz-form-item>
-        <label style="color: var(--text-primary)" class="w-100 mb-1"
-          >Chủ tài khoản
+        <label style="color: var(--text-primary)" class="w-100 mb-1">Chủ tài khoản
           <span class="fw-bold text-danger">*</span>
         </label>
-        <nz-form-control
-          class="m-0"
-          nzErrorTip="Vui lòng nhập tên chủ tài khoản"
-          [nzValidateStatus]="bankingInforForm.controls.bankingUser"
-        >
+        <nz-form-control class="m-0" nzErrorTip="Vui lòng nhập tên chủ tài khoản"
+          [nzValidateStatus]="bankingInforForm.controls.bankingUser">
           <nz-input-group>
-            <input
-              nz-input
-              formControlName="bankingUser"
-              placeholder="Nhập tên chủ tài khoản"
-            />
+            <input nz-input formControlName="bankingUser" placeholder="Nhập tên chủ tài khoản" />
           </nz-input-group>
         </nz-form-control>
       </nz-form-item>
