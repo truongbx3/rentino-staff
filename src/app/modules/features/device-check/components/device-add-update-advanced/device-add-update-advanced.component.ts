@@ -32,7 +32,14 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
     fromShipmentDetail = false;
     deviceCurrentStatus: string = '';
     shipmentDetailUrl: string = '';
+    functionCheckResult: string | null = null;
+    deviceFinalSummary: string | null = null;
     private suppressDeviceReload = false; // ngăn reload câu hỏi khi set giá trị ban đầu
+
+    get isMobile2g(): boolean {
+        const model = this.deviceForm?.get('model')?.value;
+        return model?.toUpperCase() === 'MOBILE_2G';
+    }
 
     fileList: NzUploadFile[] = [];
     videoSrc: string | null = null;
@@ -194,8 +201,16 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
                                 }
                                 // Save current status for conditional API selection
                                 this.deviceCurrentStatus = device.status || '';
+                                this.functionCheckResult = device.functionCheck || null;
+                                this.deviceFinalSummary = data.finalSummary || null;
                                 this.deviceForm.patchValue(device);
                                 this.videoSrc = device.videoUrl || null;
+
+                                // For Mobile_2g: map finalSummary to osVersion display
+                                if (device.model?.toUpperCase() === 'MOBILE_2G' && this.deviceFinalSummary) {
+                                    const powerStatus = this.deviceFinalSummary === 'LOAI_1' ? 'Có lên nguồn' : 'Không lên nguồn';
+                                    this.deviceForm.patchValue({ osVersion: powerStatus });
+                                }
 
                                 // Load dropdown options cho model này, rồi re-patch deviceCode để dropdown hiển thị đúng
                                 if (device.model) {
@@ -215,9 +230,13 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
                 return of(null);
             }),
             // getAllQuestions now uses the transactionId from findByIds (edit) or getTransaction (add)
-            concatMap(() =>
-                this.deviceCheckService.getAllQuestions('MOBILE', this.transactionID)
-            ),
+            // Skip questions for Mobile_2g model
+            concatMap(() => {
+                if (this.isMobile2g) {
+                    return of({ data: [] });
+                }
+                return this.deviceCheckService.getAllQuestions('MOBILE', this.transactionID);
+            }),
             tap(res => {
                 this.questions = res?.data || res?.data?.content || [];
                 this.totalSteps = this.questions.length + 2;
@@ -250,6 +269,7 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
             deviceCode: [null, Validators.required],
             model: ['', Validators.required],
             osVersion: [''],
+            imei: [''],
             storage: [''],
             totalRam: [''],
             videoUrl: [null]
@@ -416,7 +436,7 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
                 }))
                 .subscribe(res => {
                     this.devicesOptions = res.data.content.map((item: any) => ({
-                        label: `${item.deviceName} - ${item.totalRam} - ${item.storage}`,
+                        label: [item.deviceName, item.totalRam, item.storage].filter(v => v != null && v !== '').join(' - '),
                         value: item.deviceCode,
                         infor: {
                             totalRam: item.totalRam,
@@ -447,6 +467,14 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
     }
 
     private reloadQuestionsByDeviceCode(deviceCode: string): void {
+        // Skip reload questions for Mobile_2g
+        if (this.isMobile2g) {
+            this.questions = [];
+            this.totalSteps = 2;
+            this.calcPercent();
+            this.initAdditionalChecksForm();
+            return;
+        }
         this.loading.show('Đang tải câu hỏi...');
         this.deviceCheckService.getQuestionsByDeviceCode('MOBILE', deviceCode)
             .pipe(finalize(() => this.loading.hide()))
@@ -510,12 +538,19 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
             of(null),
         ).pipe(
             concatMap((fileResp: any) => {
-                const devicePayload = {
-                    ...this.deviceForm.value,
+                const formValue = this.deviceForm.value;
+                const devicePayload: any = {
+                    ...formValue,
                     transactionId: this.transactionID,
                     typeCheck: "STAFF_CHECK",
-                    videoUrl: fileResp?.data?.[0]?.pathName || this.deviceForm.value.videoUrl
+                    videoUrl: fileResp?.data?.[0]?.pathName || formValue.videoUrl
                 };
+
+                // For MOBILE_2G: map power status to finalSummary, clear osVersion
+                if (this.isMobile2g) {
+                    devicePayload.finalSummary = formValue.osVersion === 'Có lên nguồn' ? 'LOAI_1' : 'LOAI_2';
+                    devicePayload.osVersion = null;
+                }
                 // Dùng staffSaveWithShipment khi đến từ màn vận đơn (fromShipmentDetail được giữ qua sessionStorage)
                 const useStaffSave = this.fromShipmentDetail;
                 return useStaffSave
@@ -529,7 +564,9 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
             }),
             concatMap((res) => {
                 this.message.success('Lưu kết quả kiểm tra thành công');
-                return this.deviceCheckService.checkDeviceStatus(this.transactionID);
+                return this.isMobile2g
+                    ? this.deviceCheckService.checkDevice2G(this.transactionID)
+                    : this.deviceCheckService.checkDeviceStatus(this.transactionID);
             }),
             finalize(() => {
                 this.loading.hide();
@@ -650,8 +687,10 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
         const hasFunctionError = functionChecks.some(fc => fc.value === false);
         if (hasFunctionError) {
             this.additionalChecksForms.get('FUNCTION_WEB')?.setValue('LOAI_3');
+            this.functionCheckResult = 'LOAI_3';
         } else {
             this.additionalChecksForms.get('FUNCTION_WEB')?.setValue('LOAI_1');
+            this.functionCheckResult = 'LOAI_1';
         }
 
         this.checkRejected();
@@ -695,7 +734,10 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
                 const question = this.questions[questionIndex];
                 const questionCode = question.code;
                 const questionTitle = question.title || questionCode;
-                const answerValue = this.additionalChecksForms.get(questionCode)?.value;
+                // FUNCTION_WEB: ưu tiên lấy từ functionCheckResult (API) nếu có
+                const answerValue = (questionCode === 'FUNCTION_WEB' && this.functionCheckResult)
+                    ? this.functionCheckResult
+                    : this.additionalChecksForms.get(questionCode)?.value;
 
                 let displayValue = '';
                 let statusClass = '';

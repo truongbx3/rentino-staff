@@ -34,10 +34,10 @@
             <h4 class="mb-2 fw-bold">Thông tin cơ bản</h4>
             <span class="mb-2"> Kiểm tra thông tin của thiết bị. </span>
           </div>
-          <form nz-row [nzGutter]="24" [formGroup]="deviceForm">
+          <form nz-row [nzGutter]="24" [formGroup]="deviceForm" class="horizontal-form">
             <div nz-col nzSpan="24">
               <nz-form-item class="mb-2">
-                <label class="w-100 text-muted mb-1">Loại thiết bị</label>
+                <label class="form-label text-muted">Loại thiết bị</label>
                 <nz-form-control>
                   <nz-select formControlName="type" nzAllowClear nzPlaceHolder="Chọn loại thiết bị">
                     <nz-option nzValue="mobile" nzLabel="Điện thoại"></nz-option>
@@ -49,7 +49,7 @@
             </div>
             <div nz-col nzSpan="24">
               <nz-form-item class="mb-2">
-                <label class="w-100 text-muted mb-1">Model</label>
+                <label class="form-label text-muted">Model</label>
                 <nz-form-control>
                   <nz-select formControlName="model" nzAllowClear nzPlaceHolder="Chọn model"
                     (ngModelChange)="onModelChange($event)">
@@ -60,7 +60,7 @@
             </div>
             <div nz-col nzSpan="24">
               <nz-form-item class="mb-2">
-                <label class="w-100 text-muted mb-1">Mã thiết bị</label>
+                <label class="form-label text-muted">Mã thiết bị</label>
                 <nz-form-control>
                   <nz-select formControlName="deviceCode" nzAllowClear nzShowSearch nzPlaceHolder="Chọn thiết bị"
                     (ngModelChange)="onDeviceChange($event)">
@@ -72,7 +72,7 @@
             </div>
             <div nz-col nzSpan="24">
               <nz-form-item class="mb-2">
-                <label class="w-100 text-muted mb-1">Tên thiết bị</label>
+                <label class="form-label text-muted">Tên thiết bị</label>
                 <nz-form-control>
                   <nz-input-group>
                     <input nz-input formControlName="realDeviceName" placeholder="Nhập tên thiết bị" />
@@ -81,18 +81,36 @@
               </nz-form-item>
             </div>
             <div nz-col nzSpan="24">
-              <nz-form-item>
-                <label class="w-100 text-muted mb-1">Phiên bản OS</label>
+              <nz-form-item class="mb-2">
+                <label class="form-label text-muted">{{ isMobile2g ? 'Lên nguồn' : 'Phiên bản OS' }}</label>
+                <nz-form-control class="m-0">
+                  <ng-container *ngIf="isMobile2g; else osVersionInput">
+                    <nz-select formControlName="osVersion" nzPlaceHolder="Chọn trạng thái">
+                      <nz-option nzValue="Có lên nguồn" nzLabel="Có lên nguồn"></nz-option>
+                      <nz-option nzValue="Không lên nguồn" nzLabel="Không lên nguồn"></nz-option>
+                    </nz-select>
+                  </ng-container>
+                  <ng-template #osVersionInput>
+                    <nz-input-group>
+                      <input nz-input formControlName="osVersion" placeholder="Nhập phiên bản" />
+                    </nz-input-group>
+                  </ng-template>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="24">
+              <nz-form-item class="mb-2">
+                <label class="form-label text-muted">IMEI</label>
                 <nz-form-control class="m-0">
                   <nz-input-group>
-                    <input nz-input formControlName="osVersion" placeholder="Nhập phiên bản" />
+                    <input nz-input formControlName="imei" placeholder="Nhập IMEI" />
                   </nz-input-group>
                 </nz-form-control>
               </nz-form-item>
             </div>
             <div nz-col nzSpan="24">
               <nz-form-item>
-                <label class="w-100 text-white mb-1">Video</label>
+                <label class="form-label text-muted">Video</label>
                 <nz-form-control>
                   <nz-upload *ngIf="!videoSrc" [nzBeforeUpload]="beforeUpload"
                     [nzShowUploadList]="{ showRemoveIcon: true }" [nzFileList]="fileList" [nzAccept]="'video/*'"

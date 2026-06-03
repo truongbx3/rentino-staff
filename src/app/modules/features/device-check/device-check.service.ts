@@ -101,7 +101,15 @@ export class DeviceCheckService {
     }
 
     checkDeviceStatus(transaction: string): Observable<any> {
-        return this.http.post(`${this.contextPath}/checkDeviceWeb`, null, {
+        return this.http.post(`${this.contextPath}/checkDevice`, null, {
+            params: {
+                transaction: transaction
+            }
+        });
+    }
+
+    checkDevice2G(transaction: string): Observable<any> {
+        return this.http.post(`${this.contextPath}/checkDevice2G`, null, {
             params: {
                 transaction: transaction
             }
