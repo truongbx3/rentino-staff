@@ -586,6 +586,7 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
             if (finalRes?.code === '00') {
                 this.message.success('Hoàn tất quy trình kiểm tra thiết bị');
                 this.resultCheck = finalRes.data;
+                this.deviceFinalSummary = finalRes.data?.finalSummary || null;
             }
         });
     }

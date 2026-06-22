@@ -17,6 +17,13 @@
     <div class="summary-box">
       <ng-container *ngIf="getStepSummaryKeys().length > 0; else noData">
         <div *ngFor="let step of getStepSummaryKeys()" [innerHTML]="stepSummaries[step]"></div>
+        <hr *ngIf="deviceFinalSummary" style="border-top: 2px dashed #e0e0e0; margin: 8px 0;">
+        <div *ngIf="deviceFinalSummary" class="d-flex gap-2 justify-content-between mb-2">
+          <span class="text-muted fw-bold">Tình trạng tổng thể</span>
+          <nz-tag [nzColor]="getTypeColor(deviceFinalSummary)">
+            {{ getTypeLabel(deviceFinalSummary) }}
+          </nz-tag>
+        </div>
       </ng-container>
     </div>
 
