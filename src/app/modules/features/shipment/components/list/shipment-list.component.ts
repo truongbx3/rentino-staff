@@ -23,6 +23,11 @@ export class ShipmentListComponent implements OnInit {
   total = 0;
   defaultSort = { fieldName: 'createdDate', sort: 'DESC' as const };
 
+  dateRange: Date[] = [];
+  selectedStatus: string | null = null;
+  statusOptions: Array<{ label: string; value: string; color?: string }> = [];
+  exporting = false;
+
   constructor(
     private shipmentService: ShipmentService,
     private loading: LoadingService,
@@ -31,8 +36,13 @@ export class ShipmentListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    const today = new Date();
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(today.getMonth() - 1);
+    this.dateRange = [oneMonthAgo, today];
+
     this.loadStatuses();
-    this.getAllList();
+    this.triggerTableSearch();
   }
 
   loadStatuses(): void {
@@ -48,6 +58,7 @@ export class ShipmentListComponent implements OnInit {
         value: s.status ?? s.value ?? s,
         color: colorMap[s.status] ?? 'default'
       }));
+      this.statusOptions = options;
       const statusCol = this.columns.find(c => c.key === 'status');
       if (statusCol && statusCol.filter) {
         statusCol.filter.options = options;
@@ -87,12 +98,166 @@ export class ShipmentListComponent implements OnInit {
 
   onSearch(payload: any) {
     this.pageIndex = 1;
+    
+    // Combine table filters with our card filters
+    const conditions: any[] = payload.lsCondition || [];
+    
+    if (this.selectedStatus && !conditions.some(c => c.property === 'status')) {
+      conditions.push({
+        property: 'status',
+        operator: 'EQUAL',
+        propertyType: 'string',
+        value: this.selectedStatus
+      });
+    }
+    
+    if (this.dateRange && this.dateRange[0] && !conditions.some(c => c.property === 'createdDate' && c.operator === 'GREATER_EQUAL')) {
+      conditions.push({
+        property: 'createdDate',
+        operator: 'GREATER_EQUAL',
+        propertyType: 'date',
+        value: this.formatDateForQuery(this.dateRange[0], 'start')
+      });
+    }
+    
+    if (this.dateRange && this.dateRange[1] && !conditions.some(c => c.property === 'createdDate' && c.operator === 'LOWER_EQUAL')) {
+      conditions.push({
+        property: 'createdDate',
+        operator: 'LOWER_EQUAL',
+        propertyType: 'date',
+        value: this.formatDateForQuery(this.dateRange[1], 'end')
+      });
+    }
+
     this.lastSearchPayload = {
       ...payload,
+      lsCondition: conditions,
       page: 0,
       size: this.pageSize
     };
     this.getAllList(this.lastSearchPayload);
+  }
+
+  onFilterChange() {
+    this.pageIndex = 1;
+    this.triggerTableSearch();
+  }
+
+  formatDateForQuery(date: Date, type: 'start' | 'end'): string {
+    const d = new Date(date);
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = d.getFullYear();
+    const time = type === 'start' ? '00:00' : '23:59';
+    return `${day}/${month}/${year} ${time}`;
+  }
+
+  triggerTableSearch() {
+    const conditions: any[] = [];
+
+    if (this.selectedStatus) {
+      conditions.push({
+        property: 'status',
+        operator: 'EQUAL',
+        propertyType: 'string',
+        value: this.selectedStatus
+      });
+    }
+
+    if (this.dateRange && this.dateRange[0]) {
+      conditions.push({
+        property: 'createdDate',
+        operator: 'GREATER_EQUAL',
+        propertyType: 'date',
+        value: this.formatDateForQuery(this.dateRange[0], 'start')
+      });
+    }
+
+    if (this.dateRange && this.dateRange[1]) {
+      conditions.push({
+        property: 'createdDate',
+        operator: 'LOWER_EQUAL',
+        propertyType: 'date',
+        value: this.formatDateForQuery(this.dateRange[1], 'end')
+      });
+    }
+
+    // Merge with table filters if any (e.g. from app-table-custom columns)
+    if (this.lastSearchPayload && this.lastSearchPayload.lsCondition) {
+      this.lastSearchPayload.lsCondition.forEach((cond: any) => {
+        if (cond.property !== 'status' && cond.property !== 'createdDate') {
+          conditions.push(cond);
+        }
+      });
+    }
+
+    const payload = {
+      page: this.pageIndex - 1,
+      size: this.pageSize,
+      lsCondition: conditions,
+      sortField: [this.defaultSort]
+    };
+
+    this.lastSearchPayload = payload;
+    this.getAllList(payload);
+  }
+
+  resetFilters() {
+    const today = new Date();
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(today.getMonth() - 1);
+    this.dateRange = [oneMonthAgo, today];
+    this.selectedStatus = null;
+    this.pageIndex = 1;
+    this.lastSearchPayload = null;
+    this.triggerTableSearch();
+  }
+
+  exportDevices() {
+    const req: any = {};
+    if (this.selectedStatus) {
+      req.shipmentStatus = this.selectedStatus;
+    }
+    if (this.dateRange && this.dateRange[0]) {
+      req.fromDate = this.dateRange[0];
+    }
+    if (this.dateRange && this.dateRange[1]) {
+      req.toDate = this.dateRange[1];
+    }
+
+    // Merge in conditions from table if they exist
+    if (this.lastSearchPayload && this.lastSearchPayload.lsCondition) {
+      this.lastSearchPayload.lsCondition.forEach((cond: any) => {
+        if (cond.property === 'trackingNumber') req.trackingNumber = cond.value;
+        if (cond.property === 'carrierCode') req.carrierCode = cond.value;
+        if (cond.property === 'receiverPhone') req.receiverPhone = cond.value;
+        if (cond.property === 'status' && !req.shipmentStatus) req.shipmentStatus = cond.value;
+      });
+    }
+
+    this.exporting = true;
+    this.loading.show();
+    this.shipmentService.exportDevices(req).pipe(
+      finalize(() => {
+        this.exporting = false;
+        this.loading.hide();
+      })
+    ).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `device_shipment_${new Date().getTime()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.message.success('Xuất file excel thành công!');
+      },
+      error: (err) => {
+        this.message.error('Có lỗi xảy ra khi xuất file!');
+      }
+    });
   }
 
   onPageIndexChange(page: number) {

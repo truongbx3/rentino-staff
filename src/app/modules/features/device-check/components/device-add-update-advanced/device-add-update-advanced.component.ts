@@ -11,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NzUploadFile } from 'ng-zorro-antd/upload';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { BreadcrumbService } from 'src/app/core/services/breadcrumb.service';
+import { ShipmentService } from '../../../shipment/shipment.service';
 
 @Component({
     selector: 'app-device-add-update-advanced',
@@ -34,6 +35,8 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
     shipmentDetailUrl: string = '';
     functionCheckResult: string | null = null;
     deviceFinalSummary: string | null = null;
+    vcmPrice: number | null = null;
+    vcmFinalSummary: string | null = null;
     private suppressDeviceReload = false; // ngăn reload câu hỏi khi set giá trị ban đầu
 
     get isMobile2g(): boolean {
@@ -68,7 +71,8 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
         private router: Router,
         private modal: NzModalService,
         private breadcrumbService: BreadcrumbService,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private shipmentService: ShipmentService
     ) { }
 
 
@@ -221,6 +225,23 @@ export class DeviceAddUpdateAdvancedComponent implements OnInit {
                                         // Bật lại sau 1 microtask
                                         setTimeout(() => this.suppressDeviceReload = false, 0);
                                     });
+                                }
+
+                                // Load VCM approve info nếu vào từ vận đơn
+                                if (this.fromShipmentDetail && device.transactionId) {
+                                    const savedBreadcrumb = sessionStorage.getItem('shipmentBreadcrumb');
+                                    const trackingNumber = savedBreadcrumb ? JSON.parse(savedBreadcrumb)?.trackingNumber : null;
+                                    if (trackingNumber) {
+                                        this.shipmentService.getDevicesByShipment(trackingNumber).subscribe((shipRes: any) => {
+                                            const matched = (shipRes?.data || []).find((item: any) =>
+                                                item.deviceInfoShipment?.transactionId === device.transactionId
+                                            );
+                                            if (matched?.approveDeviceInfoLog) {
+                                                this.vcmPrice = matched.approveDeviceInfoLog.price;
+                                                this.vcmFinalSummary = matched.approveDeviceInfoLog.finalSummary;
+                                            }
+                                        });
+                                    }
                                 }
                             }
                         }),

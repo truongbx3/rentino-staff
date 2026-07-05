@@ -35,6 +35,12 @@ export class ShipmentService {
     return this.http.post(`${this.deviceInfoUrl}/search-by-shipment`, body);
   }
 
+  exportDevices(payload: any): Observable<Blob> {
+    return this.http.post(`${this.contextPath}/export-by-shipment`, payload, {
+      responseType: 'blob'
+    });
+  }
+
   getShipmentByTrackingNumber(trackingNumber: string): Observable<any> {
     return this.http.get(`${this.contextPath}/getByTrackingNumber`, { params: { trackingNumber } });
   }

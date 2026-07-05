@@ -111,7 +111,8 @@ export class ShipmentDetailComponent implements OnInit {
                     this.devices = data.map((item: any, index: number) => ({
                         index: index + 1,
                         ...item.deviceInfoShipment,
-                        approveDeviceInfoLogs: item.approveDeviceInfoLogs || []
+                        vcmFinalSummary: item.approveDeviceInfoLog?.finalSummary || null,
+                        vcmPrice: item.approveDeviceInfoLog?.price || null
                     }));
                     this.total = this.devices.length;
                 },

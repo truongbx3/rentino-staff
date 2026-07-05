@@ -24,6 +24,20 @@
             {{ getTypeLabel(deviceFinalSummary) }}
           </nz-tag>
         </div>
+        <ng-container *ngIf="vcmPrice !== null || vcmFinalSummary">
+          <hr style="border-top: 2px solid #0091ea; margin: 8px 0;">
+          <div class="fw-bold mb-2" style="color: #0091ea; font-size: 13px;">Thông tin VCM thu mua</div>
+          <div *ngIf="vcmFinalSummary" class="d-flex gap-2 justify-content-between mb-2">
+            <span class="text-muted">Loại VCM thu mua</span>
+            <nz-tag [nzColor]="getTypeColor(vcmFinalSummary)">
+              {{ getTypeLabel(vcmFinalSummary) }}
+            </nz-tag>
+          </div>
+          <div *ngIf="vcmPrice !== null" class="d-flex gap-2 justify-content-between mb-2">
+            <span class="text-muted">Giá VCM thu mua</span>
+            <span class="fw-bold" style="color: #0091ea;">{{ vcmPrice | currency : 'VND' : 'symbol' : '1.0-0' }}</span>
+          </div>
+        </ng-container>
       </ng-container>
     </div>
 

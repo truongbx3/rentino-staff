@@ -187,4 +187,26 @@ export class DevicePriceListComponent implements OnInit {
       }
     });
   }
+
+  onExport(): void {
+    this.loading.show();
+    this.devicePriceService.exportDevicePrices().pipe(
+      finalize(() => this.loading.hide())
+    ).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `device_prices_${new Date().getTime()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.message.success('Xuất Excel thành công!');
+      },
+      error: (err) => {
+        this.message.error(err?.error?.message || err?.message || 'Có lỗi xảy ra khi xuất Excel.');
+      }
+    });
+  }
 }

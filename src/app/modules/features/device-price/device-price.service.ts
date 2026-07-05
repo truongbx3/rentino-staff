@@ -23,4 +23,8 @@ export class DevicePriceService {
   deleteDevicePrice(ids: any[]): Observable<any> {
     return this.http.post(`${this.contextPath}/deleteByIds`, ids);
   }
+
+  exportDevicePrices(): Observable<Blob> {
+    return this.http.get(`${this.contextPath}/export-excel`, { responseType: 'blob' });
+  }
 }

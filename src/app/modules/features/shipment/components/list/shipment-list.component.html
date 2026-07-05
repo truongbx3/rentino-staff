@@ -1,6 +1,32 @@
 <app-breadcrumb [showBackButton]="false"></app-breadcrumb>
 <div class="list-toolbar my-3">
-  <h3 style="color: var(--text-primary)" class="fw-bold">Danh sách vận chuyển</h3>
+  <h3 style="color: var(--text-primary)" class="fw-bold m-0">Danh sách vận chuyển</h3>
+</div>
+
+<!-- Beautiful premium filter card -->
+<div class="card p-3 mb-3" style="background: var(--bg-card, #fff); border: 1px solid var(--border-color, #f0f0f0); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+  <div class="row align-items-end g-3">
+    <div class="col-12 col-md-4">
+      <label class="form-label fw-bold mb-1" style="color: var(--text-secondary, #595959); font-size: 13px;">Khoảng ngày nhận</label>
+      <nz-range-picker [(ngModel)]="dateRange" (ngModelChange)="onFilterChange()" nzFormat="dd/MM/yyyy" style="width: 100%; border-radius: 6px;"></nz-range-picker>
+    </div>
+    
+    <div class="col-12 col-md-3">
+      <label class="form-label fw-bold mb-1" style="color: var(--text-secondary, #595959); font-size: 13px;">Trạng thái vận đơn</label>
+      <nz-select [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()" nzAllowClear nzPlaceHolder="Tất cả trạng thái" style="width: 100%; border-radius: 6px;">
+        <nz-option *ngFor="let opt of statusOptions" [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
+      </nz-select>
+    </div>
+    
+    <div class="col-12 col-md-5 d-flex gap-2">
+      <button nz-button nzType="default" (click)="resetFilters()" style="flex: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 6px; height: 35px;">
+        <span nz-icon nzType="redo"></span> Làm mới bộ lọc
+      </button>
+      <button nz-button nzType="primary" (click)="exportDevices()" [nzLoading]="exporting" style="flex: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 6px; height: 35px;">
+        <span nz-icon nzType="download"></span> Xuất thông tin thiết bị
+      </button>
+    </div>
+  </div>
 </div>
 
 <app-table-custom [columns]="columns" [data]="shipments" [pageIndex]="pageIndex" [pageSize]="pageSize" [total]="total"

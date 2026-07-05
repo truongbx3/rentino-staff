@@ -106,6 +106,23 @@ export const deviceCheckColumns: TableColumn[] = [
         isSort: true
     },
     {
+        key: 'vcmFinalSummary',
+        title: 'Loại VCM',
+        type: 'tag',
+        width: '130px',
+        filter: {
+            type: 'select',
+            options: accessoryOptions
+        }
+    },
+    {
+        key: 'vcmPrice',
+        title: 'Giá VCM thu mua',
+        type: 'number',
+        width: '150px',
+        isSort: true
+    },
+    {
         key: 'createdDate',
         title: 'Ngày tạo',
         type: 'date',
