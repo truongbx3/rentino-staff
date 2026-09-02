@@ -1,0 +1,284 @@
+<nz-card [nzTitle]="cardTitleTemplate" [nzExtra]="extraTemplate" class="banner-card shadow-sm border-0">
+  <ng-template #cardTitleTemplate>
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-images text-primary fs-5"></i>
+      <span class="fw-bold fs-5 text-dark">Quản lý Banner</span>
+      <nz-tag nzColor="processing" class="ms-2 rounded-pill px-2">
+        Tổng: <b>{{ filteredBanners.length }}</b> banner
+      </nz-tag>
+    </div>
+  </ng-template>
+
+  <ng-template #extraTemplate>
+    <div class="d-flex gap-3 align-items-center">
+      <!-- Status Filter -->
+      <div class="d-flex align-items-center gap-2">
+        <span class="fw-semibold text-secondary">Trạng thái:</span>
+        <nz-select [ngModel]="selectedStatus" (ngModelChange)="onFilterStatusChange($event)" style="width: 160px;">
+          <nz-option [nzValue]="null" nzLabel="Tất cả"></nz-option>
+          <nz-option [nzValue]="1" nzLabel="Hiệu lực"></nz-option>
+          <nz-option [nzValue]="0" nzLabel="Không hiệu lực"></nz-option>
+        </nz-select>
+      </div>
+
+      <!-- Upload Button -->
+      <button nz-button nzType="primary" class="d-inline-flex align-items-center rounded-2" (click)="openUploadModal()">
+        <i class="bi bi-cloud-upload me-1"></i> Upload Banner
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Banner Table -->
+  <nz-table
+    #bannerTable
+    [nzData]="filteredBanners"
+    [nzLoading]="loading"
+    [nzPageSize]="10"
+    nzBordered
+    nzSize="middle"
+    class="banner-table mt-2"
+  >
+    <thead>
+      <tr>
+        <th nzWidth="55px" class="text-center">#</th>
+        <th nzWidth="110px" class="text-center">Hình ảnh</th>
+        <th nzWidth="240px">Tiêu đề / Tên Banner</th>
+        <th>Deeplink</th>
+        <th nzWidth="130px" class="text-center">Thứ tự (Order)</th>
+        <th nzWidth="220px" class="text-center">Trạng thái</th>
+        <th nzWidth="120px" class="text-center">Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let banner of bannerTable.data; let i = index">
+        <td class="text-center fw-semibold text-muted">{{ i + 1 }}</td>
+        <!-- Banner Thumbnail -->
+        <td class="text-center">
+          <div class="banner-thumb-wrapper" (click)="onPreview(banner)" nz-tooltip nzTooltipTitle="Click để xem ảnh phóng to">
+            <img
+              [src]="banner.imageUrl"
+              [alt]="banner.title"
+              class="banner-thumbnail"
+              (error)="onImageError($event)"
+            />
+            <div class="thumb-overlay">
+              <i class="bi bi-search text-white fs-6"></i>
+            </div>
+          </div>
+        </td>
+        <!-- Title -->
+        <td>
+          <span class="fw-bold text-dark d-block text-truncate" style="max-width: 220px;" [title]="banner.title || ''">
+            {{ banner.title || 'Chưa có tiêu đề' }}
+          </span>
+        </td>
+        <!-- Deeplink -->
+        <td>
+          <div *ngIf="banner.deeplink; else noDeeplink" class="deeplink-badge d-inline-flex align-items-center" [title]="banner.deeplink">
+            <i class="bi bi-link-45deg me-1"></i>
+            <span class="text-truncate" style="max-width: 300px;">{{ banner.deeplink }}</span>
+          </div>
+          <ng-template #noDeeplink>
+            <span class="text-muted fst-italic small">Chưa thiết lập</span>
+          </ng-template>
+        </td>
+        <!-- Display Order -->
+        <td class="text-center">
+          <nz-input-number
+            [ngModel]="banner.displayOrder"
+            [nzMin]="1"
+            [nzStep]="1"
+            [nzDisabled]="savingOrderId === banner.id"
+            (ngModelChange)="onOrderBlur(banner, $event)"
+            style="width: 80px;"
+            class="rounded"
+          ></nz-input-number>
+        </td>
+        <!-- Status Toggle -->
+        <td class="text-center">
+          <div class="d-flex align-items-center justify-content-center gap-2 py-1">
+            <nz-switch
+              [ngModel]="banner.status === 1"
+              [nzLoading]="togglingBannerId === banner.id"
+              (ngModelChange)="onStatusToggle(banner, $event)"
+              nz-tooltip
+              [nzTooltipTitle]="'Bật / tắt trạng thái banner'"
+            ></nz-switch>
+
+            <nz-tag
+              [nzColor]="banner.status === 1 ? 'success' : 'error'"
+              class="status-tag cursor-pointer me-0 m-0"
+              nz-tooltip
+              [nzTooltipTitle]="'Click để chuyển sang ' + (banner.status === 1 ? 'Không hiệu lực' : 'Hiệu lực')"
+              (click)="onStatusToggle(banner, banner.status !== 1)"
+            >
+              <i class="bi me-1" [ngClass]="banner.status === 1 ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+              <span>{{ banner.status === 1 ? 'Hiệu lực' : 'Không hiệu lực' }}</span>
+            </nz-tag>
+          </div>
+        </td>
+        <!-- Actions -->
+        <td class="text-center">
+          <div class="d-flex align-items-center justify-content-center gap-3">
+            <button
+              nz-button
+              nzType="text"
+              nzSize="small"
+              class="action-btn text-primary p-0"
+              nz-tooltip
+              nzTooltipTitle="Xem ảnh lớn"
+              (click)="onPreview(banner)"
+            >
+              <span nz-icon nzType="eye" class="fs-6"></span>
+            </button>
+            <button
+              nz-button
+              nzType="text"
+              nzSize="small"
+              class="action-btn text-info p-0"
+              nz-tooltip
+              nzTooltipTitle="Chỉnh sửa"
+              (click)="onEdit(banner)"
+            >
+              <span nz-icon nzType="edit" class="fs-6"></span>
+            </button>
+            <button
+              nz-button
+              nzType="text"
+              nzSize="small"
+              class="action-btn text-danger p-0"
+              nz-tooltip
+              nzTooltipTitle="Xóa banner"
+              nz-popconfirm
+              nzPopconfirmTitle="Bạn có chắc chắn muốn xóa banner này?"
+              (nzOnConfirm)="onDelete(banner)"
+            >
+              <span nz-icon nzType="delete" class="fs-6"></span>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- Modal Upload Banners -->
+<nz-modal
+  [(nzVisible)]="isUploadModalVisible"
+  nzTitle="Upload Banner Mới"
+  (nzOnCancel)="closeUploadModal()"
+  (nzOnOk)="handleUpload()"
+  [nzOkLoading]="isUploading"
+  [nzOkText]="'Tải lên'"
+  [nzCancelText]="'Hủy'"
+  nzWidth="600px"
+>
+  <ng-container *nzModalContent>
+    <div class="upload-dropzone mb-3 text-center p-4 border border-dashed rounded">
+      <i class="bi bi-cloud-arrow-up display-4 text-primary mb-2"></i>
+      <h5>Chọn ảnh để upload làm Banner</h5>
+      <p class="text-muted">Cho phép chọn <b>nhiều ảnh</b> cùng lúc (PNG, JPG, JPEG, WEBP)</p>
+      <input
+        type="file"
+        #fileInput
+        multiple
+        accept="image/*"
+        (change)="onFileSelected($event)"
+        style="display: none;"
+      />
+      <button nz-button nzType="primary" (click)="fileInput.click()">
+        <i class="bi bi-folder2-open me-1"></i> Chọn danh sách ảnh
+      </button>
+    </div>
+
+    <!-- Selected Files List -->
+    <div *ngIf="uploadFiles.length > 0" class="mb-3">
+      <h6>Danh sách ảnh đã chọn ({{ uploadFiles.length }} ảnh):</h6>
+      <ul class="list-group max-vh-30 overflow-auto">
+        <li *ngFor="let file of uploadFiles; let idx = index" class="list-group-item d-flex justify-content-between align-items-center py-2">
+          <div class="d-flex align-items-center text-truncate">
+            <i class="bi bi-image me-2 text-info"></i>
+            <span class="text-truncate" style="max-width: 400px;">{{ file.name }}</span>
+            <small class="text-muted ms-2">({{ (file.size / 1024).toFixed(1) }} KB)</small>
+          </div>
+          <button nz-button nzType="text" nzDanger (click)="removeUploadFile(idx)" title="Xóa file này">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Upload Options -->
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Trạng thái ban đầu</label>
+        <nz-select [(ngModel)]="uploadStatus" class="w-100">
+          <nz-option [nzValue]="1" nzLabel="Hiệu lực"></nz-option>
+          <nz-option [nzValue]="0" nzLabel="Không hiệu lực"></nz-option>
+        </nz-select>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Deeplink (Mặc định)</label>
+        <input nz-input [(ngModel)]="uploadDeeplink" placeholder="Ví dụ: myapp://promotion/123" />
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Edit Banner -->
+<nz-modal
+  [(nzVisible)]="isEditModalVisible"
+  nzTitle="Chỉnh sửa thông tin Banner"
+  (nzOnCancel)="closeEditModal()"
+  (nzOnOk)="handleSaveEdit()"
+  [nzOkLoading]="isSaving"
+  [nzOkText]="'Lưu lại'"
+  [nzCancelText]="'Hủy'"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="editForm">
+      <div class="mb-3" *ngIf="selectedBanner?.imageUrl">
+        <label class="form-label fw-bold">Xem trước ảnh</label>
+        <div>
+          <img [src]="selectedBanner?.imageUrl" class="img-fluid rounded border max-h-200" />
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Tiêu đề Banner <span class="text-danger">*</span></label>
+        <input nz-input formControlName="title" placeholder="Nhập tiêu đề hoặc tên banner" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Deeplink</label>
+        <input nz-input formControlName="deeplink" placeholder="Ví dụ: app://scheme/path" />
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Thứ tự hiển thị <span class="text-danger">*</span></label>
+          <nz-input-number formControlName="displayOrder" [nzMin]="1" class="w-100"></nz-input-number>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Trạng thái <span class="text-danger">*</span></label>
+          <nz-select formControlName="status" class="w-100">
+            <nz-option [nzValue]="1" nzLabel="Hiệu lực"></nz-option>
+            <nz-option [nzValue]="0" nzLabel="Không hiệu lực"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Lightbox Image Preview Modal -->
+<nz-modal
+  [(nzVisible)]="isPreviewVisible"
+  [nzTitle]="previewTitle"
+  (nzOnCancel)="closePreview()"
+  [nzFooter]="null"
+  nzWidth="700px"
+>
+  <ng-container *nzModalContent>
+    <div class="text-center">
+      <img [src]="previewImageUrl" [alt]="previewTitle" class="img-fluid rounded shadow-sm" />
+    </div>
+  </ng-container>
+</nz-modal>

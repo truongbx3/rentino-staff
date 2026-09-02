@@ -1,0 +1,132 @@
+.banner-card {
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.banner-table {
+  ::ng-deep .ant-table-thead > tr > th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 12px 16px;
+  }
+
+  ::ng-deep .ant-table-tbody > tr > td {
+    padding: 10px 14px;
+    vertical-align: middle;
+  }
+
+  ::ng-deep .ant-table-tbody > tr:hover > td {
+    background: #f1f5f9 !important;
+  }
+}
+
+.banner-thumb-wrapper {
+  position: relative;
+  width: 76px;
+  height: 44px;
+  margin: 0 auto;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  transition: all 0.25 ease-in-out;
+
+  &:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    border-color: #1890ff;
+
+    .thumb-overlay {
+      opacity: 1;
+    }
+  }
+
+  .banner-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .thumb-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+}
+
+.deeplink-badge {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  max-width: 100%;
+}
+
+.status-tag {
+  user-select: none;
+  font-weight: 500;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    filter: brightness(0.95);
+  }
+}
+
+.action-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    transform: scale(1.15);
+  }
+}
+
+.upload-dropzone {
+  background-color: #fafafa;
+  border-color: #d9d9d9 !important;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #f0f7ff;
+    border-color: #1890ff !important;
+  }
+}
+
+.max-h-200 {
+  max-height: 200px;
+  object-fit: contain;
+}
+
+.max-vh-30 {
+  max-height: 200px;
+}

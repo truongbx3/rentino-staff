@@ -65,6 +65,17 @@
           <i class="bi bi-tag fs-5"></i>
           <div *ngIf="!isCollapsed">Giá / Cấu hình thiết bị</div>
         </li>
+        <li
+          style="color: var(--text-primary); cursor: pointer"
+          class="d-flex align-items-center gap-3 menu-item"
+          [class]="isCollapsed ? 'justify-content-center' : ''"
+          nz-menu-item
+          [routerLink]="['/banner']"
+          routerLinkActive="ant-menu-item-selected"
+        >
+          <i class="bi bi-images fs-5"></i>
+          <div *ngIf="!isCollapsed">Quản lý Banner</div>
+        </li>
       </ul>
       <div
         class="sidebar-footer d-flex flex-column gap-3 align-items-center justify-content-end"

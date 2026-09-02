@@ -32,6 +32,10 @@ const routes: Routes = [
       {
         path: 'device-price',
         loadChildren: () => import('./modules/features/device-price/device-price.module').then(m => m.DevicePriceModule)
+      },
+      {
+        path: 'banner',
+        loadChildren: () => import('./modules/features/banner/banner.module').then(m => m.BannerModule)
       }
     ]
   },
