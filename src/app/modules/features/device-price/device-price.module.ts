@@ -13,6 +13,8 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzTableModule } from 'ng-zorro-antd/table';
 
 @NgModule({
   declarations: [
@@ -32,7 +34,9 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
     NzDatePickerModule,
     NzCardModule,
     NzSelectModule,
-    FormsModule
+    FormsModule,
+    NzTagModule,
+    NzTableModule
   ]
 })
 export class DevicePriceModule { }

@@ -1,6 +1,15 @@
 <nz-card [nzTitle]="'Danh mục cấu hình máy / Giá'" [nzExtra]="extraTemplate">
   <ng-template #extraTemplate>
     <div class="d-flex gap-2">
+      <button nz-button nzType="dashed" (click)="openDateCheckModal()">
+        <span nz-icon nzType="calendar" class="me-1"></span> Kiểm tra ngày hiệu lực
+      </button>
+      <button nz-button nzType="default" style="color: #722ed1; border-color: #722ed1" (click)="openHistoryModal()">
+        <span nz-icon nzType="history" class="me-1"></span> Lịch sử Import
+      </button>
+      <button nz-button nzType="default" style="color: #13c2c2; border-color: #13c2c2" (click)="openImportModal()">
+        <span nz-icon nzType="upload" class="me-1"></span> Import Excel
+      </button>
       <button nz-button nzType="default" (click)="onExport()">
         <span nz-icon nzType="download" class="me-1"></span> Xuất Excel
       </button>
@@ -68,5 +77,218 @@
         </div>
       </div>
     </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Date Check Modal -->
+<nz-modal [(nzVisible)]="isDateCheckVisible"
+  nzTitle="Kiểm tra ngày hiệu lực giá"
+  (nzOnCancel)="closeDateCheckModal()"
+  [nzFooter]="null"
+  nzWidth="520px">
+  <ng-container *nzModalContent>
+    <div class="date-check-modal">
+      <div class="mb-3">
+        <label class="d-block mb-1 fw-bold">Chọn ngày kiểm tra</label>
+        <div class="d-flex gap-2 align-items-center">
+          <nz-date-picker
+            [(ngModel)]="checkDate"
+            nzFormat="dd/MM/yyyy"
+            nzPlaceHolder="Chọn ngày"
+            style="flex: 1">
+          </nz-date-picker>
+          <button nz-button nzType="primary" (click)="onCheckDate()" [nzLoading]="isCheckLoading">
+            <span nz-icon nzType="search" *ngIf="!isCheckLoading"></span> Kiểm tra
+          </button>
+        </div>
+      </div>
+
+      <!-- Count Result -->
+      <div *ngIf="activeCount !== null" class="result-box result-count mb-3">
+        <div class="result-icon">
+          <span nz-icon nzType="info-circle" nzTheme="twotone" [nzTwotoneColor]="'#1890ff'"></span>
+        </div>
+        <div class="result-content">
+          <span class="result-label">Số bản ghi có giá hợp lệ:</span>
+          <span class="result-value">{{ activeCount }}</span>
+        </div>
+      </div>
+
+      <!-- Expire Action -->
+      <div *ngIf="activeCount !== null && activeCount > 0" class="expire-section mb-3">
+        <nz-divider nzText="Hết hiệu lực"></nz-divider>
+        <p class="text-muted mb-2" style="font-size: 13px;">
+          Set ngày kết thúc (to_date) = ngày đã chọn cho tất cả <strong>{{ activeCount }}</strong> bản ghi đang hiệu lực.
+        </p>
+        <button nz-button nzType="primary" nzDanger
+          nz-popconfirm
+          nzPopconfirmTitle="Bạn có chắc chắn muốn set ngày hết hiệu lực cho tất cả bản ghi?"
+          (nzOnConfirm)="onExpireByDate()"
+          [nzLoading]="isExpireLoading">
+          <span nz-icon nzType="stop" *ngIf="!isExpireLoading"></span> Hết hiệu lực tất cả
+        </button>
+      </div>
+
+      <!-- Expire Result -->
+      <div *ngIf="expireResult !== null" class="result-box result-success">
+        <div class="result-icon">
+          <span nz-icon nzType="check-circle" nzTheme="twotone" [nzTwotoneColor]="'#52c41a'"></span>
+        </div>
+        <div class="result-content">
+          <span class="result-label">Đã cập nhật thành công:</span>
+          <span class="result-value success">{{ expireResult }} bản ghi</span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Import Excel Modal -->
+<nz-modal [(nzVisible)]="isImportVisible"
+  nzTitle="Import giá thiết bị từ Excel"
+  (nzOnCancel)="closeImportModal()"
+  [nzFooter]="null"
+  nzWidth="620px">
+  <ng-container *nzModalContent>
+    <div class="date-check-modal">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="d-block mb-1 fw-bold">Ngày bắt đầu hiệu lực <span class="text-danger">*</span></label>
+          <nz-date-picker
+            [(ngModel)]="importFromDate"
+            nzFormat="dd/MM/yyyy"
+            nzPlaceHolder="Từ ngày"
+            style="width: 100%">
+          </nz-date-picker>
+        </div>
+        <div class="col-md-6">
+          <label class="d-block mb-1 fw-bold">Ngày kết thúc hiệu lực <span class="text-danger">*</span></label>
+          <nz-date-picker
+            [(ngModel)]="importToDate"
+            nzFormat="dd/MM/yyyy"
+            nzPlaceHolder="Đến ngày"
+            style="width: 100%">
+          </nz-date-picker>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="d-block mb-1 fw-bold">File Excel <span class="text-danger">*</span></label>
+        <nz-upload
+          [nzBeforeUpload]="beforeUpload"
+          [nzAccept]="'.xlsx,.xls'"
+          [nzShowUploadList]="false">
+          <button nz-button>
+            <span nz-icon nzType="upload"></span> Chọn file
+          </button>
+        </nz-upload>
+        <span *ngIf="importFileName" class="ms-2 text-muted">{{ importFileName }}</span>
+      </div>
+
+      <div class="d-flex gap-2 mb-3">
+        <button nz-button nzType="default" (click)="onValidateImport()" [nzLoading]="isValidateLoading">
+          <span nz-icon nzType="check-circle" *ngIf="!isValidateLoading"></span> Validate hiệu lực
+        </button>
+        <button nz-button nzType="primary"
+          [disabled]="validateResult !== 0 || !importFile"
+          (click)="onImport()"
+          [nzLoading]="isImportLoading">
+          <span nz-icon nzType="import" *ngIf="!isImportLoading"></span> Import
+        </button>
+      </div>
+
+      <!-- Validate Result -->
+      <div *ngIf="validateResult !== null && validateResult > 0" class="result-box mb-3" style="background: #fff2e8; border: 1px solid #ffbb96;">
+        <div class="result-icon">
+          <span nz-icon nzType="warning" nzTheme="twotone" [nzTwotoneColor]="'#fa8c16'"></span>
+        </div>
+        <div class="result-content">
+          <span class="result-label">Có <strong style="color: #fa8c16">{{ validateResult }}</strong> bản ghi trùng khoảng ngày. Không thể import!</span>
+        </div>
+      </div>
+
+      <div *ngIf="validateResult !== null && validateResult === 0" class="result-box result-success mb-3">
+        <div class="result-icon">
+          <span nz-icon nzType="check-circle" nzTheme="twotone" [nzTwotoneColor]="'#52c41a'"></span>
+        </div>
+        <div class="result-content">
+          <span class="result-label">Khoảng ngày hợp lệ, có thể import!</span>
+        </div>
+      </div>
+
+      <!-- Import Result -->
+      <div *ngIf="importResult" class="result-box result-count mb-3">
+        <div class="result-icon">
+          <span nz-icon nzType="check-circle" nzTheme="twotone" [nzTwotoneColor]="'#52c41a'"></span>
+        </div>
+        <div class="result-content">
+          <span class="result-label">Đã import: <strong style="color: #1890ff">{{ importResult.totalInserted }}</strong> bản ghi</span>
+          <span class="result-label" *ngIf="importResult.totalSkipped > 0"> | Bỏ qua: <strong style="color: #fa8c16">{{ importResult.totalSkipped }}</strong></span>
+        </div>
+      </div>
+
+      <!-- Skipped Details -->
+      <div *ngIf="importResult?.skippedDetails?.length > 0">
+        <nz-divider nzText="Danh sách bỏ qua"></nz-divider>
+        <div style="max-height: 200px; overflow-y: auto; font-size: 12px; background: #fafafa; padding: 8px; border-radius: 4px;">
+          <div *ngFor="let item of importResult.skippedDetails" style="padding: 2px 0; color: #8c8c8c;">
+            {{ item }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Import History Modal -->
+<nz-modal [(nzVisible)]="isHistoryVisible"
+  nzTitle="Lịch sử Import giá thiết bị"
+  (nzOnCancel)="closeHistoryModal()"
+  [nzFooter]="null"
+  nzWidth="85vw">
+  <ng-container *nzModalContent>
+    <nz-table
+      #historyTable
+      [nzData]="importHistoryList"
+      [nzFrontPagination]="false"
+      [nzTotal]="historyTotal"
+      [nzPageIndex]="historyPageIndex"
+      [nzPageSize]="historyPageSize"
+      (nzPageIndexChange)="onHistoryPageChange($event)"
+      nzSize="small"
+      [nzScroll]="{ y: '400px' }">
+      <thead>
+        <tr>
+          <th nzWidth="50px">STT</th>
+          <th nzWidth="200px">File</th>
+          <th nzWidth="110px">Từ ngày</th>
+          <th nzWidth="110px">Đến ngày</th>
+          <th nzWidth="90px">Đã import</th>
+          <th nzWidth="90px">Bỏ qua</th>
+          <th nzWidth="90px">Trạng thái</th>
+          <th nzWidth="140px">Ngày import</th>
+          <th nzWidth="70px">Tải file</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of historyTable.data">
+          <td>{{ item.index }}</td>
+          <td style="word-break: break-all; white-space: normal;">{{ item.fileName }}</td>
+          <td>{{ item.fromDate | date:'dd/MM/yyyy' }}</td>
+          <td>{{ item.toDate | date:'dd/MM/yyyy' }}</td>
+          <td class="text-center">{{ item.totalRecords }}</td>
+          <td class="text-center">{{ item.totalSkipped }}</td>
+          <td class="text-center">
+            <nz-tag [nzColor]="item.status === 'SUCCESS' ? 'green' : 'red'">{{ item.status }}</nz-tag>
+          </td>
+          <td>{{ item.createdDate | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td class="text-center">
+            <a *ngIf="item.filePath" (click)="downloadHistoryFile(item.filePath, item.fileName)" nz-tooltip nzTooltipTitle="Tải file">
+              <span nz-icon nzType="download" style="font-size: 16px; color: #1890ff; cursor: pointer;"></span>
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
   </ng-container>
 </nz-modal>

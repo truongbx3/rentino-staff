@@ -6,13 +6,16 @@ import { finalize } from 'rxjs/operators';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { TableColumn } from 'src/app/modules/shares/models/table-column.model';
 import { DevicePriceService } from '../../device-price.service';
+import { DevicePriceDetailService } from '../../device-price-detail.service';
 import { devicePriceColumns } from '../../configs/device-price.column';
 import { DevicePriceModel } from '../../configs/device-price.model';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-device-price-list',
   templateUrl: './device-price-list.component.html',
-  styleUrls: ['./device-price-list.component.scss']
+  styleUrls: ['./device-price-list.component.scss'],
+  providers: [DatePipe]
 })
 export class DevicePriceListComponent implements OnInit {
   columns: TableColumn[] = devicePriceColumns;
@@ -29,14 +32,41 @@ export class DevicePriceListComponent implements OnInit {
   isEditing = false;
   form!: FormGroup;
 
+  // Date Check Modal properties
+  isDateCheckVisible = false;
+  checkDate: Date | null = null;
+  activeCount: number | null = null;
+  expireResult: number | null = null;
+  isCheckLoading = false;
+  isExpireLoading = false;
+
+  // Import Modal properties
+  isImportVisible = false;
+  importFromDate: Date | null = null;
+  importToDate: Date | null = null;
+  importFile: File | null = null;
+  importFileName: string = '';
+  isValidateLoading = false;
+  validateResult: number | null = null;
+  isImportLoading = false;
+  importResult: any = null;
+
+  // History Modal properties
+  isHistoryVisible = false;
+  importHistoryList: any[] = [];
+  historyTotal = 0;
+  historyPageIndex = 1;
+  historyPageSize = 10;
 
 
   constructor(
     private devicePriceService: DevicePriceService,
+    private devicePriceDetailService: DevicePriceDetailService,
     private loading: LoadingService,
     private message: NzMessageService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private datePipe: DatePipe
   ) {
     this.createForm();
   }
@@ -208,5 +238,184 @@ export class DevicePriceListComponent implements OnInit {
         this.message.error(err?.error?.message || err?.message || 'Có lỗi xảy ra khi xuất Excel.');
       }
     });
+  }
+
+  // --- Date Check Modal Logic ---
+
+  openDateCheckModal(): void {
+    this.checkDate = null;
+    this.activeCount = null;
+    this.expireResult = null;
+    this.isDateCheckVisible = true;
+  }
+
+  closeDateCheckModal(): void {
+    this.isDateCheckVisible = false;
+  }
+
+  private formatDate(date: Date): string {
+    return this.datePipe.transform(date, 'yyyy-MM-dd') || '';
+  }
+
+  onCheckDate(): void {
+    if (!this.checkDate) {
+      this.message.warning('Vui lòng chọn ngày!');
+      return;
+    }
+    const dateStr = this.formatDate(this.checkDate);
+    this.isCheckLoading = true;
+    this.activeCount = null;
+    this.expireResult = null;
+    this.devicePriceDetailService.countActiveByDate(dateStr).pipe(
+      finalize(() => this.isCheckLoading = false)
+    ).subscribe({
+      next: (res) => {
+        this.activeCount = res.data;
+      },
+      error: (err) => {
+        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi kiểm tra.');
+      }
+    });
+  }
+
+  onExpireByDate(): void {
+    if (!this.checkDate) {
+      this.message.warning('Vui lòng chọn ngày!');
+      return;
+    }
+    const dateStr = this.formatDate(this.checkDate);
+    this.isExpireLoading = true;
+    this.devicePriceDetailService.expireByDate(dateStr).pipe(
+      finalize(() => this.isExpireLoading = false)
+    ).subscribe({
+      next: (res) => {
+        this.expireResult = res.data;
+        this.message.success(`Đã cập nhật ${res.data} bản ghi thành công!`);
+        this.activeCount = null;
+      },
+      error: (err) => {
+        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi cập nhật.');
+      }
+    });
+  }
+
+  // --- Import Modal Logic ---
+
+  openImportModal(): void {
+    this.importFromDate = null;
+    this.importToDate = null;
+    this.importFile = null;
+    this.importFileName = '';
+    this.validateResult = null;
+    this.importResult = null;
+    this.isImportVisible = true;
+  }
+
+  closeImportModal(): void {
+    this.isImportVisible = false;
+  }
+
+  beforeUpload = (file: any): boolean => {
+    this.importFile = file;
+    this.importFileName = file.name;
+    this.validateResult = null;
+    this.importResult = null;
+    return false; // prevent auto upload
+  };
+
+  onValidateImport(): void {
+    if (!this.importFromDate || !this.importToDate) {
+      this.message.warning('Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc!');
+      return;
+    }
+    const fromStr = this.formatDate(this.importFromDate);
+    const toStr = this.formatDate(this.importToDate);
+    this.isValidateLoading = true;
+    this.validateResult = null;
+    this.importResult = null;
+    this.devicePriceDetailService.validateImport(fromStr, toStr).pipe(
+      finalize(() => this.isValidateLoading = false)
+    ).subscribe({
+      next: (res) => {
+        this.validateResult = res.data;
+      },
+      error: (err) => {
+        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi validate.');
+      }
+    });
+  }
+
+  onImport(): void {
+    if (!this.importFile) {
+      this.message.warning('Vui lòng chọn file Excel!');
+      return;
+    }
+    if (!this.importFromDate || !this.importToDate) {
+      this.message.warning('Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc!');
+      return;
+    }
+    const fromStr = this.formatDate(this.importFromDate);
+    const toStr = this.formatDate(this.importToDate);
+    this.isImportLoading = true;
+    this.devicePriceDetailService.importExcel(this.importFile, fromStr, toStr).pipe(
+      finalize(() => this.isImportLoading = false)
+    ).subscribe({
+      next: (res) => {
+        this.importResult = res.data;
+        this.message.success(`Import thành công: ${res.data.totalInserted} bản ghi!`);
+      },
+      error: (err) => {
+        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi import.');
+      }
+    });
+  }
+
+  // --- History Modal Logic ---
+
+  openHistoryModal(): void {
+    this.isHistoryVisible = true;
+    this.historyPageIndex = 1;
+    this.loadImportHistory();
+  }
+
+  closeHistoryModal(): void {
+    this.isHistoryVisible = false;
+  }
+
+  loadImportHistory(): void {
+    const payload = {
+      page: this.historyPageIndex - 1,
+      size: this.historyPageSize,
+      lsCondition: [],
+      sortField: [{ fieldName: 'createdDate', sort: 'DESC' }]
+    };
+    this.devicePriceDetailService.searchImportHistory(payload).subscribe({
+      next: (res) => {
+        const content = res.data?.content || res.data || [];
+        this.importHistoryList = content.map((item: any, index: number) => ({
+          index: (this.historyPageIndex - 1) * this.historyPageSize + index + 1,
+          ...item
+        }));
+        this.historyTotal = res.data?.totalElements || content.length || 0;
+      },
+      error: (err) => {
+        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi tải lịch sử.');
+      }
+    });
+  }
+
+  onHistoryPageChange(page: number): void {
+    this.historyPageIndex = page;
+    this.loadImportHistory();
+  }
+
+  downloadHistoryFile(filePath: string, fileName: string): void {
+    const url = `${this.devicePriceDetailService['baseUrl']}/attach-file`;
+    // Download directly from MinIO via presigned URL pattern
+    // Since filePath is MinIO object path, construct download URL
+    window.open(
+      `${this.devicePriceDetailService['baseUrl'].replace('/api/v1/rentino', '')}/minio-files/swap/${filePath}`,
+      '_blank'
+    );
   }
 }
