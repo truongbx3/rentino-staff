@@ -22,6 +22,11 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     children: [
       {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'device-check'
+      },
+      {
         path: 'device-check',
         loadChildren: () => import('./modules/features/device-check/device-check.module').then(m => m.DeviceCheckModule)
       },

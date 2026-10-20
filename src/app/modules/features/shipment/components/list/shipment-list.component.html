@@ -30,7 +30,7 @@
 </div>
 
 <app-table-custom [columns]="columns" [data]="shipments" [pageIndex]="pageIndex" [pageSize]="pageSize" [total]="total"
-  [defaultSort]="defaultSort" (search)="onSearch($event)" [actionTemplate]="actionTpl"
+  [defaultSort]="defaultSort" [stateKey]="'shipment-list'" (search)="onSearch($event)" [actionTemplate]="actionTpl"
   (pageIndexChange)="onPageIndexChange($event)" (pageSizeChange)="onPageSizeChange($event)">
 </app-table-custom>
 

@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnChanges, Output, TemplateRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core';
 import { SearchCondition, TableColumn } from '../../models/table-column.model';
+import { ListStateService } from 'src/app/core/services/list-state.service';
 
 type SortDirection = 'ASC' | 'DESC' | null;
 @Component({
@@ -9,7 +10,8 @@ type SortDirection = 'ASC' | 'DESC' | null;
 })
 
 
-export class TableCustomComponent {
+export class TableCustomComponent implements OnInit {
+  @Input() stateKey?: string;
   @Input() pageIndex = 1;
   @Input() pageSize = 10;
   @Input() total = 0;
@@ -37,6 +39,46 @@ export class TableCustomComponent {
     sort: SortDirection;
   }> = [];
 
+  constructor(private listStateService: ListStateService) {}
+
+  ngOnInit(): void {
+    if (this.stateKey) {
+      const saved = this.listStateService.get<{
+        searchValues: Record<string, string | number | Date | null>;
+        sortFields: Array<{ fieldName: string; sort: SortDirection }>;
+        lastSearchSnapshot: string;
+      }>(`table:${this.stateKey}`);
+      if (saved) {
+        if (saved.searchValues) {
+          this.searchValues = { ...saved.searchValues };
+        }
+        if (saved.sortFields) {
+          this.sortFields = saved.sortFields.map(s => ({ ...s }));
+        }
+        if (saved.lastSearchSnapshot !== undefined) {
+          this.lastSearchSnapshot = saved.lastSearchSnapshot;
+        }
+      }
+    }
+  }
+
+  private saveState(): void {
+    if (!this.stateKey) return;
+    this.listStateService.set(`table:${this.stateKey}`, {
+      searchValues: { ...this.searchValues },
+      sortFields: this.sortFields.map(s => ({ ...s })),
+      lastSearchSnapshot: this.lastSearchSnapshot
+    });
+  }
+
+  reset(): void {
+    this.searchValues = {};
+    this.sortFields = [];
+    this.lastSearchSnapshot = '';
+    if (this.stateKey) {
+      this.listStateService.clear(`table:${this.stateKey}`);
+    }
+  }
 
   onSort(col: TableColumn): void {
     if (!col.isSort) return;
@@ -60,6 +102,7 @@ export class TableCustomComponent {
       this.sortFields.splice(index, 1);
     }
 
+    this.saveState();
     this.triggerSearch(true);
   }
 
@@ -104,12 +147,16 @@ export class TableCustomComponent {
 
     const snapshot = JSON.stringify(conditions);
 
-    if (!force && snapshot === this.lastSearchSnapshot) return;
+    if (!force && snapshot === this.lastSearchSnapshot) {
+      this.saveState();
+      return;
+    }
 
     this.lastSearchSnapshot = snapshot;
+    this.saveState();
 
     const payload = {
-      page: 0,
+      page: 1,
       size: this.pageSize,
       lsCondition: conditions,
       sortField:

@@ -20,6 +20,7 @@
   </ng-template>
   <app-table-custom [columns]="columns" [data]="devicePrices" [total]="total" [pageIndex]="pageIndex"
     [pageSize]="pageSize" [defaultSort]="defaultSort" [actionTemplate]="action" [scrollY]="'calc(100vh - 340px)'"
+    [stateKey]="'device-price-list'"
     (search)="onSearch($event)" (pageIndexChange)="onPageIndexChange($event)"
     (pageSizeChange)="onPageSizeChange($event)">
     <ng-template #action let-row>

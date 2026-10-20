@@ -30,7 +30,7 @@ export class ApiResponseInterceptor implements HttpInterceptor {
         if (body && body.message) {
           this.message.error(body.message);
         }
-        return throwError(() => err);
+        return throwError(err);
       })
     );
   }

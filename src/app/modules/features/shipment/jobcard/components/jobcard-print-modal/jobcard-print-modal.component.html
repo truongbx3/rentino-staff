@@ -1,0 +1,356 @@
+<nz-modal
+  [(nzVisible)]="isVisible"
+  [nzTitle]="modalTitle"
+  [nzWidth]="950"
+  [nzFooter]="modalFooterTpl"
+  (nzOnCancel)="close()"
+  [nzBodyStyle]="{ 'max-height': '80vh', 'overflow-y': 'auto', 'padding': '16px' }">
+  <ng-container *nzModalContent>
+    <div class="row g-3">
+      <!-- Controls Column (Left) -->
+      <div class="col-md-5">
+        <div class="card p-3 shadow-sm border-0 mb-3 bg-light">
+          <label class="form-label fw-bold mb-1">
+            <i class="bi bi-layout-text-window-reverse text-primary me-1"></i> Mẫu in:
+          </label>
+          <nz-select
+            class="w-100"
+            [(ngModel)]="selectedTemplateId"
+            (ngModelChange)="onTemplateChange($event)">
+            <nz-option
+              *ngFor="let t of templates"
+              [nzValue]="t.id"
+              [nzLabel]="t.name + (t.isDefault ? ' (Mặc định)' : '')">
+            </nz-option>
+          </nz-select>
+          <div class="form-text text-muted small mt-1">
+            Khổ giấy: {{ selectedTemplate?.paper?.preset || 'A7' }}
+            ({{ selectedTemplate?.paper?.width }} x {{ selectedTemplate?.paper?.height }} mm)
+          </div>
+
+          <div class="border-top mt-2 pt-2">
+            <label class="form-label fw-bold mb-1 d-block">Loại giấy:</label>
+            <nz-radio-group class="w-100" nzButtonStyle="solid" nzSize="small" [(ngModel)]="paperMode" (ngModelChange)="onPaperModeChange()">
+              <label nz-radio-button nzValue="roll" style="width: 50%; text-align: center;">Cuộn tem (từng tem)</label>
+              <label nz-radio-button nzValue="sheet" style="width: 50%; text-align: center;">Tờ tem dán</label>
+            </nz-radio-group>
+          </div>
+
+          <div class="border-top mt-2 pt-2" *ngIf="paperMode === 'roll'">
+            <label nz-checkbox [(ngModel)]="thermalMode" (ngModelChange)="onThermalSettingChange()"
+              [nzDisabled]="!canUseThermal">
+              <span class="fw-semibold">In nhiệt sắc nét</span>
+            </label>
+            <div class="d-flex align-items-center gap-2 mt-1" *ngIf="useThermal">
+              <span class="small text-muted">Độ phân giải máy in:</span>
+              <nz-select style="width: 130px;" [(ngModel)]="thermalDpi" (ngModelChange)="onThermalSettingChange()">
+                <nz-option [nzValue]="203" nzLabel="203 dpi"></nz-option>
+                <nz-option [nzValue]="300" nzLabel="300 dpi"></nz-option>
+              </nz-select>
+            </div>
+            <div class="form-text text-muted small mt-1" *ngIf="canUseThermal">
+              Vẽ tem thành ảnh đen trắng đúng độ phân giải máy in tem, chữ không bị nhoè. Khi in chọn khổ giấy đúng cỡ tem, tỷ lệ 100%, lề "Không có".
+            </div>
+            <div class="form-text text-warning small mt-1" *ngIf="!canUseThermal">
+              Mẫu có bảng danh sách nên dùng chế độ in thường.
+            </div>
+          </div>
+        </div>
+
+        <!-- Tờ tem dán: chọn khổ tờ + ô bắt đầu -->
+        <div class="card p-3 shadow-sm border-0 mb-3" *ngIf="paperMode === 'sheet'">
+          <h6 class="fw-bold mb-2 text-dark">
+            <i class="bi bi-grid-3x3-gap text-primary me-1"></i> Tờ tem dán
+          </h6>
+
+          <ng-container *ngIf="!isEditingSheet">
+            <div class="d-flex flex-nowrap align-items-center gap-1 mb-2">
+              <!-- không dùng nzSize="small": style chung ép select chữ 16px + padding 4px sẽ bị cắt chữ -->
+              <nz-select class="flex-grow-1" style="min-width: 0;" [ngModel]="sheetLayout?.id" (ngModelChange)="onSheetLayoutChange($event)">
+                <nz-option *ngFor="let l of sheetLayouts" [nzValue]="l.id" [nzLabel]="l.name"></nz-option>
+              </nz-select>
+              <button nz-button class="flex-shrink-0" title="Sửa kích thước tờ" (click)="startEditSheet()" [disabled]="!sheetLayout">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button nz-button class="flex-shrink-0" title="Thêm khổ tờ mới" (click)="addSheetLayout()">
+                <i class="bi bi-plus-lg"></i>
+              </button>
+            </div>
+
+            <ng-container *ngIf="sheetLayout">
+              <div class="small text-muted mb-1">
+                Bấm vào ô để chọn <b>vị trí bắt đầu in</b> (các ô phía trước coi như đã dùng):
+              </div>
+              <div class="sheet-grid mb-2" [style.grid-template-columns]="'repeat(' + sheetLayout.cols + ', 1fr)'">
+                <div *ngFor="let c of sheetCells; trackBy: trackCell" class="sheet-cell" [ngClass]="'sheet-cell-' + c.state"
+                  (click)="onSheetCellClick(c.index)"
+                  [title]="c.state === 'used' ? 'Ô đã dùng' : ('Ô số ' + (c.index + 1))">
+                  <span *ngIf="c.state === 'print'">{{ c.order }}</span>
+                  <i *ngIf="c.state === 'used'" class="bi bi-x-lg"></i>
+                </div>
+              </div>
+              <div class="small mb-2">
+                Bắt đầu từ ô <b>{{ sheetStartIndex + 1 }}</b> / {{ sheetCellsPerSheet }} · In {{ labelCount }} tem
+                <span *ngIf="sheetsNeeded > 1" class="text-warning"> · cần {{ sheetsNeeded }} tờ (tờ sau in từ ô 1)</span>
+              </div>
+              <div class="row g-2 align-items-end">
+                <div class="col-4">
+                  <label class="form-label small text-muted mb-0">Lệch ngang (mm)</label>
+                  <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.offsetX" [nzStep]="0.5" (ngModelChange)="sheetService.saveLayout(sheetLayout)"></nz-input-number>
+                </div>
+                <div class="col-4">
+                  <label class="form-label small text-muted mb-0">Lệch dọc (mm)</label>
+                  <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.offsetY" [nzStep]="0.5" (ngModelChange)="sheetService.saveLayout(sheetLayout)"></nz-input-number>
+                </div>
+                <div class="col-4">
+                  <button nz-button nzSize="small" nzBlock (click)="printSheetTestGrid()" nz-tooltip
+                    nzTooltipTitle="In khung các ô lên giấy thường, đặt chồng lên tờ tem để kiểm tra độ khớp">
+                    <i class="bi bi-bounding-box me-1"></i> In khung thử
+                  </button>
+                </div>
+              </div>
+              <div class="form-text text-muted small mt-1">
+                Khi in chọn khổ giấy đúng kích thước tờ ({{ sheetLayout.paperWidth }}×{{ sheetLayout.paperHeight }}mm), tỷ lệ 100%, lề "Không có".
+                In lệch thì chỉnh Lệch ngang/dọc (+ là sang phải/xuống dưới).
+              </div>
+            </ng-container>
+          </ng-container>
+
+          <!-- Form đo khổ tờ -->
+          <ng-container *ngIf="isEditingSheet && sheetLayout">
+            <div class="mb-2">
+              <label class="form-label small text-muted mb-0">Tên khổ tờ</label>
+              <input nz-input [(ngModel)]="sheetLayout.name" />
+            </div>
+            <div class="row g-2">
+              <div class="col-6"><label class="form-label small text-muted mb-0">Khổ tờ – rộng (mm)</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.paperWidth" [nzMin]="20" [nzStep]="1" (ngModelChange)="onSheetDimsChange()"></nz-input-number></div>
+              <div class="col-6"><label class="form-label small text-muted mb-0">Khổ tờ – cao (mm)</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.paperHeight" [nzMin]="20" [nzStep]="1" (ngModelChange)="onSheetDimsChange()"></nz-input-number></div>
+              <div class="col-6"><label class="form-label small text-muted mb-0">Số miếng theo ngang</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.cols" [nzMin]="1" [nzMax]="20" [nzStep]="1" (ngModelChange)="onSheetDimsChange()"></nz-input-number></div>
+              <div class="col-6"><label class="form-label small text-muted mb-0">Số miếng theo dọc</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.rows" [nzMin]="1" [nzMax]="40" [nzStep]="1" (ngModelChange)="onSheetDimsChange()"></nz-input-number></div>
+              <div class="col-6"><label class="form-label small fw-semibold mb-0">Tổng chiều ngang vùng tem (mm)</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.totalWidth" [nzMin]="1" [nzStep]="0.5" (ngModelChange)="onSheetDimsChange()"></nz-input-number></div>
+              <div class="col-6"><label class="form-label small fw-semibold mb-0">Tổng chiều dọc vùng tem (mm)</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.totalHeight" [nzMin]="1" [nzStep]="0.5" (ngModelChange)="onSheetDimsChange()"></nz-input-number></div>
+              <div class="col-6"><label class="form-label small fw-semibold mb-0">Khoảng cách ngang giữa 2 miếng (mm)</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.gapX" [nzMin]="0" [nzStep]="0.5" (ngModelChange)="onSheetDimsChange()"></nz-input-number></div>
+              <div class="col-6"><label class="form-label small fw-semibold mb-0">Khoảng cách dọc giữa 2 miếng (mm)</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.gapY" [nzMin]="0" [nzStep]="0.5" (ngModelChange)="onSheetDimsChange()"></nz-input-number></div>
+            </div>
+            <div class="form-text text-muted small mt-1">
+              Tổng vùng tem = đo từ mép trái miếng đầu tới mép phải miếng cuối (ngang), mép trên hàng đầu tới mép dưới hàng cuối (dọc).
+            </div>
+
+            <!-- Kết quả tự tính + hình thu nhỏ của tờ -->
+            <div class="d-flex gap-3 align-items-start mt-2">
+              <div class="sheet-mini flex-shrink-0"
+                [style.aspect-ratio]="sheetLayout.paperWidth + ' / ' + sheetLayout.paperHeight">
+                <div *ngFor="let c of sheetPreviewCells" class="sheet-mini-cell"
+                  [style.left.%]="c.left" [style.top.%]="c.top" [style.width.%]="c.width" [style.height.%]="c.height"></div>
+              </div>
+              <div class="small">
+                <div>Mỗi miếng: <b>{{ sheetLayout.labelWidth }} × {{ sheetLayout.labelHeight }} mm</b></div>
+                <div>Lề trái: <b>{{ sheetLayout.marginLeft }} mm</b> · Lề trên: <b>{{ sheetLayout.marginTop }} mm</b></div>
+                <div class="text-danger mt-1" *ngIf="sheetLayoutError">{{ sheetLayoutError }}</div>
+                <a class="d-inline-block mt-1" (click)="showSheetManual = !showSheetManual">
+                  {{ showSheetManual ? 'Ẩn chỉnh tay' : 'Chỉnh tay kích thước / lề' }}
+                </a>
+              </div>
+            </div>
+
+            <div class="row g-2 mt-1" *ngIf="showSheetManual">
+              <div class="col-6"><label class="form-label small text-muted mb-0">Miếng rộng (mm)</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.labelWidth" [nzMin]="1" [nzStep]="0.5" (ngModelChange)="onSheetManualChange()"></nz-input-number></div>
+              <div class="col-6"><label class="form-label small text-muted mb-0">Miếng cao (mm)</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.labelHeight" [nzMin]="1" [nzStep]="0.5" (ngModelChange)="onSheetManualChange()"></nz-input-number></div>
+              <div class="col-6"><label class="form-label small text-muted mb-0">Lề trái (mm)</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.marginLeft" [nzMin]="0" [nzStep]="0.5" (ngModelChange)="onSheetManualChange()"></nz-input-number></div>
+              <div class="col-6"><label class="form-label small text-muted mb-0">Lề trên (mm)</label>
+                <nz-input-number class="w-100" nzSize="small" [(ngModel)]="sheetLayout.marginTop" [nzMin]="0" [nzStep]="0.5" (ngModelChange)="onSheetManualChange()"></nz-input-number></div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+              <button nz-button nzType="primary" nzSize="small" (click)="saveSheetLayout()">Lưu</button>
+              <button nz-button nzSize="small" (click)="cancelEditSheet()">Huỷ</button>
+              <button nz-button nzSize="small" nzDanger class="ms-auto" nz-popconfirm nzPopconfirmTitle="Xoá khổ tờ này?"
+                (nzOnConfirm)="deleteSheetLayout()" *ngIf="sheetLayouts.length > 1">Xoá</button>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Custom fields form -->
+        <div class="card p-3 shadow-sm border-0 mb-3" *ngIf="customFields.length > 0">
+          <h6 class="fw-bold mb-2 text-dark">
+            <i class="bi bi-pencil-square text-primary me-1"></i> Thông tin bổ sung khi in
+          </h6>
+          <p class="text-muted small mb-3">
+            Điền giá trị cho các trường tùy biến trên mẫu in. Nếu để trống, hệ thống sẽ in khoảng kẻ ngang để viết tay.
+          </p>
+
+          <!-- MULTIPLE DEVICES TABLE (scope = device and > 1 pages) -->
+          <ng-container *ngIf="scope === 'device' && isAllDevices && devices.length > 1; else singleCustomFieldsTpl">
+            <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+              <table class="table table-bordered table-sm align-middle small mb-0">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th style="min-width: 130px;">Thiết bị</th>
+                    <th *ngFor="let cf of customFields" style="min-width: 120px;">
+                      <div class="d-flex flex-column align-items-start">
+                        <span>{{ cf.label }}</span>
+                        <button
+                          nz-button
+                          nzType="link"
+                          nzSize="small"
+                          class="p-0 text-primary"
+                          style="font-size: 11px; height: auto;"
+                          (click)="applyToAll(cf.key)"
+                          nz-tooltip
+                          nzTooltipTitle="Sao chép giá trị dòng đầu tiên cho tất cả thiết bị">
+                          <i class="bi bi-arrow-down-circle me-1"></i>Áp dụng cho tất cả
+                        </button>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="let dev of devices; let i = index"
+                    [class.table-primary]="previewPageIndex === i">
+                    <td>
+                      <div class="fw-semibold text-truncate" [title]="dev.deviceName" style="max-width: 140px;">
+                        {{ dev.deviceName }}
+                      </div>
+                      <div class="text-muted" style="font-size: 11px;">
+                        ...{{ getImeiLast5(dev.imei) }}
+                      </div>
+                    </td>
+                    <td *ngFor="let cf of customFields">
+                      <input
+                        nz-input
+                        type="text"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="deviceCustomFieldValues[i][cf.key]"
+                        (ngModelChange)="onCustomFieldValueChange()"
+                        [placeholder]="'Nhập ' + cf.label.toLowerCase()" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-container>
+
+          <!-- SINGLE DEVICE / SINGLE PAGE FORM -->
+          <ng-template #singleCustomFieldsTpl>
+            <div class="mb-2" *ngFor="let cf of customFields">
+              <label class="form-label small fw-semibold mb-1">{{ cf.label }}</label>
+              <input
+                nz-input
+                type="text"
+                class="form-control form-control-sm"
+                [(ngModel)]="customFieldValues[cf.key]"
+                (ngModelChange)="onCustomFieldValueChange()"
+                [placeholder]="'Nhập ' + cf.label.toLowerCase() + ' (hoặc để trống)'" />
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Multi-page preview navigator for all devices -->
+        <div class="card p-3 shadow-sm border-0" *ngIf="isAllDevices && devices.length > 1">
+          <h6 class="fw-bold mb-2 text-dark">
+            <i class="bi bi-collection text-primary me-1"></i> Xem trước trang in
+          </h6>
+          <div class="d-flex align-items-center justify-content-between">
+            <button
+              nz-button
+              nzType="default"
+              nzSize="small"
+              [disabled]="previewPageIndex <= 0"
+              (click)="prevPage()">
+              <i class="bi bi-chevron-left"></i> Trang trước
+            </button>
+            <span class="fw-semibold text-primary small">
+              {{ previewPageIndex + 1 }} / {{ devices.length }}
+            </span>
+            <button
+              nz-button
+              nzType="default"
+              nzSize="small"
+              [disabled]="previewPageIndex >= devices.length - 1"
+              (click)="nextPage()">
+              Trang sau <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+          <div class="small text-muted mt-2 text-truncate" *ngIf="devices[previewPageIndex]">
+            Thiết bị: <strong>{{ devices[previewPageIndex].deviceName }}</strong>
+            <span *ngIf="devices[previewPageIndex].imei"> (IMEI: {{ devices[previewPageIndex].imei }})</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Preview Column (Right) -->
+      <div class="col-md-7">
+        <div class="preview-panel p-3 rounded">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small fw-bold text-muted text-uppercase">
+              <i class="bi bi-eye text-primary me-1"></i> Xem trước bản in (Xem tỷ lệ chuẩn)
+            </span>
+            <div class="d-flex align-items-center gap-1">
+              <button
+                nz-button
+                nzSize="small"
+                nzShape="circle"
+                (click)="previewScale = Math.max(0.4, previewScale - 0.1)">
+                -
+              </button>
+              <span class="small px-1">{{ Math.round(previewScale * 100) }}%</span>
+              <button
+                nz-button
+                nzSize="small"
+                nzShape="circle"
+                (click)="previewScale = Math.min(1.5, previewScale + 0.1)">
+                +
+              </button>
+            </div>
+          </div>
+
+          <div class="preview-scroll-container text-center">
+            <div
+              class="preview-paper-wrapper d-inline-block shadow"
+              [style.transform]="'scale(' + previewScale + ')'"
+              [style.transform-origin]="'top center'">
+              <img *ngIf="useThermal && previewImage" [src]="previewImage" alt="Xem trước tem"
+                [style.width.mm]="selectedTemplate?.paper?.width"
+                [style.height.mm]="selectedTemplate?.paper?.height"
+                style="display: block; image-rendering: pixelated; background: #fff;" />
+              <div *ngIf="!useThermal" [innerHTML]="previewHtml"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<ng-template #modalFooterTpl>
+  <div class="d-flex justify-content-between align-items-center w-100">
+    <div>
+      <button nz-button nzType="link" (click)="onOpenDesigner()">
+        <i class="bi bi-gear me-1"></i> Quản lý / Chỉnh sửa mẫu
+      </button>
+    </div>
+    <div class="d-flex gap-2">
+      <button nz-button nzType="default" (click)="close()">
+        Đóng
+      </button>
+      <button
+        nz-button
+        nzType="primary"
+        [nzLoading]="isPrinting"
+        (click)="onPrint()">
+        <i class="bi bi-printer me-1" *ngIf="!isPrinting"></i> In ngay
+      </button>
+    </div>
+  </div>
+</ng-template>

@@ -1,10 +1,52 @@
 <app-breadcrumb></app-breadcrumb>
 
+<!-- Fallback action bar if shipmentInfo is null -->
+<div class="d-flex justify-content-end my-3" *ngIf="!shipmentInfo">
+    <button nz-button nzType="primary" nz-dropdown [nzDropdownMenu]="jobcardMenuFallback">
+        <i class="bi bi-printer me-1"></i> In jobcard <i nz-icon nzType="down"></i>
+    </button>
+    <nz-dropdown-menu #jobcardMenuFallback="nzDropdownMenu">
+        <ul nz-menu>
+            <li nz-menu-item (click)="onPrintShipment()">
+                <i class="bi bi-file-earmark-text me-2 text-primary"></i> In phiếu vận đơn
+            </li>
+            <li nz-menu-item (click)="onPrintAllDevices()" [nzDisabled]="!devices || devices.length === 0">
+                <i class="bi bi-files me-2 text-info"></i> In jobcard tất cả thiết bị
+            </li>
+            <li nz-menu-divider></li>
+            <li nz-menu-item (click)="onOpenDesigner()">
+                <i class="bi bi-sliders me-2 text-warning"></i> Quản lý mẫu in
+            </li>
+        </ul>
+    </nz-dropdown-menu>
+</div>
+
 <!-- Summary card -->
 <div class="summary-card my-3" *ngIf="shipmentInfo">
-    <div class="summary-title">
-        <span nz-icon nzType="info-circle" style="color: #1890ff;"></span>
-        <span>Thông tin chung đơn hàng</span>
+    <div class="summary-title d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <span nz-icon nzType="info-circle" style="color: #1890ff;"></span>
+            <span>Thông tin chung đơn hàng</span>
+        </div>
+        <div>
+            <button nz-button nzType="primary" nz-dropdown [nzDropdownMenu]="jobcardMenu">
+                <i class="bi bi-printer me-1"></i> In jobcard <i nz-icon nzType="down"></i>
+            </button>
+            <nz-dropdown-menu #jobcardMenu="nzDropdownMenu">
+                <ul nz-menu>
+                    <li nz-menu-item (click)="onPrintShipment()">
+                        <i class="bi bi-file-earmark-text me-2 text-primary"></i> In phiếu vận đơn
+                    </li>
+                    <li nz-menu-item (click)="onPrintAllDevices()" [nzDisabled]="!devices || devices.length === 0">
+                        <i class="bi bi-files me-2 text-info"></i> In jobcard tất cả thiết bị
+                    </li>
+                    <li nz-menu-divider></li>
+                    <li nz-menu-item (click)="onOpenDesigner()">
+                        <i class="bi bi-sliders me-2 text-warning"></i> Quản lý mẫu in
+                    </li>
+                </ul>
+            </nz-dropdown-menu>
+        </div>
     </div>
     <div class="summary-body">
         <div class="summary-item">
@@ -45,6 +87,15 @@
 
 <ng-template #actionTpl let-row>
     <div class="d-flex align-items-center justify-content-center gap-3">
+        <!-- In jobcard: luôn kích hoạt, không phụ thuộc trạng thái vận đơn -->
+        <span
+            class="action-icon cursor-pointer"
+            style="color: #1890ff;"
+            nz-tooltip nzTooltipTitle="In jobcard thiết bị"
+            (click)="onPrintDevice(row)">
+            <i class="bi bi-printer"></i>
+        </span>
+
         <!-- Guard: chỉ cho phép thao tác khi vận đơn ở trạng thái received -->
         <ng-container *ngIf="shipmentInfo?.status === 'received'; else allDisabled">
 
@@ -85,3 +136,6 @@
         </ng-template>
     </div>
 </ng-template>
+
+<!-- Jobcard print modal -->
+<app-jobcard-print-modal #jobcardModal [trackingNumber]="trackingNumber"></app-jobcard-print-modal>

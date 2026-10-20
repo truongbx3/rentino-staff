@@ -72,9 +72,19 @@ export class BannerListComponent implements OnInit {
       },
       (err: any) => {
         this.loading = false;
-        this.message.error('Không thể tải danh sách banner!');
+        this.notifyError(err?.error?.message, 'Không thể tải danh sách banner!');
       }
     );
+  }
+
+  /**
+   * Interceptor đã hiển thị body.message (HTTP lỗi hoặc code !== '00'),
+   * nên chỉ hiện thông báo dự phòng khi body không có message.
+   */
+  private notifyError(bodyMessage: any, fallback: string): void {
+    if (!bodyMessage) {
+      this.message.error(fallback);
+    }
   }
 
   applyFilter(): void {
@@ -125,13 +135,17 @@ export class BannerListComponent implements OnInit {
     this.bannerService.uploadBanners(this.uploadFiles, this.uploadStatus, this.uploadDeeplink).subscribe(
       (res: any) => {
         this.isUploading = false;
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Tải lên banner thất bại!');
+          return;
+        }
         this.message.success(`Tải lên thành công ${this.uploadFiles.length} banner!`);
         this.closeUploadModal();
         this.loadBanners();
       },
       (err: any) => {
         this.isUploading = false;
-        this.message.error('Tải lên banner thất bại!');
+        this.notifyError(err?.error?.message, 'Tải lên banner thất bại!');
       }
     );
   }
@@ -178,13 +192,17 @@ export class BannerListComponent implements OnInit {
     this.bannerService.saveBanner(updatedBanner).subscribe(
       (res: any) => {
         this.isSaving = false;
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Cập nhật thất bại!');
+          return;
+        }
         this.message.success('Cập nhật thông tin banner thành công!');
         this.closeEditModal();
         this.loadBanners();
       },
       (err: any) => {
         this.isSaving = false;
-        this.message.error('Cập nhật thất bại!');
+        this.notifyError(err?.error?.message, 'Cập nhật thất bại!');
       }
     );
   }
@@ -216,25 +234,59 @@ export class BannerListComponent implements OnInit {
     };
 
     this.bannerService.saveBanner(updatedBanner).subscribe(
-      () => {
+      (res: any) => {
         this.togglingBannerId = null;
+        if (res?.code !== '00') {
+          banner.status = oldStatus;
+          this.notifyError(res?.message, 'Đổi trạng thái thất bại!');
+          return;
+        }
         banner.status = targetStatus;
         const statusText = targetStatus === 1 ? 'Hiệu lực' : 'Không hiệu lực';
         this.message.success(`Đã đổi trạng thái banner "${banner.title || ''}" thành ${statusText}`);
       },
-      () => {
+      (err: any) => {
         this.togglingBannerId = null;
         banner.status = oldStatus;
-        this.message.error('Đổi trạng thái thất bại!');
+        this.notifyError(err?.error?.message, 'Đổi trạng thái thất bại!');
       }
     );
   }
 
   // --- Display Order Inline Update ---
-  onOrderBlur(banner: Banner, newOrder: number): void {
-    if (!banner || banner.id === undefined || banner.displayOrder === newOrder) return;
-    const oldOrder = banner.displayOrder;
-    this.savingOrderId = banner.id;
+  // Giá trị tạm khi người dùng đang gõ / bấm mũi tên; chỉ lưu khi blur hoặc Enter.
+  orderDrafts = new Map<number, number | null>();
+
+  getOrderValue(banner: Banner): number | null | undefined {
+    if (banner.id !== undefined && this.orderDrafts.has(banner.id)) {
+      return this.orderDrafts.get(banner.id);
+    }
+    return banner.displayOrder;
+  }
+
+  onOrderDraftChange(banner: Banner, value: number | null): void {
+    if (!banner || banner.id === undefined) return;
+    this.orderDrafts.set(banner.id, value);
+  }
+
+  onOrderBlur(banner: Banner): void {
+    if (!banner || banner.id === undefined) return;
+    if (this.savingOrderId === banner.id) return;
+    if (!this.orderDrafts.has(banner.id)) return;
+
+    const draft = this.orderDrafts.get(banner.id);
+    const newOrder = Number(draft);
+    const isValid = draft !== null && draft !== undefined && `${draft}` !== ''
+      && Number.isFinite(newOrder) && newOrder >= 1;
+
+    if (!isValid || banner.displayOrder === newOrder) {
+      // Giá trị không hợp lệ hoặc không đổi: bỏ giá trị tạm, hiển thị lại thứ tự cũ
+      this.orderDrafts.delete(banner.id);
+      return;
+    }
+
+    const bannerId = banner.id;
+    this.savingOrderId = bannerId;
 
     const updatedBanner: Banner = {
       ...banner,
@@ -242,16 +294,21 @@ export class BannerListComponent implements OnInit {
     };
 
     this.bannerService.saveBanner(updatedBanner).subscribe(
-      () => {
+      (res: any) => {
         this.savingOrderId = null;
+        this.orderDrafts.delete(bannerId);
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Cập nhật thứ tự thất bại!');
+          return;
+        }
         banner.displayOrder = newOrder;
         this.message.success('Cập nhật thứ tự hiển thị thành công!');
         this.loadBanners();
       },
-      () => {
+      (err: any) => {
         this.savingOrderId = null;
-        banner.displayOrder = oldOrder;
-        this.message.error('Cập nhật thứ tự thất bại!');
+        this.orderDrafts.delete(bannerId);
+        this.notifyError(err?.error?.message, 'Cập nhật thứ tự thất bại!');
       }
     );
   }
@@ -260,12 +317,16 @@ export class BannerListComponent implements OnInit {
   onDelete(banner: Banner): void {
     if (!banner.id) return;
     this.bannerService.deleteBanners([banner.id]).subscribe(
-      () => {
+      (res: any) => {
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Xóa banner thất bại!');
+          return;
+        }
         this.message.success('Xóa banner thành công!');
         this.loadBanners();
       },
-      () => {
-        this.message.error('Xóa banner thất bại!');
+      (err: any) => {
+        this.notifyError(err?.error?.message, 'Xóa banner thất bại!');
       }
     );
   }
