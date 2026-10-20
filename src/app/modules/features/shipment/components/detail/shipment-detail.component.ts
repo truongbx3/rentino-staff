@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ShipmentService } from '../../shipment.service';
 import { DeviceCheckService } from 'src/app/modules/features/device-check/device-check.service';
@@ -7,6 +7,7 @@ import { finalize } from 'rxjs/operators';
 import { TableColumn } from 'src/app/modules/shares/models/table-column.model';
 import { deviceCheckColumns } from 'src/app/modules/features/device-check/configs/device-check.colum';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { JobcardPrintModalComponent } from '../../jobcard/components/jobcard-print-modal/jobcard-print-modal.component';
 
 @Component({
     selector: 'app-shipment-detail',
@@ -198,5 +199,47 @@ export class ShipmentDetailComponent implements OnInit {
                 },
                 error: () => { }
             });
+    }
+
+    @ViewChild('jobcardModal') jobcardModal?: JobcardPrintModalComponent;
+
+    onPrintShipment(): void {
+        this.jobcardModal?.open({
+            scope: 'shipment',
+            shipmentInfo: this.shipmentInfo || { trackingNumber: this.trackingNumber },
+            devices: this.devices
+        });
+    }
+
+    onPrintAllDevices(): void {
+        if (!this.devices || this.devices.length === 0) {
+            this.message.warning('Không có thiết bị nào để in');
+            return;
+        }
+        this.jobcardModal?.open({
+            scope: 'device',
+            shipmentInfo: this.shipmentInfo || { trackingNumber: this.trackingNumber },
+            devices: this.devices
+        });
+    }
+
+    onPrintDevice(row: any): void {
+        this.jobcardModal?.open({
+            scope: 'device',
+            shipmentInfo: this.shipmentInfo || { trackingNumber: this.trackingNumber },
+            devices: this.devices,
+            singleDevice: row
+        });
+    }
+
+    onOpenDesigner(): void {
+        const id = this.route.snapshot.queryParamMap.get('id') || this.shipmentInfo?.id;
+        this.router.navigate(['/shipment/jobcard-designer'], {
+            queryParams: {
+                scope: 'device',
+                trackingNumber: this.trackingNumber,
+                ...(id ? { id } : {})
+            }
+        });
     }
 }

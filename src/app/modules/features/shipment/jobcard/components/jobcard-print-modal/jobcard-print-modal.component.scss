@@ -1,0 +1,67 @@
+.preview-panel {
+  background-color: #636b75;
+  min-height: 480px;
+}
+
+.preview-scroll-container {
+  max-height: 600px;
+  overflow: auto;
+  padding: 16px 8px;
+}
+
+.sheet-grid {
+  display: grid;
+  gap: 4px;
+  max-width: 260px;
+}
+
+.sheet-cell {
+  aspect-ratio: 5 / 3;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  user-select: none;
+
+  &:hover {
+    border-color: #1890ff;
+  }
+}
+
+.sheet-cell-used {
+  background: #f0f0f0;
+  color: #bfbfbf;
+}
+
+.sheet-cell-print {
+  background: #1890ff;
+  border-color: #1890ff;
+  color: #fff;
+}
+
+.sheet-mini {
+  position: relative;
+  width: 90px;
+  background: #fff;
+  border: 1px solid #bfbfbf;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.sheet-mini-cell {
+  position: absolute;
+  background: #e6f4ff;
+  border: 1px solid #1890ff;
+  border-radius: 1px;
+}
+
+.preview-paper-wrapper {
+  background: #ffffff;
+  border-radius: 2px;
+  transition: transform 0.15s ease;
+  user-select: none;
+}
