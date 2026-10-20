@@ -63,7 +63,7 @@ export class DevicePriceDetailModalComponent implements OnInit {
 
   buildPayload() {
     return {
-      page: this.pageIndex - 1,
+      page: this.pageIndex,
       size: this.pageSize,
       lsCondition: [
         { operator: 'EQUAL', property: 'deviceCode', propertyType: 'string', value: this.deviceCode }
@@ -86,9 +86,19 @@ export class DevicePriceDetailModalComponent implements OnInit {
         this.total = res.data?.totalElements || content.length || 0;
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi lấy danh sách cấu hình giá.');
+        this.notifyError(err?.error?.message, 'Có lỗi khi lấy danh sách cấu hình giá.');
       }
     });
+  }
+
+  /**
+   * Interceptor đã hiển thị body.message (HTTP lỗi hoặc code !== '00'),
+   * nên chỉ hiện thông báo dự phòng khi body không có message.
+   */
+  private notifyError(bodyMessage: any, fallback: string): void {
+    if (!bodyMessage) {
+      this.message.error(fallback);
+    }
   }
 
   onPageIndexChange(page: number) {
@@ -121,12 +131,16 @@ export class DevicePriceDetailModalComponent implements OnInit {
     this.devicePriceDetailService.deleteDevicePriceDetail([row.id]).pipe(
       finalize(() => this.loading.hide())
     ).subscribe({
-      next: () => {
+      next: (res) => {
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Xóa thất bại');
+          return;
+        }
         this.message.success('Xóa cấu hình giá thành công!');
         this.getAllList();
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Xóa thất bại');
+        this.notifyError(err?.error?.message, 'Xóa thất bại');
       }
     });
   }
@@ -156,13 +170,17 @@ export class DevicePriceDetailModalComponent implements OnInit {
     this.devicePriceDetailService.saveDevicePriceDetail(payload).pipe(
       finalize(() => this.isConfirmLoading = false)
     ).subscribe({
-      next: () => {
+      next: (res) => {
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Có lỗi xảy ra!');
+          return;
+        }
         this.message.success(this.isEditing ? 'Cập nhật thành công!' : 'Thêm mới thành công!');
         this.isFormVisible = false;
         this.getAllList();
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Có lỗi xảy ra!');
+        this.notifyError(err?.error?.message, 'Có lỗi xảy ra!');
       }
     });
   }

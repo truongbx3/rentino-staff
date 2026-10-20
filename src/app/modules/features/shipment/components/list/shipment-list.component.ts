@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ShipmentModel } from '../../configs/shipment.model';
 import { ShipmentService } from '../../shipment.service';
 import { LoadingService } from 'src/app/core/services/loading.service';
@@ -7,6 +7,8 @@ import { TableColumn } from 'src/app/modules/shares/models/table-column.model';
 import { shipmentColumns } from '../../configs/shipment.column';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { Router } from '@angular/router';
+import { ListStateService } from 'src/app/core/services/list-state.service';
+import { TableCustomComponent } from 'src/app/modules/shares/components/table/table.component';
 
 @Component({
   selector: 'app-shipment-list',
@@ -14,6 +16,8 @@ import { Router } from '@angular/router';
   styleUrls: ['./shipment-list.component.scss']
 })
 export class ShipmentListComponent implements OnInit {
+  @ViewChild(TableCustomComponent) tableComponent?: TableCustomComponent;
+
   columns: TableColumn[] = shipmentColumns;
   lastSearchPayload: any = null;
 
@@ -32,17 +36,40 @@ export class ShipmentListComponent implements OnInit {
     private shipmentService: ShipmentService,
     private loading: LoadingService,
     private message: NzMessageService,
-    private router: Router
+    private router: Router,
+    private listStateService: ListStateService
   ) { }
 
   ngOnInit(): void {
-    const today = new Date();
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(today.getMonth() - 1);
-    this.dateRange = [oneMonthAgo, today];
-
     this.loadStatuses();
-    this.triggerTableSearch();
+
+    const saved = this.listStateService.get<{
+      pageIndex: number;
+      pageSize: number;
+      lastSearchPayload: any;
+      dateRange: Date[];
+      selectedStatus: string | null;
+    }>('shipment-list');
+
+    if (saved) {
+      this.pageIndex = saved.pageIndex ?? 1;
+      this.pageSize = saved.pageSize ?? 10;
+      this.lastSearchPayload = saved.lastSearchPayload ?? null;
+      this.dateRange = saved.dateRange ? saved.dateRange.map((d: any) => new Date(d)) : [];
+      this.selectedStatus = saved.selectedStatus ?? null;
+
+      const payload = this.lastSearchPayload
+        ? { ...this.lastSearchPayload, page: this.pageIndex, size: this.pageSize }
+        : this.buildPayload();
+      this.getAllList(payload);
+    } else {
+      const today = new Date();
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(today.getMonth() - 1);
+      this.dateRange = [oneMonthAgo, today];
+
+      this.triggerTableSearch();
+    }
   }
 
   loadStatuses(): void {
@@ -66,9 +93,19 @@ export class ShipmentListComponent implements OnInit {
     });
   }
 
+  private saveState(): void {
+    this.listStateService.set('shipment-list', {
+      pageIndex: this.pageIndex,
+      pageSize: this.pageSize,
+      lastSearchPayload: this.lastSearchPayload,
+      dateRange: this.dateRange,
+      selectedStatus: this.selectedStatus
+    });
+  }
+
   buildPayload() {
     return {
-      page: this.pageIndex - 1,
+      page: this.pageIndex,
       size: this.pageSize,
       lsCondition: [],
       sortField: [
@@ -84,16 +121,34 @@ export class ShipmentListComponent implements OnInit {
     if (!payload) {
       payload = this.buildPayload();
     }
+    this.saveState();
     this.loading.show();
     this.shipmentService.searchShipments(payload).pipe(
       finalize(() => this.loading.hide())
-    ).subscribe(res => {
-      this.shipments = res.data.content.map((item: any, index: number) => ({
-        index: (this.pageIndex - 1) * this.pageSize + index + 1,
-        ...item
-      })) || [];
-      this.total = res.data.totalElements || 0;
+    ).subscribe({
+      next: (res) => {
+        this.shipments = (res?.data?.content || []).map((item: any, index: number) => ({
+          index: (this.pageIndex - 1) * this.pageSize + index + 1,
+          ...item
+        }));
+        this.total = res?.data?.totalElements || 0;
+      },
+      error: (err) => {
+        this.shipments = [];
+        this.total = 0;
+        this.notifyError(err?.error?.message, 'Có lỗi khi lấy danh sách vận đơn.');
+      }
     });
+  }
+
+  /**
+   * Interceptor đã hiển thị body.message (HTTP lỗi hoặc code !== '00'),
+   * nên chỉ hiện thông báo dự phòng khi body không có message.
+   */
+  private notifyError(bodyMessage: any, fallback: string): void {
+    if (!bodyMessage) {
+      this.message.error(fallback);
+    }
   }
 
   onSearch(payload: any) {
@@ -132,14 +187,16 @@ export class ShipmentListComponent implements OnInit {
     this.lastSearchPayload = {
       ...payload,
       lsCondition: conditions,
-      page: 0,
+      page: 1,
       size: this.pageSize
     };
+    this.saveState();
     this.getAllList(this.lastSearchPayload);
   }
 
   onFilterChange() {
     this.pageIndex = 1;
+    this.saveState();
     this.triggerTableSearch();
   }
 
@@ -192,7 +249,7 @@ export class ShipmentListComponent implements OnInit {
     }
 
     const payload = {
-      page: this.pageIndex - 1,
+      page: this.pageIndex,
       size: this.pageSize,
       lsCondition: conditions,
       sortField: [this.defaultSort]
@@ -203,6 +260,10 @@ export class ShipmentListComponent implements OnInit {
   }
 
   resetFilters() {
+    this.listStateService.clear('shipment-list');
+    this.listStateService.clear('table:shipment-list');
+    this.tableComponent?.reset();
+
     const today = new Date();
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(today.getMonth() - 1);
@@ -218,11 +279,16 @@ export class ShipmentListComponent implements OnInit {
     if (this.selectedStatus) {
       req.shipmentStatus = this.selectedStatus;
     }
+    // Chuẩn hoá giờ theo giờ địa phương để khớp với bộ lọc danh sách (00:00 – 23:59)
     if (this.dateRange && this.dateRange[0]) {
-      req.fromDate = this.dateRange[0];
+      const fromDate = new Date(this.dateRange[0]);
+      fromDate.setHours(0, 0, 0, 0);
+      req.fromDate = fromDate;
     }
     if (this.dateRange && this.dateRange[1]) {
-      req.toDate = this.dateRange[1];
+      const toDate = new Date(this.dateRange[1]);
+      toDate.setHours(23, 59, 59, 999);
+      req.toDate = toDate;
     }
 
     // Merge in conditions from table if they exist
@@ -255,7 +321,7 @@ export class ShipmentListComponent implements OnInit {
         this.message.success('Xuất file excel thành công!');
       },
       error: (err) => {
-        this.message.error('Có lỗi xảy ra khi xuất file!');
+        this.notifyError(err?.error?.message, 'Có lỗi xảy ra khi xuất file!');
       }
     });
   }
@@ -263,8 +329,10 @@ export class ShipmentListComponent implements OnInit {
   onPageIndexChange(page: number) {
     this.pageIndex = page;
     const payload = this.lastSearchPayload
-      ? { ...this.lastSearchPayload, page: page - 1 }
+      ? { ...this.lastSearchPayload, page: page }
       : this.buildPayload();
+    this.lastSearchPayload = payload;
+    this.saveState();
     this.getAllList(payload);
   }
 
@@ -272,8 +340,10 @@ export class ShipmentListComponent implements OnInit {
     this.pageSize = size;
     this.pageIndex = 1;
     const payload = this.lastSearchPayload
-      ? { ...this.lastSearchPayload, size, page: 0 }
+      ? { ...this.lastSearchPayload, size, page: 1 }
       : this.buildPayload();
+    this.lastSearchPayload = payload;
+    this.saveState();
     this.getAllList(payload);
   }
 
@@ -282,13 +352,16 @@ export class ShipmentListComponent implements OnInit {
     this.shipmentService.receiveShipment(row.trackingNumber).pipe(
       finalize(() => this.loading.hide())
     ).subscribe({
-      next: () => {
+      next: (res) => {
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Có lỗi xảy ra, vui lòng thử lại!');
+          return;
+        }
         this.message.success('Cập nhật trạng thái thành công!');
         this.getAllList(this.lastSearchPayload || this.buildPayload());
       },
       error: (err) => {
-        const errMsg = err?.error?.message || err?.message || 'Có lỗi xảy ra, vui lòng thử lại!';
-        this.message.error(errMsg);
+        this.notifyError(err?.error?.message, 'Có lỗi xảy ra, vui lòng thử lại!');
       }
     });
   }

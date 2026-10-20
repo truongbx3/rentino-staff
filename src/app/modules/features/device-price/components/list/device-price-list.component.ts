@@ -11,6 +11,8 @@ import { devicePriceColumns } from '../../configs/device-price.column';
 import { DevicePriceModel } from '../../configs/device-price.model';
 import { DatePipe } from '@angular/common';
 
+import { ListStateService } from 'src/app/core/services/list-state.service';
+
 @Component({
   selector: 'app-device-price-list',
   templateUrl: './device-price-list.component.html',
@@ -66,13 +68,39 @@ export class DevicePriceListComponent implements OnInit {
     private message: NzMessageService,
     private fb: FormBuilder,
     private router: Router,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private listStateService: ListStateService
   ) {
     this.createForm();
   }
 
   ngOnInit(): void {
-    this.getAllList();
+    const saved = this.listStateService.get<{
+      pageIndex: number;
+      pageSize: number;
+      lastSearchPayload: any;
+    }>('device-price-list');
+
+    if (saved) {
+      this.pageIndex = saved.pageIndex ?? 1;
+      this.pageSize = saved.pageSize ?? 10;
+      this.lastSearchPayload = saved.lastSearchPayload ?? null;
+
+      const payload = this.lastSearchPayload
+        ? { ...this.lastSearchPayload, page: this.pageIndex, size: this.pageSize }
+        : this.buildPayload();
+      this.getAllList(payload);
+    } else {
+      this.getAllList();
+    }
+  }
+
+  private saveState(): void {
+    this.listStateService.set('device-price-list', {
+      pageIndex: this.pageIndex,
+      pageSize: this.pageSize,
+      lastSearchPayload: this.lastSearchPayload
+    });
   }
 
   createForm(): void {
@@ -90,7 +118,7 @@ export class DevicePriceListComponent implements OnInit {
 
   buildPayload() {
     return {
-      page: this.pageIndex - 1,
+      page: this.pageIndex,
       size: this.pageSize,
       lsCondition: [],
       sortField: [
@@ -106,6 +134,7 @@ export class DevicePriceListComponent implements OnInit {
     if (!payload) {
       payload = this.buildPayload();
     }
+    this.saveState();
     this.loading.show();
     this.devicePriceService.searchDevicePrices(payload).pipe(
       finalize(() => this.loading.hide())
@@ -119,26 +148,39 @@ export class DevicePriceListComponent implements OnInit {
         this.total = res.data?.totalElements || content.length || 0;
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi lấy danh sách.');
+        this.notifyError(err?.error?.message, 'Có lỗi khi lấy danh sách.');
       }
     });
+  }
+
+  /**
+   * Interceptor đã hiển thị body.message (HTTP lỗi hoặc code !== '00'),
+   * nên chỉ hiện thông báo dự phòng khi body không có message.
+   */
+  private notifyError(bodyMessage: any, fallback: string): void {
+    if (!bodyMessage) {
+      this.message.error(fallback);
+    }
   }
 
   onSearch(payload: any) {
     this.pageIndex = 1;
     this.lastSearchPayload = {
       ...payload,
-      page: 0,
+      page: 1,
       size: this.pageSize
     };
+    this.saveState();
     this.getAllList(this.lastSearchPayload);
   }
 
   onPageIndexChange(page: number) {
     this.pageIndex = page;
     const payload = this.lastSearchPayload
-      ? { ...this.lastSearchPayload, page: page - 1 }
+      ? { ...this.lastSearchPayload, page: page }
       : this.buildPayload();
+    this.lastSearchPayload = payload;
+    this.saveState();
     this.getAllList(payload);
   }
 
@@ -146,8 +188,10 @@ export class DevicePriceListComponent implements OnInit {
     this.pageSize = size;
     this.pageIndex = 1;
     const payload = this.lastSearchPayload
-      ? { ...this.lastSearchPayload, size, page: 0 }
+      ? { ...this.lastSearchPayload, size, page: 1 }
       : this.buildPayload();
+    this.lastSearchPayload = payload;
+    this.saveState();
     this.getAllList(payload);
   }
 
@@ -175,12 +219,16 @@ export class DevicePriceListComponent implements OnInit {
     this.devicePriceService.deleteDevicePrice([row.id]).pipe(
       finalize(() => this.loading.hide())
     ).subscribe({
-      next: () => {
+      next: (res) => {
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Xóa thất bại');
+          return;
+        }
         this.message.success('Xóa thiết bị thành công!');
         this.getAllList(this.lastSearchPayload || this.buildPayload());
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Xóa thất bại');
+        this.notifyError(err?.error?.message, 'Xóa thất bại');
       }
     });
   }
@@ -207,13 +255,17 @@ export class DevicePriceListComponent implements OnInit {
     this.devicePriceService.saveDevicePrice(payload).pipe(
       finalize(() => this.isConfirmLoading = false)
     ).subscribe({
-      next: () => {
+      next: (res) => {
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Có lỗi xảy ra, vui lòng kiểm tra lại!');
+          return;
+        }
         this.message.success(this.isEditing ? 'Cập nhật thành công!' : 'Thêm mới thành công!');
         this.isVisible = false;
         this.getAllList(this.lastSearchPayload || this.buildPayload());
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Có lỗi xảy ra, vui lòng kiểm tra lại!');
+        this.notifyError(err?.error?.message, 'Có lỗi xảy ra, vui lòng kiểm tra lại!');
       }
     });
   }
@@ -235,7 +287,7 @@ export class DevicePriceListComponent implements OnInit {
         this.message.success('Xuất Excel thành công!');
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Có lỗi xảy ra khi xuất Excel.');
+        this.notifyError(err?.error?.message, 'Có lỗi xảy ra khi xuất Excel.');
       }
     });
   }
@@ -270,10 +322,14 @@ export class DevicePriceListComponent implements OnInit {
       finalize(() => this.isCheckLoading = false)
     ).subscribe({
       next: (res) => {
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Có lỗi khi kiểm tra.');
+          return;
+        }
         this.activeCount = res.data;
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi kiểm tra.');
+        this.notifyError(err?.error?.message, 'Có lỗi khi kiểm tra.');
       }
     });
   }
@@ -289,12 +345,16 @@ export class DevicePriceListComponent implements OnInit {
       finalize(() => this.isExpireLoading = false)
     ).subscribe({
       next: (res) => {
-        this.expireResult = res.data;
-        this.message.success(`Đã cập nhật ${res.data} bản ghi thành công!`);
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Có lỗi khi cập nhật.');
+          return;
+        }
+        this.expireResult = res.data ?? 0;
+        this.message.success(`Đã cập nhật ${res.data ?? 0} bản ghi thành công!`);
         this.activeCount = null;
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi cập nhật.');
+        this.notifyError(err?.error?.message, 'Có lỗi khi cập nhật.');
       }
     });
   }
@@ -337,10 +397,14 @@ export class DevicePriceListComponent implements OnInit {
       finalize(() => this.isValidateLoading = false)
     ).subscribe({
       next: (res) => {
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Có lỗi khi validate.');
+          return;
+        }
         this.validateResult = res.data;
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi validate.');
+        this.notifyError(err?.error?.message, 'Có lỗi khi validate.');
       }
     });
   }
@@ -361,11 +425,15 @@ export class DevicePriceListComponent implements OnInit {
       finalize(() => this.isImportLoading = false)
     ).subscribe({
       next: (res) => {
+        if (res?.code !== '00') {
+          this.notifyError(res?.message, 'Có lỗi khi import.');
+          return;
+        }
         this.importResult = res.data;
-        this.message.success(`Import thành công: ${res.data.totalInserted} bản ghi!`);
+        this.message.success(`Import thành công: ${res.data?.totalInserted ?? 0} bản ghi!`);
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi import.');
+        this.notifyError(err?.error?.message, 'Có lỗi khi import.');
       }
     });
   }
@@ -384,7 +452,7 @@ export class DevicePriceListComponent implements OnInit {
 
   loadImportHistory(): void {
     const payload = {
-      page: this.historyPageIndex - 1,
+      page: this.historyPageIndex,
       size: this.historyPageSize,
       lsCondition: [],
       sortField: [{ fieldName: 'createdDate', sort: 'DESC' }]
@@ -399,7 +467,7 @@ export class DevicePriceListComponent implements OnInit {
         this.historyTotal = res.data?.totalElements || content.length || 0;
       },
       error: (err) => {
-        this.message.error(err?.error?.message || err?.message || 'Có lỗi khi tải lịch sử.');
+        this.notifyError(err?.error?.message, 'Có lỗi khi tải lịch sử.');
       }
     });
   }

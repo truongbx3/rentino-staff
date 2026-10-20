@@ -42,7 +42,10 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
   }
 
   navigateTo(url: string): void {
-    this.router.navigate([url]);
+    if (!url) return;
+    // navigateByUrl giữ nguyên query string (vd: '/shipment/detail/ABC?id=5'),
+    // còn navigate([url]) sẽ encode '?' vào path segment.
+    this.router.navigateByUrl(url);
   }
 
   goHome(): void {

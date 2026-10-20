@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DeviceCheckModel } from '../../configs/device-check.model';
 import { DeviceCheckService } from '../../device-check.service';
 import { accessoryOptions, deviceStatusOptions, modelItems } from '../../configs/device.check.constant';
@@ -8,18 +8,20 @@ import { finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { TableColumn } from 'src/app/modules/shares/models/table-column.model';
 import { deviceCheckColumns } from '../../configs/device-check.colum';
+import { ListStateService } from 'src/app/core/services/list-state.service';
 
 @Component({
   selector: 'app-device-list',
   templateUrl: './device-list.component.html',
   styleUrls: ['./device-list.component.scss']
 })
-export class DeviceListComponent {
+export class DeviceListComponent implements OnInit {
   constructor(
     private deviceCheckService: DeviceCheckService,
     private modalService: NzModalService,
     private loading: LoadingService,
-    private router: Router
+    private router: Router,
+    private listStateService: ListStateService
   ) { }
 
   columns: TableColumn[] = deviceCheckColumns;
@@ -48,7 +50,33 @@ export class DeviceListComponent {
 
   ngOnInit(): void {
     this.loadStatusOptions();
-    this.getAllList();
+
+    const saved = this.listStateService.get<{
+      pageIndex: number;
+      pageSize: number;
+      lastSearchPayload: any;
+    }>('device-list');
+
+    if (saved) {
+      this.pageIndex = saved.pageIndex ?? 1;
+      this.pageSize = saved.pageSize ?? 10;
+      this.lastSearchPayload = saved.lastSearchPayload ?? null;
+
+      const payload = this.lastSearchPayload
+        ? { ...this.lastSearchPayload, page: this.pageIndex, size: this.pageSize }
+        : this.buildPayload();
+      this.getAllList(payload);
+    } else {
+      this.getAllList();
+    }
+  }
+
+  private saveState(): void {
+    this.listStateService.set('device-list', {
+      pageIndex: this.pageIndex,
+      pageSize: this.pageSize,
+      lastSearchPayload: this.lastSearchPayload
+    });
   }
 
   private loadStatusOptions(): void {
@@ -75,16 +103,24 @@ export class DeviceListComponent {
     if (!payload) {
       payload = this.buildPayload();
     }
+    this.saveState();
     this.loading.show();
 
     this.deviceCheckService.getAllDevices(payload).pipe((finalize(() => {
       this.loading.hide();
-    }))).subscribe(res => {
-      this.devices = res.data.content.map((item: any, index: number) => ({
-        index: (this.pageIndex - 1) * this.pageSize + index + 1,
-        ...item
-      })) || [];
-      this.total = res.data.totalElements || 0;
+    }))).subscribe({
+      next: (res: any) => {
+        const content = res?.data?.content || [];
+        this.devices = content.map((item: any, index: number) => ({
+          index: (this.pageIndex - 1) * this.pageSize + index + 1,
+          ...item
+        }));
+        this.total = res?.data?.totalElements || 0;
+      },
+      error: () => {
+        this.devices = [];
+        this.total = 0;
+      }
     });
   }
 
@@ -131,7 +167,7 @@ export class DeviceListComponent {
   buildPayload() {
     const conditions: any[] = [];
     return {
-      page: this.pageIndex - 1,
+      page: this.pageIndex,
       size: this.pageSize,
       lsCondition: conditions,
       sortField: [
@@ -148,19 +184,20 @@ export class DeviceListComponent {
 
     this.lastSearchPayload = {
       ...payload,
-      page: 0,
+      page: 1,
       size: this.pageSize
     };
-
+    this.saveState();
     this.getAllList(this.lastSearchPayload);
   }
   onPageIndexChange(page: number) {
     this.pageIndex = page;
 
     const payload = this.lastSearchPayload
-      ? { ...this.lastSearchPayload, page: page - 1 }
+      ? { ...this.lastSearchPayload, page: page }
       : this.buildPayload();
-
+    this.lastSearchPayload = payload;
+    this.saveState();
     this.getAllList(payload);
   }
 
@@ -169,9 +206,10 @@ export class DeviceListComponent {
     this.pageIndex = 1;
 
     const payload = this.lastSearchPayload
-      ? { ...this.lastSearchPayload, size, page: 0 }
+      ? { ...this.lastSearchPayload, size, page: 1 }
       : this.buildPayload();
-
+    this.lastSearchPayload = payload;
+    this.saveState();
     this.getAllList(payload);
   }
 

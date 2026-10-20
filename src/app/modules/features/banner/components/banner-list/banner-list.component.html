@@ -85,11 +85,13 @@
         <!-- Display Order -->
         <td class="text-center">
           <nz-input-number
-            [ngModel]="banner.displayOrder"
+            [ngModel]="getOrderValue(banner)"
             [nzMin]="1"
             [nzStep]="1"
             [nzDisabled]="savingOrderId === banner.id"
-            (ngModelChange)="onOrderBlur(banner, $event)"
+            (ngModelChange)="onOrderDraftChange(banner, $event)"
+            (nzBlur)="onOrderBlur(banner)"
+            (keyup.enter)="onOrderBlur(banner)"
             style="width: 80px;"
             class="rounded"
           ></nz-input-number>
@@ -97,10 +99,13 @@
         <!-- Status Toggle -->
         <td class="text-center">
           <div class="d-flex align-items-center justify-content-center gap-2 py-1">
+            <!-- nzControl: switch chỉ hiển thị theo banner.status, không tự đổi khi click;
+                 lưu thất bại (HTTP lỗi hoặc code !== '00') thì giữ nguyên trạng thái cũ -->
             <nz-switch
               [ngModel]="banner.status === 1"
+              [nzControl]="true"
               [nzLoading]="togglingBannerId === banner.id"
-              (ngModelChange)="onStatusToggle(banner, $event)"
+              (click)="onStatusToggle(banner, banner.status !== 1)"
               nz-tooltip
               [nzTooltipTitle]="'Bật / tắt trạng thái banner'"
             ></nz-switch>

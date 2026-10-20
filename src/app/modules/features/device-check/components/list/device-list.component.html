@@ -131,6 +131,7 @@
     </nz-col>
   </nz-row> -->
 <app-table-custom [columns]="columns" [data]="devices" [pageIndex]="pageIndex" [pageSize]="pageSize" [total]="total"
+  [stateKey]="'device-list'"
   (search)="onSearch($event)" [actionTemplate]="actionTpl" (pageIndexChange)="onPageIndexChange($event)"
   (pageSizeChange)="onPageSizeChange($event)">
 </app-table-custom>
