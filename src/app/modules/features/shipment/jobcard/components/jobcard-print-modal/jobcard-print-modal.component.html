@@ -55,6 +55,15 @@
               Mẫu có bảng danh sách nên dùng chế độ in thường.
             </div>
           </div>
+
+          <!-- Ô tuỳ chọn của mẫu (printToggleKey), mỗi key một checkbox -->
+          <div class="border-top mt-2 pt-2" *ngIf="toggleOptions.length">
+            <div *ngFor="let opt of toggleOptions">
+              <label nz-checkbox [(ngModel)]="printToggles[opt.key]" (ngModelChange)="onPrintToggleChange()">
+                <span class="fw-semibold">{{ opt.label }}</span>
+              </label>
+            </div>
+          </div>
         </div>
 
         <!-- Tờ tem dán: chọn khổ tờ + ô bắt đầu -->

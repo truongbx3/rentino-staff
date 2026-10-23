@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { JobcardTemplate, SheetLayout } from '../models/jobcard.model';
+import { JobcardTemplate, PrintToggles, SheetLayout } from '../models/jobcard.model';
 import { escapeHtml, JobcardRenderService } from './jobcard-render.service';
 
 /**
@@ -121,7 +121,8 @@ export class JobcardSheetService {
     template: JobcardTemplate,
     pagesData: any[],
     customFieldValues: Record<string, string> | Record<string, string>[],
-    startIndex: number
+    startIndex: number,
+    toggles: PrintToggles = {}
   ): string {
     const perSheet = this.cellsPerSheet(layout);
     const sheets = this.sheetsNeeded(layout, startIndex, pagesData.length);
@@ -137,7 +138,7 @@ export class JobcardSheetService {
       const sheetNo = Math.floor(cell / perSheet);
       const { x, y } = this.cellPosition(layout, cell);
       const vals = Array.isArray(customFieldValues) ? (customFieldValues[i] || {}) : customFieldValues;
-      const labelHtml = this.renderService.renderSinglePage(template, data, vals, []);
+      const labelHtml = this.renderService.renderSinglePage(template, data, vals, [], toggles);
       sheetBodies[sheetNo] += `
         <div style="position: absolute; left: ${x + padX}mm; top: ${y + padY}mm; width: ${scaledW}mm; height: ${scaledH}mm; overflow: hidden;">
           <div style="width: ${template.paper.width}mm; height: ${template.paper.height}mm; transform: scale(${scale}); transform-origin: top left;">

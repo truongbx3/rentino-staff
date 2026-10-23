@@ -4,6 +4,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import {
   JobcardTemplate,
+  PrintToggles,
   TemplateScope
 } from '../../models/jobcard.model';
 import { JobcardTemplateService } from '../../services/jobcard-template.service';
@@ -16,6 +17,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 const THERMAL_MODE_KEY = 'jobcard_thermal_mode';
 const THERMAL_DPI_KEY = 'jobcard_thermal_dpi';
 const PAPER_MODE_KEY = 'jobcard_paper_mode';
+const PRINT_TOGGLES_KEY = 'jobcard_print_toggles_v1';
 
 interface SheetCellView {
   index: number;
@@ -66,6 +68,10 @@ export class JobcardPrintModalComponent implements OnInit {
   // In nhiệt sắc nét: raster đen trắng đúng DPI máy in (mặc định bật, nhớ lựa chọn theo trình duyệt)
   thermalMode = this.readPref(THERMAL_MODE_KEY, 'true') === 'true';
   thermalDpi = Number(this.readPref(THERMAL_DPI_KEY, '203')) || 203;
+
+  // Ô tuỳ chọn (printToggleKey) của mẫu đang chọn; mặc định tắt, nhớ theo trình duyệt
+  toggleOptions: { key: string; label: string }[] = [];
+  printToggles: PrintToggles = this.readToggles();
 
   // Loại giấy: cuộn tem (in từng tem) hoặc tờ tem dán nhiều ô
   paperMode: 'roll' | 'sheet' = this.readPref(PAPER_MODE_KEY, 'roll') === 'sheet' ? 'sheet' : 'roll';
@@ -285,6 +291,30 @@ export class JobcardPrintModalComponent implements OnInit {
     this.updatePreview();
   }
 
+  onPrintToggleChange(): void {
+    this.writePref(PRINT_TOGGLES_KEY, JSON.stringify(this.printToggles));
+    this.updatePreview();
+  }
+
+  private readToggles(): PrintToggles {
+    try {
+      const parsed = JSON.parse(this.readPref(PRINT_TOGGLES_KEY, '{}'));
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private buildToggleOptions(template: JobcardTemplate | null): { key: string; label: string }[] {
+    const map = new Map<string, string>();
+    (template?.elements || []).forEach(el => {
+      if (el.printToggleKey && !map.has(el.printToggleKey)) {
+        map.set(el.printToggleKey, 'In ' + (el.label || el.printToggleKey));
+      }
+    });
+    return Array.from(map, ([key, label]) => ({ key, label }));
+  }
+
   private readPref(key: string, fallback: string): string {
     try {
       return localStorage.getItem(key) ?? fallback;
@@ -342,6 +372,7 @@ export class JobcardPrintModalComponent implements OnInit {
   onTemplateChange(templateId: string): void {
     this.selectedTemplateId = templateId;
     this.selectedTemplate = this.templates.find(t => t.id === templateId) || null;
+    this.toggleOptions = this.buildToggleOptions(this.selectedTemplate);
 
     if (!this.selectedTemplate) {
       this.customFields = [];
@@ -448,7 +479,7 @@ export class JobcardPrintModalComponent implements OnInit {
 
     if (this.useThermal) {
       // Xem trước đúng ảnh sẽ gửi xuống máy in
-      this.previewImage = this.thermalService.renderPage(this.selectedTemplate, dataForPreview, customValsForPreview, this.thermalDpi);
+      this.previewImage = this.thermalService.renderPage(this.selectedTemplate, dataForPreview, customValsForPreview, this.thermalDpi, this.printToggles);
       this.previewHtml = '';
       return;
     }
@@ -457,7 +488,8 @@ export class JobcardPrintModalComponent implements OnInit {
       this.selectedTemplate,
       dataForPreview,
       customValsForPreview,
-      this.devices
+      this.devices,
+      this.printToggles
     );
 
     this.previewImage = null;
@@ -535,7 +567,7 @@ export class JobcardPrintModalComponent implements OnInit {
           this.message.warning('Vui lòng chọn khổ tờ tem');
           return;
         }
-        const html = this.sheetService.buildSheetHtml(layout, this.selectedTemplate, pagesData, customValsToPrint, this.sheetStartIndex);
+        const html = this.sheetService.buildSheetHtml(layout, this.selectedTemplate, pagesData, customValsToPrint, this.sheetStartIndex, this.printToggles);
         success = await this.renderService.printHtmlDocument(html);
         if (success) {
           this.confirmSheetAdvance(layout, pagesData.length);
@@ -544,7 +576,7 @@ export class JobcardPrintModalComponent implements OnInit {
         const tpl = this.selectedTemplate;
         const dataUrls = pagesData.map((page, i) => {
           const vals = Array.isArray(customValsToPrint) ? (customValsToPrint[i] || {}) : customValsToPrint;
-          return this.thermalService.renderPage(tpl, page, vals, this.thermalDpi);
+          return this.thermalService.renderPage(tpl, page, vals, this.thermalDpi, this.printToggles);
         });
         success = await this.renderService.printRasterPages(tpl.paper.width, tpl.paper.height, dataUrls, tpl.name);
       } else {
@@ -552,7 +584,8 @@ export class JobcardPrintModalComponent implements OnInit {
           this.selectedTemplate,
           pagesData,
           customValsToPrint,
-          this.devices
+          this.devices,
+          this.printToggles
         );
       }
 
