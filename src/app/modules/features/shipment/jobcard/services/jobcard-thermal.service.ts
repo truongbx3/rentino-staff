@@ -1,5 +1,13 @@
 import { Injectable } from '@angular/core';
-import { getDeviceOs, JobcardElement, JobcardTemplate } from '../models/jobcard.model';
+import {
+  getDeviceOs,
+  getEffectiveWidth,
+  getPrintableElements,
+  JobcardElement,
+  JobcardTemplate,
+  PrintToggles,
+  resolveDisplayValue
+} from '../models/jobcard.model';
 import { JobcardRenderService } from './jobcard-render.service';
 
 /**
@@ -28,7 +36,8 @@ export class JobcardThermalService {
     template: JobcardTemplate,
     data: any,
     customFieldValues: Record<string, string> = {},
-    dpi = 203
+    dpi = 203,
+    toggles: PrintToggles = {}
   ): string {
     const dotsPerMm = dpi / 25.4;
     const widthDots = Math.round(template.paper.width * dotsPerMm);
@@ -42,8 +51,7 @@ export class JobcardThermalService {
     ctx.fillRect(0, 0, widthDots, heightDots);
 
     const os = getDeviceOs(data);
-    const elements = [...(template.elements || [])]
-      .filter(el => !el.visibleWhen || el.visibleWhen === 'always' || el.visibleWhen === os)
+    const elements = getPrintableElements(template.elements || [], os, toggles)
       .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
 
     const px = (mm: number) => mm * dotsPerMm;
@@ -53,7 +61,7 @@ export class JobcardThermalService {
       ctx.save();
       const x = Math.round(px(el.x));
       const y = Math.round(px(el.y));
-      const w = Math.round(px(el.width));
+      const w = Math.round(px(getEffectiveWidth(el, template.elements || [], os, toggles)));
       const h = Math.round(px(el.height));
 
       ctx.beginPath();
@@ -69,8 +77,7 @@ export class JobcardThermalService {
           this.drawLine(ctx, el, x, y, w, h, ptToDots);
           break;
         case 'data_field': {
-          const raw = el.fieldKey ? data?.[el.fieldKey] : '';
-          const value = this.renderService.formatValue(raw, el.format);
+          const value = resolveDisplayValue(el, data, (v, f) => this.renderService.formatValue(v, f));
           const label = el.showLabel && el.label ? el.label : '';
           this.drawField(ctx, el, label, value, false, x, y, w, ptToDots, px);
           break;

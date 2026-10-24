@@ -173,7 +173,12 @@ export class JobcardDesignerComponent implements OnInit, AfterViewInit, OnDestro
       this.currentTemplate,
       data,
       {},
-      this.previewDevicesList
+      this.previewDevicesList,
+      // Trình thiết kế luôn hiện các ô tuỳ chọn khi in
+      (this.currentTemplate.elements || []).reduce((acc: Record<string, boolean>, e) => {
+        if (e.printToggleKey) acc[e.printToggleKey] = true;
+        return acc;
+      }, {})
     );
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }

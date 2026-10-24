@@ -25,6 +25,7 @@ export type ElementType =
 
 export type ValueFormat =
   | 'text'
+  | 'uppercase'
   | 'currency'
   | 'datetime'
   | 'date'
@@ -50,6 +51,10 @@ export interface JobcardElement {
 
   // Visibility condition
   visibleWhen?: 'always' | 'android' | 'ios';
+  showWhenStatus?: string; // Nếu set và data.status khác giá trị này thì in placeholderText thay giá trị thật
+  placeholderText?: string;
+  printToggleKey?: string; // Chỉ in khi toggle key này đang bật trong hộp thoại in
+  expandWhenHidden?: { elementId: string; width: number }; // Nếu elementId không được in thì dùng width này
 
   // Typography & common style
   fontSize?: number; // pt (default 10)
@@ -214,5 +219,55 @@ export function getDeviceOs(data: any): 'ios' | 'android' | 'other' {
     return 'other';
   }
   return 'android';
+}
+
+/** Trạng thái bật/tắt các ô tuỳ chọn trong hộp thoại in, theo printToggleKey. */
+export type PrintToggles = Record<string, boolean>;
+
+/** Element có được in không (theo OS thiết bị + toggle trong hộp thoại in). */
+export function isElementPrintable(
+  el: JobcardElement,
+  os: 'ios' | 'android' | 'other',
+  toggles: PrintToggles = {}
+): boolean {
+  if (el.visibleWhen && el.visibleWhen !== 'always' && el.visibleWhen !== os) return false;
+  if (el.printToggleKey && !toggles[el.printToggleKey]) return false;
+  return true;
+}
+
+/** Danh sách element sẽ in (đã lọc), giữ nguyên thứ tự gốc. */
+export function getPrintableElements(
+  elements: JobcardElement[],
+  os: 'ios' | 'android' | 'other',
+  toggles: PrintToggles = {}
+): JobcardElement[] {
+  return (elements || []).filter(el => isElementPrintable(el, os, toggles));
+}
+
+/** Chiều rộng hiệu lực: dùng expandWhenHidden.width nếu element tham chiếu không được in. */
+export function getEffectiveWidth(
+  el: JobcardElement,
+  elements: JobcardElement[],
+  os: 'ios' | 'android' | 'other',
+  toggles: PrintToggles = {}
+): number {
+  const rule = el.expandWhenHidden;
+  if (!rule) return el.width;
+  const target = (elements || []).find(e => e.id === rule.elementId);
+  if (!target || !isElementPrintable(target, os, toggles)) return rule.width;
+  return el.width;
+}
+
+/** Giá trị hiển thị: nếu showWhenStatus không khớp data.status thì trả placeholderText, ngược lại format giá trị thật. */
+export function resolveDisplayValue(
+  el: JobcardElement,
+  data: any,
+  formatter: (value: any, format?: ValueFormat) => string
+): string {
+  if (el.showWhenStatus && data?.status !== el.showWhenStatus) {
+    return el.placeholderText || '';
+  }
+  const raw = el.fieldKey ? data?.[el.fieldKey] : '';
+  return formatter(raw, el.format);
 }
 

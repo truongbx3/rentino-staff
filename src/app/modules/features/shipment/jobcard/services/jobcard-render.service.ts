@@ -1,8 +1,12 @@
 import { Injectable } from '@angular/core';
 import {
   getDeviceOs,
+  getEffectiveWidth,
+  getPrintableElements,
   JobcardElement,
   JobcardTemplate,
+  PrintToggles,
+  resolveDisplayValue,
   TableColumnDef,
   ValueFormat
 } from '../models/jobcard.model';
@@ -87,6 +91,8 @@ export class JobcardRenderService {
       case 'status': {
         return this.deviceStatusMap[value] || this.shipmentStatusMap[value] || String(value);
       }
+      case 'uppercase':
+        return String(value).toUpperCase();
       case 'text':
       default:
         return String(value);
@@ -129,17 +135,14 @@ export class JobcardRenderService {
     template: JobcardTemplate,
     data: any,
     customFieldValues: Record<string, string> = {},
-    devicesListForTable: any[] = []
+    devicesListForTable: any[] = [],
+    toggles: PrintToggles = {}
   ): string {
     const os = getDeviceOs(data);
-    const sortedElements = [...template.elements]
-      .filter(el => {
-        if (!el.visibleWhen || el.visibleWhen === 'always') return true;
-        return el.visibleWhen === os;
-      })
+    const sortedElements = getPrintableElements(template.elements, os, toggles)
       .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
     const elementsHtml = sortedElements.map(el => {
-      return this.renderElement(el, template, data, customFieldValues, devicesListForTable);
+      return this.renderElement(el, template, data, customFieldValues, devicesListForTable, getEffectiveWidth(el, template.elements, os, toggles));
     }).join('\n');
 
     return `
@@ -171,13 +174,14 @@ export class JobcardRenderService {
     template: JobcardTemplate,
     data: any,
     customFieldValues: Record<string, string>,
-    devicesListForTable: any[]
+    devicesListForTable: any[],
+    width: number = el.width
   ): string {
     const styleParts: string[] = [
       'position: absolute',
       `left: ${el.x}mm`,
       `top: ${el.y}mm`,
-      `width: ${el.width}mm`,
+      `width: ${width}mm`,
       `height: ${el.height}mm`,
       'box-sizing: border-box',
       'overflow: hidden',
@@ -207,8 +211,7 @@ export class JobcardRenderService {
 
     switch (el.type) {
       case 'data_field': {
-        const rawVal = el.fieldKey ? data?.[el.fieldKey] : '';
-        const formattedVal = this.formatValue(rawVal, el.format);
+        const formattedVal = resolveDisplayValue(el, data, (v, f) => this.formatValue(v, f));
         if (el.labelPosition === 'top') {
           const topLabel = el.showLabel && el.label ? this.renderTopLabel(el.label) : '';
           contentHtml = `${topLabel}<div class="field-value" style="line-height: 1.2;">${escapeHtml(formattedVal)}</div>`;
@@ -337,14 +340,15 @@ export class JobcardRenderService {
     template: JobcardTemplate,
     pagesData: any[],
     customFieldValues: Record<string, string> | Record<string, string>[] = {},
-    devicesListForTable: any[] = []
+    devicesListForTable: any[] = [],
+    toggles: PrintToggles = {}
   ): string {
     const isArray = Array.isArray(customFieldValues);
     const pagesHtml = pagesData.map((data, index) => {
       const pageCustomVals = isArray
         ? (customFieldValues as Record<string, string>[])[index] || {}
         : (customFieldValues as Record<string, string>);
-      return this.renderSinglePage(template, data, pageCustomVals, devicesListForTable);
+      return this.renderSinglePage(template, data, pageCustomVals, devicesListForTable, toggles);
     }).join('\n');
 
     return `<!DOCTYPE html>
@@ -416,9 +420,10 @@ export class JobcardRenderService {
     template: JobcardTemplate,
     pagesData: any[],
     customFieldValues: Record<string, string> | Record<string, string>[] = {},
-    devicesListForTable: any[] = []
+    devicesListForTable: any[] = [],
+    toggles: PrintToggles = {}
   ): Promise<boolean> {
-    return this.printHtmlDocument(this.generatePrintHtml(template, pagesData, customFieldValues, devicesListForTable));
+    return this.printHtmlDocument(this.generatePrintHtml(template, pagesData, customFieldValues, devicesListForTable, toggles));
   }
 
   /**

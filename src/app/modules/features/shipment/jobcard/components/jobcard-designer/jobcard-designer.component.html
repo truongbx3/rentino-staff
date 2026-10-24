@@ -1231,6 +1231,7 @@
             <label class="form-label small text-muted">Định dạng hiển thị:</label>
             <nz-select class="w-100" [(ngModel)]="selectedElement.format" (ngModelChange)="onPropertyChange()">
               <nz-option nzValue="text" nzLabel="Mặc định (Văn bản)"></nz-option>
+              <nz-option nzValue="uppercase" nzLabel="Văn bản IN HOA"></nz-option>
               <nz-option nzValue="currency" nzLabel="Tiền tệ (VND)"></nz-option>
               <nz-option nzValue="datetime" nzLabel="Ngày giờ (dd/MM/yyyy HH:mm)"></nz-option>
               <nz-option nzValue="date" nzLabel="Ngày (dd/MM/yyyy)"></nz-option>

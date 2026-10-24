@@ -13,7 +13,7 @@ import {
 export class JobcardTemplateService {
   private readonly STORAGE_KEY = 'jobcard_templates_v1';
   private readonly LAST_USED_KEY = 'jobcard_last_used_template_v1';
-  private readonly SEED_VERSION = 6;
+  private readonly SEED_VERSION = 9;
 
   constructor() {
     this.ensureSeedData();
@@ -316,7 +316,7 @@ export class JobcardTemplateService {
   }
 
   buildDefaultDeviceTemplate(): JobcardTemplate {
-    // Tem nhiệt 50x30mm (203dpi): không lề trái/phải, chữ >= 8pt, toàn bộ màu đen tuyền
+    // Tem nhiệt 50x30mm (203dpi): không lề trái/phải, chữ >= 6pt, toàn bộ màu đen tuyền
     return {
       id: 'default_device_template',
       name: 'Jobcard tem 50x30',
@@ -338,32 +338,38 @@ export class JobcardTemplateService {
       elements: [
         // Dải tiêu đề đen + tên máy
         { id: 'el_header_bg', type: 'box', x: 0, y: 0.6, width: 50, height: 5.8, zIndex: 1, backgroundColor: '#000000' },
-        { id: 'el_dev_name', type: 'data_field', fieldKey: 'deviceName', label: 'Tên thiết bị', showLabel: false,
-          fontWeight: 'bold', fontSize: 9, color: '#ffffff', x: 1.2, y: 1.4, width: 47.6, height: 4.4, zIndex: 2 },
+        { id: 'el_dev_name', type: 'data_field', fieldKey: 'deviceName', label: 'Tên thiết bị', showLabel: false, format: 'uppercase',
+          fontWeight: 'bold', fontSize: 8, color: '#ffffff', x: 1.2, y: 1.4, width: 35.6, height: 4.4, zIndex: 2,
+          expandWhenHidden: { elementId: 'el_rentino_type', width: 47.6 } },
+        // Loại Rentino (góc phải dải đen): chỉ in khi bật trong hộp thoại in, chỉ hiện loại thật khi đã gửi VCM
+        { id: 'el_rentino_type', type: 'data_field', fieldKey: 'finalSummary', format: 'accessory_type', label: 'Loại Rentino', showLabel: false,
+          fontWeight: 'bold', fontSize: 8, color: '#ffffff', textAlign: 'right', x: 37, y: 1.4, width: 11.8, height: 4.4, zIndex: 2,
+          showWhenStatus: 'sent_vcm', placeholderText: 'Loại ....', printToggleKey: 'rentino_type' },
         // IMEI
         { id: 'el_imei', type: 'data_field', fieldKey: 'imei', label: 'IMEI', showLabel: true, labelWidth: 8.5,
-          fontWeight: 'bold', fontSize: 9.5, color: '#000000', x: 1.2, y: 7, width: 47.6, height: 4.6, zIndex: 2 },
+          fontWeight: 'bold', fontSize: 8.5, color: '#000000', x: 1.2, y: 7, width: 47.6, height: 4.6, zIndex: 2 },
         { id: 'el_line_1', type: 'line', lineOrientation: 'horizontal', lineThickness: 0.75, color: '#000000', x: 0, y: 11.4, width: 50, height: 1, zIndex: 2 },
-        // Lưới 2 cột: ROM | RAM (Android), Màu | Pin
+        // Lưới 2 cột: ROM | RAM (Android), Màu | Pin, BH | Sạc
         { id: 'el_storage', type: 'data_field', fieldKey: 'storage', label: 'ROM', showLabel: true, labelWidth: 7.5,
-          fontWeight: 'bold', fontSize: 8, color: '#000000', x: 1.2, y: 12.6, width: 23, height: 4.2, zIndex: 2 },
+          fontWeight: 'bold', fontSize: 7, color: '#000000', x: 1.2, y: 12.6, width: 23, height: 4.2, zIndex: 2 },
         { id: 'el_ram', type: 'data_field', fieldKey: 'totalRam', label: 'RAM', showLabel: true, labelWidth: 7.5,
-          visibleWhen: 'android', fontWeight: 'bold', fontSize: 8, color: '#000000', x: 25.6, y: 12.6, width: 23.2, height: 4.2, zIndex: 2 },
+          visibleWhen: 'android', fontWeight: 'bold', fontSize: 7, color: '#000000', x: 25.6, y: 12.6, width: 23.2, height: 4.2, zIndex: 2 },
         { id: 'el_color', type: 'custom_field', customKey: 'custom_color', label: 'Màu', defaultValue: '', labelWidth: 7.5,
-          fontWeight: 'bold', fontSize: 8, color: '#000000', x: 1.2, y: 16.9, width: 23, height: 4.2, zIndex: 2 },
+          fontWeight: 'bold', fontSize: 7, color: '#000000', x: 1.2, y: 16.9, width: 23, height: 4.2, zIndex: 2 },
         { id: 'el_battery', type: 'custom_field', customKey: 'custom_battery', label: 'Pin', defaultValue: '', labelWidth: 7.5,
-          fontWeight: 'bold', fontSize: 8, color: '#000000', x: 25.6, y: 16.9, width: 23.2, height: 4.2, zIndex: 2 },
+          fontWeight: 'bold', fontSize: 7, color: '#000000', x: 25.6, y: 16.9, width: 23.2, height: 4.2, zIndex: 2 },
+        { id: 'el_warranty', type: 'custom_field', customKey: 'custom_warranty', label: 'BH', defaultValue: '', labelWidth: 5,
+          fontWeight: 'bold', fontSize: 7, color: '#000000', x: 1.2, y: 21.2, width: 23, height: 4.2, zIndex: 2 },
+        { id: 'el_charge', type: 'custom_field', customKey: 'custom_charge', label: 'Sạc', defaultValue: '', labelWidth: 7.5,
+          fontWeight: 'bold', fontSize: 7, color: '#000000', x: 25.6, y: 21.2, width: 23.2, height: 4.2, zIndex: 2 },
         { id: 'el_vline_1', type: 'line', lineOrientation: 'vertical', lineThickness: 0.5, color: '#000000',
-          x: 24.8, y: 11.9, width: 1, height: 9.4, zIndex: 2 },
-        // Hạn bảo hành (cả dòng)
-        { id: 'el_warranty', type: 'custom_field', customKey: 'custom_warranty', label: 'Hạn BH', defaultValue: '', labelWidth: 11,
-          fontWeight: 'bold', fontSize: 8, color: '#000000', x: 1.2, y: 21.2, width: 47.6, height: 4.2, zIndex: 2 },
+          x: 24.8, y: 11.9, width: 1, height: 13.8, zIndex: 2 },
         { id: 'el_line_2', type: 'line', lineOrientation: 'horizontal', lineThickness: 0.75, color: '#000000', x: 0, y: 25.2, width: 50, height: 1, zIndex: 2 },
         // Chân tem: mã vận đơn + ngày in
         { id: 'el_tracking', type: 'data_field', fieldKey: 'trackingNumber', label: 'VĐ:', showLabel: true,
-          fontSize: 6.5, color: '#000000', x: 1.2, y: 26.2, width: 31, height: 3.2, zIndex: 2 },
+          fontSize: 6, color: '#000000', x: 1.2, y: 26.2, width: 31, height: 3.2, zIndex: 2 },
         { id: 'el_print_date', type: 'print_date', label: 'In:', showLabel: false, dateFormat: 'dd/MM/yyyy',
-          fontSize: 6.5, fontWeight: 'bold', color: '#000000', textAlign: 'right', x: 31.5, y: 26.2, width: 17.3, height: 3.2, zIndex: 2 }
+          fontSize: 6, fontWeight: 'bold', color: '#000000', textAlign: 'right', x: 31.5, y: 26.2, width: 17.3, height: 3.2, zIndex: 2 }
       ]
     };
   }
