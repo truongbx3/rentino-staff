@@ -27,6 +27,7 @@
     "chartjs-plugin-datalabels": "^2.2.0",
     "cytoscape": "^3.33.1",
     "dagre": "^0.8.5",
+    "exceljs": "^4.4.0",
     "ng-zorro-antd": "^12.1.1",
     "rxjs": "~6.6.0",
     "tslib": "^2.3.0",

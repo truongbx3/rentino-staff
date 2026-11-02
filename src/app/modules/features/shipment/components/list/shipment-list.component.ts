@@ -9,6 +9,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { Router } from '@angular/router';
 import { ListStateService } from 'src/app/core/services/list-state.service';
 import { TableCustomComponent } from 'src/app/modules/shares/components/table/table.component';
+import { ShipmentExportService } from '../../services/shipment-export.service';
 
 @Component({
   selector: 'app-shipment-list',
@@ -34,6 +35,7 @@ export class ShipmentListComponent implements OnInit {
 
   constructor(
     private shipmentService: ShipmentService,
+    private shipmentExportService: ShipmentExportService,
     private loading: LoadingService,
     private message: NzMessageService,
     private router: Router,
@@ -303,27 +305,44 @@ export class ShipmentListComponent implements OnInit {
 
     this.exporting = true;
     this.loading.show();
-    this.shipmentService.exportDevices(req).pipe(
-      finalize(() => {
-        this.exporting = false;
-        this.loading.hide();
-      })
-    ).subscribe({
-      next: (blob: Blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `device_shipment_${new Date().getTime()}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        this.message.success('Xuất file excel thành công!');
+    this.shipmentService.exportDevices(req).subscribe({
+      next: async (blob: Blob) => {
+        let finalBlob = blob;
+        try {
+          // Xử lý thêm cột "Khu vực" vào file excel
+          finalBlob = await this.shipmentExportService.processExportBlob(blob, {
+            lastSearchPayload: this.lastSearchPayload,
+            selectedStatus: this.selectedStatus,
+            dateRange: this.dateRange,
+            exportRequest: req
+          });
+        } catch (err) {
+          console.error('Lỗi khi xử lý file excel:', err);
+          finalBlob = blob;
+        } finally {
+          this.downloadBlob(finalBlob);
+          this.message.success('Xuất file excel thành công!');
+          this.exporting = false;
+          this.loading.hide();
+        }
       },
       error: (err) => {
         this.notifyError(err?.error?.message, 'Có lỗi xảy ra khi xuất file!');
+        this.exporting = false;
+        this.loading.hide();
       }
     });
+  }
+
+  private downloadBlob(blob: Blob): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `device_shipment_${new Date().getTime()}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
 
   onPageIndexChange(page: number) {
